@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Ebene_1" data-name="Ebene 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <g id="Bounding_box" data-name="Bounding box">
+    <rect width="24" height="24" fill="none"/>
+  </g>
+  <path id="Icon" d="m15,5v14h-6V5h6m0-2h-6c-1.1,0-2,.9-2,2v14c0,1.1.9,2,2,2h6c1.1,0,2-.9,2-2V5c0-1.1-.9-2-2-2h0Zm-3,12h0c.55,0,1,.45,1,1h0c0,.55-.45,1-1,1h0c-.55,0-1-.45-1-1h0c0-.55.45-1,1-1Z" fill="#009999"/>
+</svg>

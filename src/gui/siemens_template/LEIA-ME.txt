@@ -1,0 +1,3 @@
+Templates Siemens — material de referencia.
+Nao editar para o funcionamento da aplicacao Stock Tracker.
+A aplicacao principal esta em src/gui/ (stock_tracker_window.py).

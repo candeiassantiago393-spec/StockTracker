@@ -1,0 +1,16 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "files.exclude": {
+    "**/.venv": true,
+    "**/__pycache__": true,
+    "**/src/gui/siemens_template/resources/icons": true
+  },
+  "search.exclude": {
+    "**/.venv": true,
+    "**/src/gui/siemens_template/resources/icons": true
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/src/gui/siemens_template/resources/**": true
+  }
+}

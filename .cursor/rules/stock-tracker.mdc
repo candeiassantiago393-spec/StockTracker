@@ -1,0 +1,29 @@
+---
+description: Stock Tracker — estagio Siemens, arquitetura core/gui
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Stock Tracker
+
+Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
+
+## Arquitetura
+
+- Logica: `src/core/stock.py` (classe `StockTracker`)
+- GUI: `src/gui/stock_tracker_window.py`
+- Entrada: `python -m src.main` ou `run.bat`
+- Credenciais: `config/secrets.py` (nao commitar)
+- Dados: `data/stock.xlsx` — fechar Excel antes de gravar
+
+## Regras
+
+- Nao colocar logica de negocio na GUI
+- Nao executar modulos `gui/` isoladamente (imports relativos)
+- Diffs minimos; estilo existente
+- Utilizador em portugues — explicacoes claras em PT quando aplicavel
+
+## Nao confundir
+
+`Documents\stock-tracker` — projeto legado separado.
