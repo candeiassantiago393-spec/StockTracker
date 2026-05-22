@@ -1,4 +1,6 @@
-# Documentacao — Stock Tracker
+# Documentation — Stock Tracker
+
+User-facing docs are in **Portuguese** (`utilizador/`). The root [README.md](../README.md) is in English for GitHub.
 
 ## Manual do utilizador
 

@@ -7,9 +7,12 @@ __pycache__/
 dist/
 build/
 
-# IDE
+# IDE / OS
 .idea/
+.vscode/*.log
 *.swp
+Thumbs.db
+.DS_Store
 
 # Credenciais e dados locais
 config/secrets.py

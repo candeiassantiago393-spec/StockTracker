@@ -1,116 +1,133 @@
 # Stock Tracker
 
-**Sistema de inventario de componentes eletronicos** — estagio Siemens.
+**Electronic component inventory — Siemens internship project.**
 
-Gestao de stock em Excel, integracao com a API Mouser e interface desktop PySide6 alinhada com o design system Siemens.
+Desktop app for stock management with an Excel database, PySide6 GUI (Siemens-style UI), and distributor API integration (Mouser active; DigiKey, TME, RS prepared).
 
----
-
-## Funcionalidades
-
-- Pesquisa e consulta de componentes no inventario (Excel)
-- Leitura de codigos de barras / referencias Mouser
-- Entrada e saida de stock com registo em historico
-- Importacao de novos componentes via API Mouser
-- Interface grafica com validacao de utilizador e confirmacao de remocoes
+> **Documentation in Portuguese:** see [`docs/`](docs/README.md) (architecture, commands, suppliers, internship report draft).
 
 ---
 
-## Requisitos
+## Features
+
+- Excel inventory (`Components` + `History` sheets)
+- GUI: search, barcode/scan, stock IN/OUT, history viewer
+- **Multi-match search** in Excel with selection dialog
+- **Autocomplete** from Excel (search field + barcode/Mouser reference field)
+- Mouser API: lookup and import new parts
+- Modular suppliers: `src/core/suppliers/` (Mouser, DigiKey, TME, RS, Robert Mauser stub)
+- Terminal test menu: `python -m src.test_terminal`
+- Clear split: business logic in `core/`, UI in `gui/`
+
+---
+
+## Requirements
 
 - Windows 10/11
-- Python 3.10 ou superior
-- Microsoft Excel (ficheiro `data/stock.xlsx` deve estar **fechado** durante operacoes de gravacao)
-- Ligacao a Internet (consultas Mouser)
+- Python 3.10+
+- Internet (Mouser API)
+- Close `data/stock.xlsx` in Excel before saving from the app
 
 ---
 
-## Instalacao
+## Quick start
 
 ```powershell
-cd C:\Users\z005027j\Downloads\StockTracker\StockTracker
+git clone https://github.com/YOUR_USER/StockTracker.git
+cd StockTracker
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-### Chave API Mouser
-
-```powershell
 copy config\secrets.example.py config\secrets.py
 ```
 
-Editar `config/secrets.py` e definir `MOUSER_API_KEY`. O ficheiro `secrets.py` nao e versionado (`.gitignore`).
+1. Edit `config/secrets.py` — set `MOUSER_API_KEY` (and other keys if needed).
+2. Add your inventory file: `data/stock.xlsx` (see [`data/README.md`](data/README.md)).
+3. Run:
 
----
-
-## Utilizacao
-
-| Metodo | Acao |
-|--------|------|
-| **Duplo clique** | `run.bat` |
-| **Terminal** | `python -m src.main` |
-| **Testes CLI** | `python -m src.test_terminal` |
-
----
-
-## Arquitetura
-
-```
-src/
-├── main.py                 # Entrada da aplicacao
-├── test_terminal.py        # Consola de testes (desenvolvimento)
-├── core/
-│   └── stock.py            # Logica de negocio (StockTracker)
-└── gui/
-    ├── stock_tracker_window.py
-    ├── ui_stock_tracker.py
-    ├── history_dialog.py
-    ├── styles.py
-    └── siemens_template/   # Templates oficiais Siemens (referencia)
+```powershell
+python -m src.main
 ```
 
-| Camada | Responsabilidade |
-|--------|------------------|
-| `core/stock.py` | Excel, API Mouser, movimentos de stock, historico |
-| `gui/` | Interacao, validacoes de utilizador, confirmacoes |
-| `data/stock.xlsx` | Base de dados (folhas Components e History) |
+Or double-click `run.bat`.
 
 ---
 
-## Documentacao
+## Configuration
 
-| Documento | Conteudo |
-|-----------|----------|
-| [docs/README.md](docs/README.md) | Indice da documentacao |
-| [docs/utilizador/COMANDOS.md](docs/utilizador/COMANDOS.md) | Comandos e resolucao de problemas |
-| [docs/utilizador/ORGANIZACAO.md](docs/utilizador/ORGANIZACAO.md) | Estrutura do repositorio |
-| [docs/utilizador/ARQUITETURA.md](docs/utilizador/ARQUITETURA.md) | Decisoes tecnicas e fluxos |
-| [src/gui/ESTRUTURA.md](src/gui/ESTRUTURA.md) | Modulo de interface grafica |
+| File | Purpose |
+|------|---------|
+| `config/secrets.py` | API keys (**local only**, not in Git) |
+| `config/secrets.example.py` | Template for secrets |
+| `data/stock.xlsx` | Inventory database (**not in Git** by default) |
+
+Never commit `config/secrets.py` or real API keys.
 
 ---
 
-## Estrutura do repositorio
+## Project structure
 
 ```
 StockTracker/
-├── config/           # Credenciais (secrets.py local)
-├── data/             # stock.xlsx
-├── docs/             # Documentacao
-├── src/              # Codigo fonte
-├── tools/            # Scripts de manutencao
+├── config/          # credentials loader + secrets.example.py
+├── data/            # stock.xlsx (local, gitignored)
+├── docs/            # user & architecture docs (PT)
+├── src/
+│   ├── main.py      # GUI entry point
+│   ├── test_terminal.py
+│   ├── core/        # StockTracker + suppliers
+│   └── gui/         # PySide6 UI
+├── tools/           # maintenance scripts
 ├── requirements.txt
 └── run.bat
 ```
 
+| Layer | Location | Role |
+|-------|----------|------|
+| Entry | `src/main.py` | Starts GUI |
+| Business | `src/core/stock.py` | Excel, stock, history, APIs |
+| UI | `src/gui/` | Events, dialogs, styles |
+| Suppliers | `src/core/suppliers/` | Mouser, DigiKey, TME, RS, … |
+
 ---
 
-## Notas de desenvolvimento
+## Documentation
 
-- Nao executar ficheiros em `src/gui/` diretamente (ex.: `history_dialog.py`); usar `python -m src.main`.
-- Separacao obrigatoria: logica em `core/`, interface em `gui/`.
-- Projeto de referencia antigo: `Documents\stock-tracker` (nao misturar com este repositorio).
+| Document | Content |
+|----------|---------|
+| [docs/README.md](docs/README.md) | Documentation index |
+| [docs/utilizador/COMANDOS.md](docs/utilizador/COMANDOS.md) | Install, run, troubleshooting |
+| [docs/utilizador/ARQUITETURA.md](docs/utilizador/ARQUITETURA.md) | Architecture & flows |
+| [docs/utilizador/FORNECEDORES.md](docs/utilizador/FORNECEDORES.md) | API suppliers |
+| [docs/utilizador/CONTINUAR_AGENTE.md](docs/utilizador/CONTINUAR_AGENTE.md) | Handover notes for development |
 
 ---
 
-*Stock Tracker — projeto de estagio. Uso interno.*
+## Publish to GitHub
+
+Repository is already a Git repo. After creating an empty repo on GitHub:
+
+```powershell
+git remote add origin https://github.com/YOUR_USER/StockTracker.git
+git branch -M main
+git push -u origin main
+```
+
+**GitHub repository description (short):**
+
+```
+Desktop electronic component inventory (Excel + PySide6 + Mouser API). Siemens internship project.
+```
+
+---
+
+## Development notes
+
+- Run as module: `python -m src.main` (do not run `gui/*.py` directly).
+- Legacy project path (do not mix): `Documents\stock-tracker`.
+
+---
+
+## Resumo (PT)
+
+Aplicação de inventário de componentes eletrónicos: Excel, interface Siemens (PySide6), API Mouser, pesquisa com lista de resultados e sugestões ao escrever. Projeto de estágio — uso interno.

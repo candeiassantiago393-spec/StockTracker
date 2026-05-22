@@ -1,16 +1,30 @@
-# Dados — Stock Tracker
+# Data — Stock Tracker
 
-Colocar aqui o ficheiro **`stock.xlsx`** (folhas `Components` e `History`).
+Place your inventory file here: **`stock.xlsx`**
 
-## Requisitos
+## Required sheets
 
-- Fechar o ficheiro no Microsoft Excel antes de executar operacoes de gravacao na aplicacao
-- Manter copia de seguranca periodica do inventario
+| Sheet | Purpose |
+|-------|---------|
+| `Components` | Parts and stock levels |
+| `History` | Stock movements (IN/OUT) |
 
-## Migracao do projeto legado
+The app creates headers automatically if the file is missing or empty.
+
+## Before running the app
+
+- **Close** `stock.xlsx` in Microsoft Excel before save operations
+- Keep regular backups of your inventory
+
+## After cloning from GitHub
+
+`stock.xlsx` is **not** in the repository (see root `.gitignore`). Either:
+
+1. Copy your existing file into this folder, or  
+2. Run the app once — it will create a new workbook with empty sheets.
+
+Example (adjust paths):
 
 ```powershell
-copy "C:\Users\z005027j\Documents\stock-tracker\data\stock.xlsx" "data\stock.xlsx"
+copy "path\to\your\stock.xlsx" "data\stock.xlsx"
 ```
-
-O ficheiro nao e versionado por defeito (ver `.gitignore`).
