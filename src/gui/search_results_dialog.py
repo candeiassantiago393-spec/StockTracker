@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 from . import styles
 
 COLUMNS = (
-    "Mouser Reference",
+    "Supplier Reference",
     "Manufacturer",
     "Manufacturer Reference",
     "Description",

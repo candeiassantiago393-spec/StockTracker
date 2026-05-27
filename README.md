@@ -100,26 +100,28 @@ StockTracker/
 | [docs/utilizador/ARQUITETURA.md](docs/utilizador/ARQUITETURA.md) | Architecture & flows |
 | [docs/utilizador/FORNECEDORES.md](docs/utilizador/FORNECEDORES.md) | API suppliers |
 | [docs/utilizador/CONTINUAR_AGENTE.md](docs/utilizador/CONTINUAR_AGENTE.md) | Handover notes for development |
+| [docs/utilizador/ORGANIZAR_TRABALHO.md](docs/utilizador/ORGANIZAR_TRABALHO.md) | Organize folders (Desktop, Designer, daily workflow) |
 
 ---
 
 ## Publish to GitHub
 
-Repository is already a Git repo. After creating an empty repo on GitHub:
+**Step-by-step (PT):** [docs/utilizador/GITHUB.md](docs/utilizador/GITHUB.md)
+
+1. Create an empty repo on GitHub (no README).
+2. In Cursor terminal:
 
 ```powershell
+cd C:\Users\z005027j\Downloads\StockTracker\StockTracker
+git add .
+git status
+git commit -m "Add Siemens UI, Qt Designer, suppliers and demo mode"
 git remote add origin https://github.com/YOUR_USER/StockTracker.git
 git branch -M main
 git push -u origin main
 ```
 
-**GitHub repository description (short):**
-
-```
-Desktop electronic component inventory (Excel + PySide6 + Mouser API). Siemens internship project.
-```
-
----
+Never commit `config/secrets.py` or real API keys.
 
 ## Development notes
 

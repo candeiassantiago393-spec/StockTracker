@@ -1,44 +1,21 @@
-"""Stock Tracker main window — uses StockTracker from src.core.stock."""
-from pathlib import Path
-
+"""Legacy demo window — Mouser-only scan, green/red stock buttons."""
 from PySide6.QtCore import Qt, QStringListModel
 from PySide6.QtWidgets import QCompleter, QDialog, QMainWindow, QMessageBox
 
 from src.core.stock import StockTracker
-from src.core.suppliers import supplier_label
-from src.core.suppliers.base import SupplierId
-from src.core.suppliers.credentials import is_configured
+from src.gui.history_dialog import HistoryDialog
+from src.gui.search_results_dialog import SearchResultsDialog
 
-from .history_dialog import HistoryDialog
-from .search_results_dialog import SearchResultsDialog
+from .ui_stock_tracker import Ui_StockTracker
 
 
-def _load_ui_class():
-    """Prefer Qt Designer export when the generated file is complete."""
-    try:
-        from .designer.gui_stocktracker import Ui_StockTracker as DesignerUi
-
-        designer_py = Path(__file__).resolve().parent / "designer" / "gui_stocktracker.py"
-        source = designer_py.read_text(encoding="utf-8")
-        required = ("barcode_entry", "supplier_combo", "val_stock", "btn_scan")
-        if all(name in source for name in required):
-            return DesignerUi
-    except (ImportError, OSError):
-        pass
-    from .ui_stock_tracker import Ui_StockTracker
-
-    return Ui_StockTracker
-
-
-class StockTrackerWindow(QMainWindow):
+class DemoStockTrackerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.tracker = StockTracker()
-        Ui_StockTracker = _load_ui_class()
         self.ui = Ui_StockTracker()
         self.ui.setupUi(self)
         self._connect_signals()
-        self._setup_supplier_combo()
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
 
@@ -51,8 +28,6 @@ class StockTrackerWindow(QMainWindow):
         u.btn_history_all.clicked.connect(lambda: self.open_history(False))
         u.btn_history_component.clicked.connect(lambda: self.open_history(True))
         u.btn_clear.clicked.connect(self.clear_all_fields)
-        if hasattr(u, "btn_exit"):
-            u.btn_exit.clicked.connect(self.close)
 
     def _make_completer(
         self, terms: list[str], filter_mode: Qt.MatchFlag
@@ -64,30 +39,7 @@ class StockTrackerWindow(QMainWindow):
         completer.setMaxVisibleItems(12)
         return completer
 
-    def _setup_supplier_combo(self) -> None:
-        combo = self.ui.supplier_combo
-        combo.clear()
-        configured = self.tracker.configured_suppliers()
-        if not configured:
-            combo.addItem("No distributor API configured", "")
-            combo.setEnabled(False)
-            return
-        combo.setEnabled(True)
-        for supplier_id in configured:
-            combo.addItem(supplier_label(supplier_id), supplier_id)
-        default = "mouser" if "mouser" in configured else configured[0]
-        index = combo.findData(default)
-        if index >= 0:
-            combo.setCurrentIndex(index)
-
-    def _selected_supplier(self) -> SupplierId | None:
-        supplier_id = self.ui.supplier_combo.currentData()
-        if not supplier_id:
-            return None
-        return supplier_id
-
     def _setup_autocompletes(self) -> None:
-        """Excel suggestions for search and barcode/supplier reference fields."""
         workbook = self.tracker.get_workbook()
         sheet = self.tracker.get_components_sheet(workbook)
 
@@ -98,7 +50,7 @@ class StockTrackerWindow(QMainWindow):
         self.ui.search_entry.setCompleter(self._search_completer)
 
         self._barcode_completer = self._make_completer(
-            self.tracker.excel_autocomplete_supplier_refs(sheet),
+            self.tracker.excel_autocomplete_mouser_refs(sheet),
             Qt.MatchFlag.MatchStartsWith,
         )
         self.ui.barcode_entry.setCompleter(self._barcode_completer)
@@ -112,7 +64,7 @@ class StockTrackerWindow(QMainWindow):
             )
         if hasattr(self, "_barcode_completer"):
             self._barcode_completer.model().setStringList(
-                self.tracker.excel_autocomplete_supplier_refs(sheet)
+                self.tracker.excel_autocomplete_mouser_refs(sheet)
             )
 
     def set_status(self, text: str) -> None:
@@ -178,53 +130,39 @@ class StockTrackerWindow(QMainWindow):
             self.set_status("Component found in Excel.")
             return
 
-        supplier = self._selected_supplier()
-        distributor_name = (
-            supplier_label(supplier) if supplier else "distributor"
-        )
         answer = QMessageBox.question(
             self,
             "Component not found",
-            f"Component not found in Excel.\n\n"
-            f"Search the {distributor_name} catalog?",
+            "Component not found. Do you want to search Mouser?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
 
-        if supplier is None or not is_configured(supplier, self.tracker._secrets):
+        if not self.tracker.api_key:
             QMessageBox.critical(
                 self,
-                "API credentials missing",
-                "No distributor API is configured.\n\n"
-                "Edit config/secrets.py (see secrets.example.py).",
+                "API key missing",
+                "Set MOUSER_API_KEY in config/secrets.py (see secrets.example.py).",
             )
             return
 
-        part = self.tracker.search_supplier(supplier, part_number)
+        part = self.tracker.search_mouser(part_number)
         if part is None:
             QMessageBox.critical(
                 self,
-                "Distributor lookup failed",
-                f"Could not search {distributor_name} or no result was found.\n\n"
-                "Check internet, API credentials, and the part number.",
+                "Mouser error",
+                "Could not connect to Mouser or no result found. "
+                "Check internet, API key, or part number.",
             )
             return
 
-        supplier_reference = self.tracker.part_supplier_reference(
-            part, part_number
-        )
-        manufacturer_ref = self.tracker.part_manufacturer_reference(part)
+        mouser_reference = part.get("MouserPartNumber", part_number)
+        manufacturer_ref = part.get("ManufacturerPartNumber", "")
 
-        if self.tracker.component_exists(
-            sheet, supplier_reference, manufacturer_ref
-        ):
+        if self.tracker.component_exists(sheet, mouser_reference, manufacturer_ref):
             existing = self.tracker.find_component_any(
-                sheet,
-                supplier_reference,
-                manufacturer_ref,
-                part_number,
-                code,
+                sheet, mouser_reference, manufacturer_ref, part_number, code
             )
             if existing:
                 self.show_component(existing)
@@ -239,10 +177,10 @@ class StockTrackerWindow(QMainWindow):
 
         self.tracker.add_component_row(
             sheet,
-            mouser_ref=supplier_reference,
-            manufacturer=self.tracker.part_manufacturer(part),
+            mouser_ref=mouser_reference,
+            manufacturer=part.get("Manufacturer", ""),
             manufacturer_ref=manufacturer_ref,
-            description=self.tracker.part_description(part),
+            description=part.get("Description", ""),
             stock=0,
         )
 
@@ -256,9 +194,9 @@ class StockTrackerWindow(QMainWindow):
 
         workbook = self.tracker.get_workbook()
         sheet = self.tracker.get_components_sheet(workbook)
-        self.ui.barcode_entry.setText(supplier_reference)
+        self.ui.barcode_entry.setText(mouser_reference)
         added_row = self.tracker.find_component_any(
-            sheet, supplier_reference, manufacturer_ref, part_number, code
+            sheet, mouser_reference, manufacturer_ref, part_number, code
         )
         if added_row:
             self.show_component(added_row)

@@ -21,6 +21,10 @@ IMPLEMENTED: tuple[SupplierId, ...] = ("mouser", "digikey", "tme", "rs")
 PLANNED: tuple[SupplierId, ...] = ()
 
 
+def supplier_label(supplier: SupplierId) -> str:
+    return AVAILABLE.get(supplier, supplier)
+
+
 def search_part(supplier: SupplierId, part_number: str, secrets: dict):
     """Pesquisa unificada por fornecedor."""
     if supplier == "mouser":

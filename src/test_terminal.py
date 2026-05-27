@@ -1,46 +1,79 @@
 """
-Stock Tracker — consola de testes (desenvolvimento).
+Stock Tracker — terminal test console (development).
 
-Execucao: python -m src.test_terminal
+Run: python -m src.test_terminal
 """
 from src.core.stock import StockTracker
+from src.core.suppliers import supplier_label
+from src.core.suppliers.base import SupplierId
+from src.core.suppliers.credentials import is_configured
 
 
 def print_header(tracker: StockTracker, user: str) -> None:
     print("\n" + "=" * 50)
-    print("  STOCK TRACKER - Teste no terminal")
+    print("  STOCK TRACKER - Terminal test")
     print("=" * 50)
-    print(f"  Utilizador: {user}")
+    print(f"  User: {user}")
     print(f"  Excel: {tracker.excel_file}")
-    mouser = "definida" if tracker.api_key else "NAO definida (opcoes 5 e 6)"
-    print(f"  API Mouser: {mouser}")
     configured = tracker.configured_suppliers()
-    print(f"  Fornecedores com chave: {', '.join(configured) or '(nenhum)'}")
+    if configured:
+        names = ", ".join(supplier_label(s) for s in configured)
+        print(f"  Distributor APIs: {names}")
+    else:
+        print("  Distributor APIs: (none configured)")
     print("=" * 50)
 
 
 def print_menu() -> None:
-    print("\n  1 - Pesquisar componente no Excel")
-    print("  2 - Ver dados de um codigo (scan simulado)")
-    print("  3 - Adicionar stock (IN)")
-    print("  4 - Remover stock (OUT) [pede confirmacao]")
-    print("  5 - Pesquisar na Mouser (so consulta)")
-    print("  6 - Mouser -> Excel -> adicionar stock")
-    print("  7 - Listar componentes no Excel")
-    print("  8 - Ver ultimos 20 movimentos (historico)")
-    print("  9 - Mudar nome de utilizador")
-    print(" 10 - Pesquisar na TME (so consulta)")
-    print("  0 - Sair")
+    print("\n  1 - Search component in Excel")
+    print("  2 - View component by code (simulated scan)")
+    print("  3 - Add stock (IN)")
+    print("  4 - Remove stock (OUT) [confirmation]")
+    print("  5 - Search distributor catalog (lookup only)")
+    print("  6 - Distributor -> Excel -> add stock")
+    print("  7 - List components in Excel")
+    print("  8 - View last 20 history entries")
+    print("  9 - Change user name")
+    print("  0 - Exit")
 
 
 def print_component(data: dict) -> None:
-    print("  --- Componente ---")
-    print(f"  Mouser:     {data['mouser']}")
-    print(f"  Fabricante: {data['manufacturer']}")
-    print(f"  Ref. fab.:  {data['manufacturer_ref']}")
-    print(f"  Descricao:  {data['description']}")
-    print(f"  Stock:      {data['stock']}")
+    print("  --- Component ---")
+    print(f"  Supplier ref: {data['mouser']}")
+    print(f"  Manufacturer: {data['manufacturer']}")
+    print(f"  Mfr. ref:     {data['manufacturer_ref']}")
+    print(f"  Description:  {data['description']}")
+    print(f"  Stock:        {data['stock']}")
     print("  ------------------")
+
+
+def pick_supplier(tracker: StockTracker) -> SupplierId | None:
+    configured = tracker.configured_suppliers()
+    if not configured:
+        print("No distributor API configured. Edit config/secrets.py.")
+        return None
+    if len(configured) == 1:
+        return configured[0]
+    print("\n  Select distributor:")
+    for index, supplier_id in enumerate(configured, start=1):
+        print(f"    {index} - {supplier_label(supplier_id)}")
+    choice = input("  Number: ").strip()
+    try:
+        position = int(choice) - 1
+        return configured[position]
+    except (ValueError, IndexError):
+        print("Invalid selection.")
+        return None
+
+
+def print_supplier_part(supplier_id: SupplierId, result: dict) -> None:
+    print(f"  --- {supplier_label(supplier_id)} ---")
+    print(
+        f"  Part: {StockTracker.part_supplier_reference(result)}"
+    )
+    print(f"  Manufacturer: {StockTracker.part_manufacturer(result)}")
+    print(f"  Mfr. ref:     {StockTracker.part_manufacturer_reference(result)}")
+    print(f"  Description:  {StockTracker.part_description(result)}")
 
 
 def ask_positive_int(prompt: str) -> int | None:
@@ -184,29 +217,26 @@ def main():
             pause()
 
         elif opcao == "5":
-            if not tracker.api_key:
-                print("Defina MOUSER_API_KEY em config/secrets.py.")
-            else:
-                part = input("Referencia Mouser: ").strip()
+            supplier = pick_supplier(tracker)
+            if supplier and is_configured(supplier, tracker._secrets):
+                part = input("Part number or keyword: ").strip()
                 if part:
-                    result = tracker.search_mouser(part)
+                    result = tracker.search_supplier(supplier, part)
                     if result:
-                        print("  --- Mouser ---")
-                        print(f"  Part: {result.get('MouserPartNumber')}")
-                        print(f"  Fabricante: {result.get('Manufacturer')}")
-                        print(f"  Descricao: {result.get('Description')}")
+                        print_supplier_part(supplier, result)
                     else:
-                        print("Sem resultado ou erro de ligacao.")
+                        print("No result or connection error.")
             pause()
 
         elif opcao == "6":
-            if not tracker.api_key:
-                print("Defina MOUSER_API_KEY em config/secrets.py.")
-            else:
-                code = input("Referencia Mouser (nova ou existente): ").strip()
-                qty = ask_positive_int("Quantidade a adicionar: ")
+            supplier = pick_supplier(tracker)
+            if supplier and is_configured(supplier, tracker._secrets):
+                code = input("Part reference (new or existing): ").strip()
+                qty = ask_positive_int("Quantity to add: ")
                 if code and qty is not None:
-                    tracker.add_from_mouser_and_stock_in(user, code, qty)
+                    tracker.add_from_supplier_and_stock_in(
+                        user, code, qty, supplier
+                    )
             pause()
 
         elif opcao == "7":
@@ -220,30 +250,6 @@ def main():
                 print(
                     f"  {i:3}. {item['mouser']:<28} stock={item['stock']}"
                 )
-            pause()
-
-        elif opcao == "10":
-            from src.core.suppliers.credentials import is_configured
-
-            if not is_configured("tme", tracker._secrets):
-                print(
-                    "Defina TME_API_TOKEN e TME_APP_SECRET em config/secrets.py "
-                    "e guarde o ficheiro (Ctrl+S)."
-                )
-            else:
-                part = input("Referencia TME (simbolo ou texto): ").strip()
-                if part:
-                    result = tracker.search_tme(part)
-                    if result:
-                        print("  --- TME ---")
-                        print(
-                            f"  Symbol: {result.get('supplier_part_number') or result.get('MouserPartNumber')}"
-                        )
-                        print(f"  Fabricante: {result.get('Manufacturer')}")
-                        print(f"  Ref. fab.:  {result.get('ManufacturerPartNumber')}")
-                        print(f"  Descricao:  {result.get('Description')}")
-                    else:
-                        print("Sem resultado ou erro de ligacao (ver mensagens acima).")
             pause()
 
         elif opcao == "8":

@@ -2,7 +2,9 @@
 
 ## Credentials (`config/secrets.py`)
 
-Copy from `config/secrets.example.py`. Use empty `""` for suppliers you are not using yet.
+Copy from `config/secrets.example.py` and replace placeholders (`A_SUA_CHAVE_...`, `O_SEU_CLIENT_ID_...`). Use empty `""` for suppliers you are not using yet.
+
+**DigiKey from scratch:** [DIGIKEY_SETUP.md](DIGIKEY_SETUP.md)
 
 | Supplier | Keys in `secrets.py` |
 |----------|----------------------|

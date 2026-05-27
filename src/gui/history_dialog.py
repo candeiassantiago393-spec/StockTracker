@@ -13,7 +13,7 @@ from . import styles
 COLUMNS = (
     "Date",
     "User",
-    "Mouser Reference",
+    "Supplier Reference",
     "Movement",
     "Quantity",
     "Stock After",

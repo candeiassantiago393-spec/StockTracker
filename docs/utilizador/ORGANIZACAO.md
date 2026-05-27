@@ -49,3 +49,15 @@
 ## Projeto legado
 
 `Documents\stock-tracker` — implementacao anterior. Utilizar apenas como referencia; o projeto de estagio e este repositorio em `Downloads\StockTracker\StockTracker`.
+
+---
+
+## Pastas no Ambiente de Trabalho
+
+Ver guia completo: [ORGANIZAR_TRABALHO.md](ORGANIZAR_TRABALHO.md)
+
+| Pasta Desktop | Uso |
+|---------------|-----|
+| `StockTracker-Projeto` | Copia sincronizada do projeto (`tools\sincronizar-desktop.ps1`) |
+| `StockTracker-Designer` | `gui_stocktracker.ui` + `siemens_template` para o tutor |
+| `StockTracker` | Template antigo do tutor — ignorar |

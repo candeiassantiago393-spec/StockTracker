@@ -28,3 +28,8 @@ src/gui/_reorganize_report.txt
 
 # Cursor / screenshots locais
 assets/
+
+# Desktop sync copies (local only)
+Desktop/
+LEIA-ME.txt
+CORRER-*.bat

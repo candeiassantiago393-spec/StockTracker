@@ -1,0 +1,955 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>StockTracker</class>
+ <widget class="QMainWindow" name="StockTracker">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>1284</width><height>720</height></rect>
+  </property>
+  <property name="windowTitle"><string>Stock Tracker</string></property>
+  <property name="windowIcon">
+   <iconset resource="../siemens_template/resources/resources.qrc">
+    <normaloff>:/siemens_logo/logos/sie-favicon_internet.ico</normaloff>:/siemens_logo/logos/sie-favicon_internet.ico</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+* {
+    border: none;
+    background: #000028;
+    padding: 0;
+    margin: 0;
+    color: #FFFFFF;
+    font-family: &quot;SiemensSansPro_A_Bd&quot;;
+    font-size: 14px;
+}
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing"><number>0</number></property>
+    <property name="leftMargin"><number>0</number></property>
+    <property name="topMargin"><number>0</number></property>
+    <property name="rightMargin"><number>0</number></property>
+    <property name="bottomMargin"><number>0</number></property>
+    <item>
+     <widget class="QWidget" name="header" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+   <string notr="true">
+* {
+    background: #333353;
+}
+</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_header">
+       <property name="spacing"><number>16</number></property>
+       <item>
+        <widget class="QLabel" name="brand_identifier">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../siemens_template/resources/resources.qrc">:/siemens_logo/logos/Siemens Logo.png</pixmap>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="product_name">
+         <property name="styleSheet">
+   <string notr="true">
+* {
+    font-size: 18px;
+}
+</string>
+         </property>
+         <property name="text"><string>Stock Tracker</string></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="container_main_body" native="true">
+      <layout class="QGridLayout" name="gridLayout_main">
+       <property name="leftMargin"><number>16</number></property>
+       <item row="0" column="0" colspan="2">
+        <widget class="QFrame" name="frame_title">
+         <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>
+         <property name="frameShadow"><enum>QFrame::Shadow::Raised</enum></property>
+         <layout class="QVBoxLayout" name="verticalLayout_title">
+          <property name="spacing"><number>0</number></property>
+          <property name="leftMargin"><number>0</number></property>
+          <property name="topMargin"><number>0</number></property>
+          <property name="rightMargin"><number>0</number></property>
+          <property name="bottomMargin"><number>0</number></property>
+          <item>
+           <widget class="QLabel" name="tab1_title">
+            <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    font-size: 40px;
+}
+</string>
+            </property>
+            <property name="text"><string>Inventory</string></property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QFrame" name="container_tab1_left">
+         <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>
+         <property name="frameShadow"><enum>QFrame::Shadow::Raised</enum></property>
+         <layout class="QGridLayout" name="gridLayout_left">
+          <property name="topMargin"><number>15</number></property>
+          <property name="verticalSpacing"><number>0</number></property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_operations">
+            <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    font-size: 20px;
+    font-weight: bold;
+}
+</string>
+            </property>
+            <property name="text"><string>Operations</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QWidget" name="row_user_entry" native="true">
+            <layout class="QHBoxLayout" name="layout_user_entry">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="label_user_entry">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>User Name</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLineEdit" name="user_entry">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="2" column="0" colspan="2">
+           <widget class="QWidget" name="row_search_entry" native="true">
+            <layout class="QHBoxLayout" name="layout_search_entry">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="label_search_entry">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Search Component</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLineEdit" name="search_entry">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_search">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>SEARCH</string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="3" column="0" colspan="2">
+           <widget class="QWidget" name="row_supplier_combo" native="true">
+            <layout class="QGridLayout" name="grid_supplier">
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_supplier">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Distributor</string></property>
+              </widget>
+
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="supplier_combo">
+               <property name="minimumSize"><size><width>172</width><height>30</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QComboBox {
+    padding: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    min-width: 130;
+    min-height: 18px;
+    max-width: 130px;
+    max-height: 18px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+}
+QComboBox:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+QComboBox QAbstractItemView {
+    background-color: #2D2D45;
+    padding: 0px;
+}
+QComboBox QAbstractItemView::item:hover {
+    padding: 0px;
+    padding-left: 10px;
+}
+</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="4" column="0" colspan="2">
+           <widget class="QWidget" name="row_barcode_entry" native="true">
+            <layout class="QHBoxLayout" name="layout_barcode_entry">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="label_barcode_entry">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Scan Barcode / Supplier Ref.</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLineEdit" name="barcode_entry">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="5" column="0" colspan="2">
+           <widget class="QWidget" name="row_quantity_entry" native="true">
+            <layout class="QHBoxLayout" name="layout_quantity_entry">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="label_quantity_entry">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Quantity</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLineEdit" name="quantity_entry">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_scan">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>SCAN</string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="6" column="0" colspan="2">
+           <widget class="QWidget" name="row_stock_buttons" native="true">
+            <layout class="QHBoxLayout" name="layout_stock_buttons">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="label_stock_btn">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Button</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_add_stock">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>ADD STOCK</string></property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_remove_stock">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>REMOVE STOCK</string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="7" column="1">
+           <spacer name="verticalSpacer_left">
+            <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
+            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QFrame" name="container_tab1_right">
+         <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>
+         <property name="frameShadow"><enum>QFrame::Shadow::Raised</enum></property>
+         <layout class="QGridLayout" name="gridLayout_right">
+          <property name="topMargin"><number>15</number></property>
+          <property name="verticalSpacing"><number>0</number></property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_details">
+            <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    font-size: 20px;
+    font-weight: bold;
+}
+</string>
+            </property>
+            <property name="text"><string>Component Details</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QWidget" name="row_val_mouser" native="true">
+            <layout class="QHBoxLayout" name="layout_val_mouser">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="title_val_mouser">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Supplier Reference</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLabel" name="val_mouser">
+               <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLabel:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+               <property name="text"><string></string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="2" column="0" colspan="2">
+           <widget class="QWidget" name="row_val_manufacturer" native="true">
+            <layout class="QHBoxLayout" name="layout_val_manufacturer">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="title_val_manufacturer">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Manufacturer</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLabel" name="val_manufacturer">
+               <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLabel:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+               <property name="text"><string></string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="3" column="0" colspan="2">
+           <widget class="QWidget" name="row_val_manufacturer_ref" native="true">
+            <layout class="QHBoxLayout" name="layout_val_manufacturer_ref">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="title_val_manufacturer_ref">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Manufacturer Reference</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLabel" name="val_manufacturer_ref">
+               <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLabel:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+               <property name="text"><string></string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="4" column="0" colspan="2">
+           <widget class="QWidget" name="row_val_description" native="true">
+            <layout class="QHBoxLayout" name="layout_val_description">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="title_val_description">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Description</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLabel" name="val_description">
+               <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLabel:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+               <property name="text"><string></string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="5" column="0" colspan="2">
+           <widget class="QWidget" name="row_val_stock" native="true">
+            <layout class="QHBoxLayout" name="layout_val_stock">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="title_val_stock">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Current Stock</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLabel" name="val_stock">
+               <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLabel:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+               <property name="text"><string></string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="6" column="1">
+           <spacer name="verticalSpacer_right">
+            <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
+            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="widget_actions" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout_actions">
+       <property name="spacing"><number>6</number></property>
+       <property name="leftMargin"><number>16</number></property>
+       <property name="topMargin"><number>9</number></property>
+       <property name="rightMargin"><number>16</number></property>
+       <property name="bottomMargin"><number>9</number></property>
+       <item>
+        <widget class="QPushButton" name="btn_history_all">
+         <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+         <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+         </property>
+         <property name="text"><string>Last 20</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_history_component">
+         <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+         <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+         </property>
+         <property name="text"><string>Comp. hist.</string></property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_actions">
+         <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+         <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_clear">
+         <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+         <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+         </property>
+         <property name="text"><string>CLEAR</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_exit">
+         <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+         <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+         </property>
+         <property name="text"><string>Exit</string></property>
+        </widget>
+       </item>
+
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="status_label">
+      <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    color: #B3B3BE;
+    font-size: 12px;
+}
+</string>
+      </property>
+      <property name="text"><string></string></property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../siemens_template/resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

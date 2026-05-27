@@ -8,6 +8,9 @@ User-facing docs are in **Portuguese** (`utilizador/`). The root [README.md](../
 |-----------|-----------|
 | [utilizador/COMANDOS.md](utilizador/COMANDOS.md) | Instalacao, execucao e erros frequentes |
 | [utilizador/ORGANIZACAO.md](utilizador/ORGANIZACAO.md) | Estrutura de pastas e ficheiros |
+| [utilizador/ORGANIZAR_TRABALHO.md](utilizador/ORGANIZAR_TRABALHO.md) | **Organizar pastas Desktop + fluxo diário** |
+| [utilizador/GITHUB.md](utilizador/GITHUB.md) | **Publicar no GitHub (passo a passo)** |
+| [utilizador/QT_DESIGNER.md](utilizador/QT_DESIGNER.md) | Qt Designer e ficheiro `.ui` |
 | [utilizador/ARQUITETURA.md](utilizador/ARQUITETURA.md) | Arquitetura e fluxos de negocio |
 | [utilizador/COMO_USAR_VSCODE.md](utilizador/COMO_USAR_VSCODE.md) | Ambiente de desenvolvimento (VS Code) |
 | [utilizador/FORNECEDORES.md](utilizador/FORNECEDORES.md) | Mouser e fornecedores futuros |

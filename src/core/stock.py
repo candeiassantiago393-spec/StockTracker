@@ -29,7 +29,7 @@ SHEET_HISTORY = "History"
 
 class StockTracker:
     """
-    Class that manages stock (Excel + Mouser API).
+    Class that manages stock (Excel + distributor APIs).
 
     Example:
         tracker = StockTracker()
@@ -67,7 +67,7 @@ class StockTracker:
 
         if sheet.max_row == 1 and sheet["A1"].value is None:
             sheet.append([
-                "ID", "Mouser Reference", "Manufacturer",
+                "ID", "Supplier Reference", "Manufacturer",
                 "Manufacturer Reference", "Value", "Description", "Stock",
             ])
         return sheet
@@ -80,7 +80,7 @@ class StockTracker:
 
         if history.max_row == 1 and history["A1"].value is None:
             history.append([
-                "Date", "User", "Mouser Reference",
+                "Date", "User", "Supplier Reference",
                 "Movement", "Quantity", "Stock After",
             ])
         return history
@@ -194,8 +194,8 @@ class StockTracker:
                 terms.append(text)
         return sorted(terms, key=lambda x: x.upper())
 
-    def excel_autocomplete_mouser_refs(self, sheet) -> list[str]:
-        """Referencias Mouser (coluna 1) para sugestoes no campo barcode/scan."""
+    def excel_autocomplete_supplier_refs(self, sheet) -> list[str]:
+        """Supplier references (column 1) for barcode/scan autocomplete."""
         seen: set[str] = set()
         refs: list[str] = []
         for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
@@ -210,6 +210,34 @@ class StockTracker:
             seen.add(key)
             refs.append(text)
         return sorted(refs, key=lambda x: x.upper())
+
+    def excel_autocomplete_mouser_refs(self, sheet) -> list[str]:
+        """Backward-compatible alias."""
+        return self.excel_autocomplete_supplier_refs(sheet)
+
+    @staticmethod
+    def part_supplier_reference(part: dict, fallback: str = "") -> str:
+        return str(
+            part.get("supplier_part_number")
+            or part.get("MouserPartNumber")
+            or fallback
+        ).strip()
+
+    @staticmethod
+    def part_manufacturer(part: dict) -> str:
+        return str(part.get("manufacturer") or part.get("Manufacturer") or "")
+
+    @staticmethod
+    def part_manufacturer_reference(part: dict) -> str:
+        return str(
+            part.get("manufacturer_part_number")
+            or part.get("ManufacturerPartNumber")
+            or ""
+        )
+
+    @staticmethod
+    def part_description(part: dict) -> str:
+        return str(part.get("description") or part.get("Description") or "")
 
     def list_components(self, sheet) -> list:
         """Lista componentes (ignora linhas vazias)."""
@@ -343,16 +371,20 @@ class StockTracker:
         )
         return self.save_workbook(workbook)
 
-    def add_from_mouser_and_stock_in(
-        self, user: str, code: str, quantity: int
+    def add_from_supplier_and_stock_in(
+        self,
+        user: str,
+        code: str,
+        quantity: int,
+        supplier: SupplierId = "mouser",
     ) -> bool:
         """
         Full flow:
         1) If component exists in Excel -> add stock (IN)
-        2) If not -> search Mouser -> add row -> add stock (IN)
+        2) If not -> search distributor API -> add row -> add stock (IN)
         """
         if quantity <= 0:
-            print("Quantidade tem de ser maior que 0.")
+            print("Quantity must be greater than 0.")
             return False
 
         workbook = self.get_workbook()
@@ -363,33 +395,38 @@ class StockTracker:
         row = self.find_component_any(sheet, part_number, code)
 
         if row is None:
-            part = self.search_mouser(part_number)
+            part = self.search_supplier(supplier, part_number)
             if part is None:
-                print("Nao encontrado no Excel nem na Mouser.")
+                print("Not found in Excel or distributor catalog.")
                 return False
 
-            mouser_ref = part.get("MouserPartNumber", part_number)
-            if self.find_component_any(sheet, mouser_ref):
-                row = self.find_component_any(sheet, mouser_ref)
+            supplier_ref = self.part_supplier_reference(part, part_number)
+            manufacturer_ref = self.part_manufacturer_reference(part)
+            if self.find_component_any(sheet, supplier_ref, manufacturer_ref):
+                row = self.find_component_any(
+                    sheet, supplier_ref, manufacturer_ref, part_number, code
+                )
             else:
                 self.add_component_row(
                     sheet,
-                    mouser_ref=mouser_ref,
-                    manufacturer=part.get("Manufacturer", ""),
-                    manufacturer_ref=part.get("ManufacturerPartNumber", ""),
-                    description=part.get("Description", ""),
+                    mouser_ref=supplier_ref,
+                    manufacturer=self.part_manufacturer(part),
+                    manufacturer_ref=manufacturer_ref,
+                    description=self.part_description(part),
                     stock=0,
                 )
                 if not self.save_workbook(workbook):
                     return False
-                print(f"Novo componente adicionado ao Excel: {mouser_ref}")
+                print(f"New component added to Excel: {supplier_ref}")
                 workbook = self.get_workbook()
                 sheet = self.get_components_sheet(workbook)
                 history = self.get_history_sheet(workbook)
-                row = self.find_component_any(sheet, mouser_ref, part_number, code)
+                row = self.find_component_any(
+                    sheet, supplier_ref, manufacturer_ref, part_number, code
+                )
 
         if row is None:
-            print("Erro ao localizar componente apos guardar.")
+            print("Could not locate component after save.")
             return False
 
         current = int(row[6].value or 0)
@@ -399,6 +436,12 @@ class StockTracker:
             history, user, row[1].value, "IN", quantity, new_stock
         )
         if self.save_workbook(workbook):
-            print(f"Stock atualizado: {new_stock}")
+            print(f"Stock updated: {new_stock}")
             return True
         return False
+
+    def add_from_mouser_and_stock_in(
+        self, user: str, code: str, quantity: int
+    ) -> bool:
+        """Backward-compatible wrapper for Mouser."""
+        return self.add_from_supplier_and_stock_in(user, code, quantity, "mouser")
