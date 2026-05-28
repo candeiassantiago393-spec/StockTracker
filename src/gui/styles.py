@@ -164,3 +164,36 @@ QHeaderView::section {
 """
 
 SUBTITLE_STYLE = STATUS_STYLE
+
+# gui_popup.ui (Siemens popup template)
+POPUP_WINDOW_STYLE = """
+* {
+    border: none;
+    background: #000028;
+    padding: 0;
+    margin: 0;
+    color: #f3f3f0;
+    font-family: "SiemensSansPro_A_Bd";
+    font-size: 14px;
+}
+"""
+
+POPUP_TITLE_STYLE = """
+QLabel {
+    color: #009999;
+    font-size: 30px;
+    font-weight: bold;
+}
+"""
+
+POPUP_DESCRIPTION_STYLE = """
+background-color: #333353;
+border-radius: 2px;
+padding: 5px;
+padding-bottom: 7px;
+margin-top: 0px;
+color: #f3f3f0;
+border: 1px solid #009999;
+"""
+
+POPUP_BTN_STYLE = BTN_TEMPLATE_STYLE

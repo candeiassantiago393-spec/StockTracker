@@ -1,15 +1,7 @@
-"""Dialog to pick one component when Excel search returns multiple matches."""
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QHeaderView,
-    QTableWidget,
-    QTableWidgetItem,
-    QVBoxLayout,
-)
+"""Pick one Excel match — Siemens gui_popup.ui shell."""
+from PySide6.QtWidgets import QTableWidget, QVBoxLayout, QWidget
 
-from . import styles
+from .siemens_template.popup_shell import SiemensPopupDialog, fill_readonly_table
 
 COLUMNS = (
     "Supplier Reference",
@@ -20,57 +12,55 @@ COLUMNS = (
 )
 
 
-class SearchResultsDialog(QDialog):
+class SearchResultsDialog(SiemensPopupDialog):
     def __init__(self, matches: list, row_to_dict, parent=None):
-        super().__init__(parent)
+        super().__init__(
+            "Search results",
+            parent,
+            connect_default_buttons=False,
+        )
         self._matches = matches
         self._row_to_dict = row_to_dict
         self._selected_row = None
 
-        self.setWindowTitle("Search results")
-        self.resize(900, 360)
-        self.setStyleSheet(styles.MAIN_WINDOW_STYLE)
+        self.resize(900, 480)
+        self.set_subtitle("Select a row and press Ok, or double-click a row.")
 
-        layout = QVBoxLayout(self)
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        layout.setContentsMargins(0, 12, 0, 0)
+
         self.table = QTableWidget()
-        self.table.setColumnCount(len(COLUMNS))
-        self.table.setHorizontalHeaderLabels(list(COLUMNS))
-        self.table.setStyleSheet(styles.TABLE_STYLE)
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
-        self.table.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
-        self.table.verticalHeader().setVisible(False)
         self.table.doubleClicked.connect(self._accept_selection)
 
-        self.table.setRowCount(len(matches))
-        for r, row in enumerate(matches):
-            data = row_to_dict(row)
-            values = (
+        table_rows = [row_to_dict(row) for row in matches]
+
+        def values(data):
+            return (
                 data["mouser"],
                 data["manufacturer"],
                 data["manufacturer_ref"],
                 data["description"],
                 data["stock"],
             )
-            for c, value in enumerate(values):
-                item = QTableWidgetItem(str(value))
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.table.setItem(r, c, item)
+
+        fill_readonly_table(
+            self.table,
+            COLUMNS,
+            table_rows,
+            row_values=values,
+        )
 
         if matches:
             self.table.selectRow(0)
 
         layout.addWidget(self.table)
+        self.set_body_widget(host)
+        self.configure_buttons(ok_text="Ok", cancel_text="Cancel")
 
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        )
-        buttons.accepted.connect(self._accept_selection)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        self.ui.btn_ok.clicked.connect(self._accept_selection)
+        self.ui.btn_cancel.clicked.connect(self.reject)
 
     def _accept_selection(self) -> None:
         row_idx = self.table.currentRow()
