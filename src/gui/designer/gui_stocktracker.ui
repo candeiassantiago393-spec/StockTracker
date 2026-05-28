@@ -871,6 +871,32 @@ QPushButton:pressed {
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="btn_add_manual">
+         <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+         <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+         </property>
+         <property name="text"><string>ADD MANUAL COMPONENT</string></property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_actions">
          <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
          <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>

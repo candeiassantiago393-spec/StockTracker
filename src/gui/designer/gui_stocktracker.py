@@ -755,6 +755,30 @@ class Ui_StockTracker(object):
 
         self.horizontalLayout_actions.addWidget(self.btn_history_component)
 
+        self.btn_add_manual = QPushButton(self.widget_actions)
+        self.btn_add_manual.setObjectName(u"btn_add_manual")
+        self.btn_add_manual.setMinimumSize(QSize(124, 0))
+        self.btn_add_manual.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.horizontalLayout_actions.addWidget(self.btn_add_manual)
+
         self.horizontalSpacer_actions = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_actions.addItem(self.horizontalSpacer_actions)
@@ -856,6 +880,7 @@ class Ui_StockTracker(object):
         self.val_stock.setText("")
         self.btn_history_all.setText(QCoreApplication.translate("StockTracker", u"Last 20", None))
         self.btn_history_component.setText(QCoreApplication.translate("StockTracker", u"Comp. hist.", None))
+        self.btn_add_manual.setText(QCoreApplication.translate("StockTracker", u"ADD MANUAL COMPONENT", None))
         self.btn_clear.setText(QCoreApplication.translate("StockTracker", u"CLEAR", None))
         self.btn_exit.setText(QCoreApplication.translate("StockTracker", u"Exit", None))
         self.status_label.setText("")

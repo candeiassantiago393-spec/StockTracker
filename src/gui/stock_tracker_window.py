@@ -10,6 +10,7 @@ from src.core.suppliers.base import SupplierId
 from src.core.suppliers.credentials import is_configured
 
 from .history_dialog import HistoryDialog
+from .manual_component_dialog import ManualComponentDialog
 from .search_results_dialog import SearchResultsDialog
 
 
@@ -50,6 +51,8 @@ class StockTrackerWindow(QMainWindow):
         u.btn_remove_stock.clicked.connect(lambda: self.update_stock("OUT"))
         u.btn_history_all.clicked.connect(lambda: self.open_history(False))
         u.btn_history_component.clicked.connect(lambda: self.open_history(True))
+        if hasattr(u, "btn_add_manual"):
+            u.btn_add_manual.clicked.connect(self.add_manual_component)
         u.btn_clear.clicked.connect(self.clear_all_fields)
         if hasattr(u, "btn_exit"):
             u.btn_exit.clicked.connect(self.close)
@@ -404,3 +407,43 @@ class StockTrackerWindow(QMainWindow):
         )
         dialog = HistoryDialog(rows, self)
         dialog.exec()
+
+    def add_manual_component(self) -> None:
+        if not self.validate_user():
+            return
+
+        dialog = ManualComponentDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            self.set_status("Manual component creation cancelled.")
+            return
+
+        payload = dialog.payload()
+        user = self.ui.user_entry.text().strip()
+        ok, message = self.tracker.add_manual_component(
+            user=user,
+            supplier_reference=payload["supplier_reference"],
+            manufacturer=payload["manufacturer"],
+            manufacturer_reference=payload["manufacturer_reference"],
+            description=payload["description"],
+            initial_stock=payload["initial_stock"],
+        )
+
+        if not ok:
+            QMessageBox.warning(self, "Manual component", message)
+            self.set_status(message)
+            return
+
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_components_sheet(workbook)
+        row = self.tracker.find_component_any(
+            sheet,
+            payload["supplier_reference"],
+            payload["manufacturer_reference"],
+            payload["manufacturer"],
+        )
+        if row:
+            self.show_component(row)
+            self.ui.barcode_entry.setText(str(row[1].value or ""))
+
+        self._refresh_autocompletes()
+        self.set_status(message)

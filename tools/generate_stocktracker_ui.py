@@ -257,6 +257,7 @@ def build_ui() -> str:
         [
             footer_btn_xml("btn_history_all", "Last 20"),
             footer_btn_xml("btn_history_component", "Comp. hist."),
+            footer_btn_xml("btn_add_manual", "ADD MANUAL COMPONENT"),
             """       <item>
         <spacer name="horizontalSpacer_actions">
          <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>

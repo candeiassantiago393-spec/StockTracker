@@ -34,6 +34,7 @@ def print_menu() -> None:
     print("  7 - List components in Excel")
     print("  8 - View last 20 history entries")
     print("  9 - Change user name")
+    print(" 10 - Add manual component (no reference required)")
     print("  0 - Exit")
 
 
@@ -104,6 +105,41 @@ def pause() -> None:
     input("\n  [Enter para voltar ao menu]")
 
 
+def add_manual_component_terminal(tracker: StockTracker, user: str) -> None:
+    print("\n  Add manual component")
+    print("  Leave Supplier Reference empty if not available.")
+    supplier_ref = input("  Supplier Reference (optional): ").strip()
+    manufacturer = input("  Manufacturer: ").strip()
+    manufacturer_ref = input("  Manufacturer Reference: ").strip()
+    description = input("  Description: ").strip()
+    initial_stock_text = input("  Initial Stock [0]: ").strip()
+
+    if not initial_stock_text:
+        initial_stock = 0
+    else:
+        try:
+            initial_stock = int(initial_stock_text)
+        except ValueError:
+            print("  Initial stock must be an integer.")
+            return
+
+    ok, message = tracker.add_manual_component(
+        user=user,
+        supplier_reference=supplier_ref,
+        manufacturer=manufacturer,
+        manufacturer_reference=manufacturer_ref,
+        description=description,
+        initial_stock=initial_stock,
+    )
+    print(f"  {message}")
+    if ok:
+        wb = tracker.get_workbook()
+        sheet = tracker.get_components_sheet(wb)
+        row = tracker.find_component_any(sheet, supplier_ref, manufacturer_ref, manufacturer)
+        if row:
+            print_component(tracker.row_to_dict(row))
+
+
 def get_row_stock(tracker: StockTracker, sheet, code: str):
     part = tracker.extract_part_number(code)
     row = tracker.find_component_any(sheet, part, code)
@@ -136,6 +172,11 @@ def main():
                 print(f"Utilizador alterado para: {user}")
             else:
                 print("Nome vazio — mantido o anterior.")
+            pause()
+            continue
+
+        elif opcao == "10":
+            add_manual_component_terminal(tracker, user)
             pause()
             continue
 

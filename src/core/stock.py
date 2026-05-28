@@ -301,6 +301,76 @@ class StockTracker:
             stock,
         ])
 
+    def _find_by_manufacturer_pair(
+        self, sheet, manufacturer: str, manufacturer_ref: str
+    ):
+        manufacturer_n = self.normalize_ref(manufacturer)
+        manufacturer_ref_n = self.normalize_ref(manufacturer_ref)
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            row_manufacturer = self.normalize_ref(row[2].value)
+            row_manufacturer_ref = self.normalize_ref(row[3].value)
+            if (
+                row_manufacturer == manufacturer_n
+                and row_manufacturer_ref == manufacturer_ref_n
+            ):
+                return row
+        return None
+
+    def add_manual_component(
+        self,
+        user: str,
+        supplier_reference: str = "",
+        manufacturer: str = "",
+        manufacturer_reference: str = "",
+        description: str = "",
+        initial_stock: int = 0,
+    ) -> tuple[bool, str]:
+        supplier_reference = str(supplier_reference).strip()
+        manufacturer = str(manufacturer).strip()
+        manufacturer_reference = str(manufacturer_reference).strip()
+        description = str(description).strip()
+
+        if initial_stock < 0:
+            return False, "Initial stock cannot be negative."
+        if not supplier_reference and not (manufacturer and manufacturer_reference):
+            return (
+                False,
+                "Provide Supplier Reference OR both Manufacturer and Manufacturer Reference.",
+            )
+
+        workbook = self.get_workbook()
+        sheet = self.get_components_sheet(workbook)
+        history = self.get_history_sheet(workbook)
+
+        if supplier_reference:
+            if self.find_component_any(sheet, supplier_reference):
+                return False, "A component with this supplier reference already exists."
+        elif self._find_by_manufacturer_pair(sheet, manufacturer, manufacturer_reference):
+            return (
+                False,
+                "A component with this Manufacturer + Manufacturer Reference already exists.",
+            )
+
+        self.add_component_row(
+            sheet,
+            mouser_ref=supplier_reference,
+            manufacturer=manufacturer,
+            manufacturer_ref=manufacturer_reference,
+            description=description,
+            stock=initial_stock,
+        )
+
+        if initial_stock > 0:
+            history_ref = supplier_reference or manufacturer_reference or "MANUAL"
+            self.add_history(history, user, history_ref, "IN", initial_stock, initial_stock)
+
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+
+        return True, "Manual component added successfully."
+
     # ------------------------------------------------------------------
     # Distribuidores (Mouser, TME, ...)
     # ------------------------------------------------------------------

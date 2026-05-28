@@ -213,6 +213,11 @@ class Ui_StockTracker:
         self.btn_history_component.setStyleSheet(styles.BTN_TEMPLATE_STYLE)
         self.btn_history_component.setMinimumSize(124, 0)
 
+        self.btn_add_manual = QPushButton("ADD MANUAL COMPONENT")
+        self.btn_add_manual.setObjectName("btn_add_manual")
+        self.btn_add_manual.setStyleSheet(styles.BTN_TEMPLATE_STYLE)
+        self.btn_add_manual.setMinimumSize(124, 0)
+
         self.btn_clear = QPushButton("CLEAR")
         self.btn_clear.setObjectName("btn_clear")
         self.btn_clear.setStyleSheet(styles.BTN_TEMPLATE_STYLE)
@@ -225,6 +230,7 @@ class Ui_StockTracker:
 
         actions_layout.addWidget(self.btn_history_all)
         actions_layout.addWidget(self.btn_history_component)
+        actions_layout.addWidget(self.btn_add_manual)
         actions_layout.addStretch()
         actions_layout.addWidget(self.btn_clear)
         actions_layout.addWidget(self.btn_exit)
