@@ -10,14 +10,9 @@ New-Item -ItemType Directory -Force -Path $Dest | Out-Null
 robocopy $Root $Dest /E /XD .venv __pycache__ .git /XF secrets.py /NFL /NDL /NJH /NJS | Out-Null
 if ($LASTEXITCODE -ge 8) { exit $LASTEXITCODE }
 
-# Designer package (ui + resources for tutor)
-$Designer = Join-Path $env:USERPROFILE "Desktop\StockTracker-Designer"
-New-Item -ItemType Directory -Force -Path $Designer | Out-Null
-Copy-Item (Join-Path $Root "src\gui\designer\gui_stocktracker.ui") (Join-Path $Designer "gui_stocktracker.ui") -Force
-$st = Join-Path $Root "src\gui\siemens_template"
-$stDest = Join-Path $Designer "siemens_template"
-robocopy $st $stDest /E /NFL /NDL /NJH /NJS | Out-Null
+# Designer package (ui paths fixed for Desktop layout)
+& (Join-Path $Root "tools\prepare-designer-desktop.ps1")
 
 Write-Host "Done."
 Write-Host "  Project copy: $Dest"
-Write-Host "  Designer UI:  $Designer\gui_stocktracker.ui"
+Write-Host "  Designer:     $env:USERPROFILE\Desktop\StockTracker-Designer"
