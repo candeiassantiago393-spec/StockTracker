@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Popup_form_manual</class>
- <widget class="QDialog" name="Popup_form_manual">
+ <class>PopupManual</class>
+ <widget class="QDialog" name="PopupManual">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>641</width>
-    <height>283</height>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -121,6 +121,170 @@ border: 1px solid #009999;</string>
        </widget>
       </item>
       <item>
+       <widget class="QWidget" name="body_form" native="true">
+        <layout class="QFormLayout" name="form_manual">
+         <property name="spacing"><number>6</number></property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_Supplier Reference">
+           <property name="text"><string>Supplier Reference</string></property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="supplier_reference">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_Manufacturer">
+           <property name="text"><string>Manufacturer</string></property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="manufacturer">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_Manufacturer Reference">
+           <property name="text"><string>Manufacturer Reference</string></property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="manufacturer_reference">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_Description">
+           <property name="text"><string>Description</string></property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="description_field">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_Initial Stock">
+           <property name="text"><string>Initial Stock</string></property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QSpinBox" name="initial_stock">
+           <property name="minimum"><number>0</number></property>
+           <property name="maximum"><number>999999</number></property>
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QWidget" name="container_button" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -186,7 +350,7 @@ QPushButton:pressed {
             </size>
            </property>
            <property name="text">
-            <string>Ok</string>
+            <string>Save</string>
            </property>
           </widget>
          </item>

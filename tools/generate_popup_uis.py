@@ -1,62 +1,247 @@
 """
-Generate Stock Tracker popup .ui files from siemens_template/gui_popup.ui.
+Generate Stock Tracker popup .ui files for Qt Designer (full layout, not shell-only).
 
 Run: python tools/generate_popup_uis.py
-Then (optional): .\\tools\\export_popup_uis.ps1
 """
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.gui import styles  # noqa: E402
+
 TEMPLATE = ROOT / "src" / "gui" / "siemens_template" / "gui_popup.ui"
 OUT_DIR = ROOT / "src" / "gui" / "designer" / "popups"
-
-VARIANTS = {
-    "gui_popup_manual.ui": (
-        "Add Manual Component",
-        "Supplier Reference is optional when both Manufacturer and Manufacturer Reference are provided.",
-        "form_manual",
-    ),
-    "gui_popup_history.ui": (
-        "History",
-        None,
-        "table_history",
-    ),
-    "gui_popup_search.ui": (
-        "Search results",
-        "Select a row and press Ok, or double-click a row.",
-        "table_search",
-    ),
-}
+INSERT_MARKER = '      <item>\n       <widget class="QWidget" name="container_button"'
 
 
-def patch_popup(base: str, title: str, subtitle: str | None, body_name: str) -> str:
-    xml = base.replace("<string>Popup Title</string>", f"<string>{title}</string>")
+def esc(text: str) -> str:
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+def prop_string(value: str) -> str:
+    return f'   <string notr="true">{esc(value)}</string>\n'
+
+
+def line_edit_xml(name: str) -> str:
+    return f"""          <widget class="QLineEdit" name="{name}">
+           <property name="styleSheet">
+{prop_string(styles.LINE_EDIT_STYLE)}           </property>
+          </widget>
+"""
+
+
+def form_row_xml(row: int, label: str, field_xml: str) -> str:
+    return f"""         <item row="{row}" column="0">
+          <widget class="QLabel" name="label_{label}">
+           <property name="text"><string>{esc(label)}</string></property>
+          </widget>
+         </item>
+         <item row="{row}" column="1">
+{field_xml}
+         </item>
+"""
+
+
+def form_manual_body() -> str:
+    rows = [
+        (0, "Supplier Reference", line_edit_xml("supplier_reference")),
+        (1, "Manufacturer", line_edit_xml("manufacturer")),
+        (2, "Manufacturer Reference", line_edit_xml("manufacturer_reference")),
+        (3, "Description", line_edit_xml("description_field")),
+        (
+            4,
+            "Initial Stock",
+            f"""          <widget class="QSpinBox" name="initial_stock">
+           <property name="minimum"><number>0</number></property>
+           <property name="maximum"><number>999999</number></property>
+           <property name="styleSheet">
+{prop_string(styles.LINE_EDIT_STYLE)}           </property>
+          </widget>
+""",
+        ),
+    ]
+    items = "\n".join(form_row_xml(r, lbl, fld) for r, lbl, fld in rows)
+    return f"""      <item>
+       <widget class="QWidget" name="body_form" native="true">
+        <layout class="QFormLayout" name="form_manual">
+         <property name="spacing"><number>{styles.TEMPLATE_ROW_SPACING}</number></property>
+{items}
+        </layout>
+       </widget>
+      </item>
+"""
+
+
+def table_body(name: str, columns: tuple[str, ...]) -> str:
+    cols = "\n".join(
+        f"""         <column>
+          <property name="text"><string>{esc(c)}</string></property>
+         </column>"""
+        for c in columns
+    )
+    return f"""      <item>
+       <widget class="QTableWidget" name="{name}">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>280</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+{prop_string(styles.TABLE_STYLE)}        </property>
+{cols}
+       </widget>
+      </item>
+"""
+
+
+HISTORY_COLUMNS = (
+    "Date",
+    "User",
+    "Supplier Reference",
+    "Movement",
+    "Quantity",
+    "Stock After",
+)
+SEARCH_COLUMNS = (
+    "Supplier Reference",
+    "Manufacturer",
+    "Manufacturer Reference",
+    "Description",
+    "Stock",
+)
+
+
+def patch_popup(
+    base: str,
+    *,
+    class_name: str,
+    title: str,
+    subtitle: str | None,
+    width: int,
+    height: int,
+    body_xml: str,
+    ok_text: str = "Ok",
+    cancel_text: str = "Cancel",
+    show_cancel: bool = True,
+) -> str:
+    xml = base
+    xml = xml.replace("<class>Popup</class>", f"<class>{class_name}</class>")
+    xml = xml.replace('name="Popup"', f'name="{class_name}"', 1)
+    xml = xml.replace("<string>Popup Title</string>", f"<string>{esc(title)}</string>")
+    xml = xml.replace(
+        "<width>641</width>",
+        f"<width>{width}</width>",
+        1,
+    )
+    xml = xml.replace(
+        "<height>283</height>",
+        f"<height>{height}</height>",
+        1,
+    )
     if subtitle:
         xml = xml.replace(
             "<string>Popup description</string>",
-            f"<string>{subtitle}</string>",
+            f"<string>{esc(subtitle)}</string>",
         )
     else:
-        # Hide description panel for table-only popups
         xml = xml.replace(
-            '<widget class="QWidget" name="widget" native="true">',
-            f'<widget class="QWidget" name="widget" native="true">\n'
-            f'        <property name="visible"><bool>false</bool></property>',
+            '      <item>\n       <widget class="QWidget" name="widget" native="true">',
+            '      <item>\n       <widget class="QWidget" name="widget" native="true">\n'
+            '        <property name="maximumSize">\n'
+            '         <size>\n'
+            '          <width>0</width>\n'
+            '          <height>0</height>\n'
+            '         </size>\n'
+            '        </property>',
             1,
         )
-    xml = xml.replace('name="Popup"', f'name="Popup_{body_name}"', 1)
-    xml = xml.replace("<class>Popup</class>", f"<class>Popup_{body_name}</class>")
+    xml = xml.replace("<string>Ok</string>", f"<string>{esc(ok_text)}</string>", 1)
+    xml = xml.replace(
+        "<string>Cancel</string>",
+        f"<string>{esc(cancel_text)}</string>",
+        1,
+    )
+    if not show_cancel:
+        xml = xml.replace(
+            '          <widget class="QPushButton" name="btn_cancel">',
+            '          <widget class="QPushButton" name="btn_cancel">\n'
+            '           <property name="visible"><bool>false</bool></property>',
+            1,
+        )
+    if INSERT_MARKER not in xml:
+        raise RuntimeError("Popup template structure changed; update INSERT_MARKER")
+    xml = xml.replace(INSERT_MARKER, body_xml + INSERT_MARKER, 1)
     return xml
 
 
 def main() -> None:
     base = TEMPLATE.read_text(encoding="utf-8")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    for filename, (title, subtitle, body) in VARIANTS.items():
+
+    variants = [
+        (
+            "gui_popup_manual.ui",
+            patch_popup(
+                base,
+                class_name="PopupManual",
+                title="Add Manual Component",
+                subtitle=(
+                    "Supplier Reference is optional when both Manufacturer and "
+                    "Manufacturer Reference are provided."
+                ),
+                width=641,
+                height=520,
+                body_xml=form_manual_body(),
+                ok_text="Save",
+                cancel_text="Cancel",
+            ),
+        ),
+        (
+            "gui_popup_history.ui",
+            patch_popup(
+                base,
+                class_name="PopupHistory",
+                title="History",
+                subtitle=None,
+                width=850,
+                height=480,
+                body_xml=table_body("table_history", HISTORY_COLUMNS),
+                ok_text="Close",
+                show_cancel=False,
+            ),
+        ),
+        (
+            "gui_popup_search.ui",
+            patch_popup(
+                base,
+                class_name="PopupSearch",
+                title="Search results",
+                subtitle="Select a row and press Ok, or double-click a row.",
+                width=900,
+                height=480,
+                body_xml=table_body("table_search", SEARCH_COLUMNS),
+            ),
+        ),
+    ]
+
+    for filename, content in variants:
         path = OUT_DIR / filename
-        path.write_text(patch_popup(base, title, subtitle, body), encoding="utf-8")
+        path.write_text(content, encoding="utf-8")
         print(f"Wrote {path}")
-    print("Open in Qt Designer: src/gui/designer/popups/")
+
+    template_copy = OUT_DIR / "gui_popup_template.ui"
+    template_copy.write_text(base, encoding="utf-8")
+    print(f"Wrote {template_copy}")
+    print("Open via DESIGNER.bat (options 2-5) or Qt Designer directly.")
 
 
 if __name__ == "__main__":

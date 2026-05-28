@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Popup_table_search</class>
- <widget class="QDialog" name="Popup_table_search">
+ <class>PopupSearch</class>
+ <widget class="QDialog" name="PopupSearch">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>641</width>
-    <height>283</height>
+    <width>900</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -118,6 +118,47 @@ border: 1px solid #009999;</string>
           </widget>
          </item>
         </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="table_search">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>280</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+   <string notr="true">
+QTableWidget {
+    background-color: #00183B;
+    gridline-color: #333353;
+    border: 1px solid #B3B3BE;
+}
+QHeaderView::section {
+    background-color: #333353;
+    color: #FFFFFF;
+    padding: 6px;
+    border: 1px solid #B3B3BE;
+    font-weight: bold;
+}
+</string>
+        </property>
+         <column>
+          <property name="text"><string>Supplier Reference</string></property>
+         </column>
+         <column>
+          <property name="text"><string>Manufacturer</string></property>
+         </column>
+         <column>
+          <property name="text"><string>Manufacturer Reference</string></property>
+         </column>
+         <column>
+          <property name="text"><string>Description</string></property>
+         </column>
+         <column>
+          <property name="text"><string>Stock</string></property>
+         </column>
        </widget>
       </item>
       <item>
