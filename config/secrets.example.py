@@ -1,38 +1,40 @@
 """
-Modelo de credenciais — copiar para secrets.py e preencher.
+Credential template — copy to secrets.py and fill in.
 
   copy config\\secrets.example.py config\\secrets.py
 
-Substitui cada "A_SUA_..." pela chave real. Nunca commits secrets.py.
-Deixa "" nos fornecedores que ainda nao usas.
+Replace each placeholder with your real key. Never commit secrets.py.
+Leave "" for suppliers you do not use yet.
 """
 
 # =============================================================================
 # MOUSER — https://www.mouser.com/api-search/
 # =============================================================================
-MOUSER_API_KEY = "A_SUA_CHAVE_MOUSER"
+MOUSER_API_KEY = "YOUR_MOUSER_API_KEY"
 
 # =============================================================================
 # DIGIKEY — https://developer.digikey.com/
-# Usa app SANDBOX (Create Sandbox App), nao Production App.
+# Use a SANDBOX app for development (see docs/user/DIGIKEY_SETUP.md).
 # =============================================================================
-DIGIKEY_CLIENT_ID = "O_SEU_CLIENT_ID_DIGIKEY"
-DIGIKEY_CLIENT_SECRET = "O_SEU_CLIENT_SECRET_DIGIKEY"
-# "sandbox" com Sandbox App | "production" so com Production App + API producao
+DIGIKEY_CLIENT_ID = "YOUR_DIGIKEY_CLIENT_ID"
+DIGIKEY_CLIENT_SECRET = "YOUR_DIGIKEY_CLIENT_SECRET"
 DIGIKEY_ENV = "sandbox"
+DIGIKEY_LOCALE_SITE = "PT"
+DIGIKEY_LOCALE_LANGUAGE = "pt"
+DIGIKEY_LOCALE_CURRENCY = "EUR"
 
 # =============================================================================
 # TME — https://developers.tme.eu
 # =============================================================================
-TME_API_TOKEN = "O_SEU_TOKEN_TME"
-TME_APP_SECRET = "O_SEU_APP_SECRET_TME"
+TME_API_TOKEN = "YOUR_TME_API_TOKEN"
+TME_APP_SECRET = "YOUR_TME_APP_SECRET"
 
 # =============================================================================
-# ROBERT MAUSER — sem API publica (reservado)
+# ROBERT MAUSER — reserved (no public API)
 # =============================================================================
 ROBERT_MAUSER_API_KEY = ""
 
 # =============================================================================
-# RS COMPONENTS — chave no portal RS; URL em src/core/suppliers/rs.py
+# RS COMPONENTS — key from RS portal; URL in src/core/suppliers/rs.py
 # =============================================================================
-RS_API_KEY = "A_SUA_CHAVE_RS"
+RS_API_KEY = "YOUR_RS_API_KEY"

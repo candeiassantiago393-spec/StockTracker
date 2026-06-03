@@ -1,27 +1,49 @@
 # Documentation — Stock Tracker
 
-User-facing docs are in **Portuguese** (`utilizador/`). The root [README.md](../README.md) is in English for GitHub.
+English documentation for developers and operators. Detailed guides are under [`user/`](user/).
 
-## Manual do utilizador
+## Specification
 
-| Documento | Descricao |
-|-----------|-----------|
-| [utilizador/COMANDOS.md](utilizador/COMANDOS.md) | Instalacao, execucao e erros frequentes |
-| [utilizador/ORGANIZACAO.md](utilizador/ORGANIZACAO.md) | Estrutura de pastas e ficheiros |
-| [utilizador/ORGANIZAR_TRABALHO.md](utilizador/ORGANIZAR_TRABALHO.md) | **Organizar pastas Desktop + fluxo diário** |
-| [utilizador/GITHUB.md](utilizador/GITHUB.md) | **Publicar no GitHub (passo a passo)** |
-| [utilizador/QT_DESIGNER.md](utilizador/QT_DESIGNER.md) | Qt Designer e ficheiro `.ui` |
-| [utilizador/ARQUITETURA.md](utilizador/ARQUITETURA.md) | Arquitetura e fluxos de negocio |
-| [utilizador/COMO_USAR_VSCODE.md](utilizador/COMO_USAR_VSCODE.md) | Ambiente de desenvolvimento (VS Code) |
-| [utilizador/FORNECEDORES.md](utilizador/FORNECEDORES.md) | Mouser e fornecedores futuros |
-| [utilizador/CONTINUAR_AGENTE.md](utilizador/CONTINUAR_AGENTE.md) | Contexto para continuar chat no Cursor |
-| [utilizador/RELATORIO_ESTAGIO.md](utilizador/RELATORIO_ESTAGIO.md) | Rascunho do relatório de estágio |
+| Document | Content |
+|----------|---------|
+| [PROJETO_STOCKTRACKER.md](PROJETO_STOCKTRACKER.md) | Product specification (English, Siemens-style) |
+| [PROJETO_STOCKTRACKER_PT.md](PROJETO_STOCKTRACKER_PT.md) | Same specification in Portuguese (optional) |
 
-## Arranque rapido
+## User guides (`docs/user/`)
+
+| Document | Content |
+|----------|---------|
+| [user/COMMANDS.md](user/COMMANDS.md) | Install, run, troubleshooting |
+| [user/REPOSITORY_LAYOUT.md](user/REPOSITORY_LAYOUT.md) | Repository structure and key files |
+| [user/ARCHITECTURE.md](user/ARCHITECTURE.md) | Architecture and data flows |
+| [user/SUPPLIERS.md](user/SUPPLIERS.md) | Supplier APIs and credentials |
+| [user/DIGIKEY_SETUP.md](user/DIGIKEY_SETUP.md) | DigiKey sandbox setup |
+| [user/QT_DESIGNER.md](user/QT_DESIGNER.md) | Qt Designer workflow |
+| [user/GITHUB.md](user/GITHUB.md) | GitHub publishing |
+| [user/IDE_SETUP.md](user/IDE_SETUP.md) | VS Code / Cursor setup |
+| [user/WORKSPACE.md](user/WORKSPACE.md) | Workspace and optional copies |
+
+## Templates (`docs/modelos/`)
+
+Reference layouts for documentation style: [modelos/README.md](modelos/README.md).
+
+## Formal Word document
+
+Optional deliverable: [`../word/`](../word/) — `StockTracker_Documentacao_Projeto.docx`
+
+Regenerate:
 
 ```powershell
-.\.venv\Scripts\activate
+python tools/build_project_docx.py
+```
+
+Requires `python-docx`.
+
+## Run the application
+
+```powershell
+.\.venv\Scripts\Activate.ps1
 python -m src.main
 ```
 
-Ou: duplo clique em `run.bat` na raiz do projeto.
+Or double-click `run.bat` at the repository root.

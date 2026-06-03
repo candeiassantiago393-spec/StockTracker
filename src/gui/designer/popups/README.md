@@ -1,21 +1,24 @@
-# Popups Siemens (Qt Designer)
+# Siemens Popups (Qt Designer)
 
-Ficheiros **completos** para ver e editar no Qt Designer (formulário, tabela, botões).
+Complete popup files for editing in Qt Designer (forms, tables, and action buttons).
 
-| Ficheiro | Conteúdo visível no Designer |
-|----------|----------------------------|
-| `gui_popup_manual.ui` | Formulário (refs, stock) + Save/Cancel |
-| `gui_popup_history.ui` | Tabela de histórico + Close |
-| `gui_popup_search.ui` | Tabela de resultados + Ok/Cancel |
-| `gui_popup_template.ui` | Template Siemens original (só título + descrição) |
+| File | Designer content |
+|------|------------------|
+| `gui_popup_manual.ui` | Manual component form + Save/Cancel |
+| `gui_popup_history.ui` | History table + Close |
+| `gui_popup_search.ui` | Search results table + Ok/Cancel |
+| `gui_popup_edit.ui` | Edit component form + Save/Cancel |
+| `gui_popup_confirm.ui` | Confirmation dialog (Yes/No) |
 
-**Em execução** a app usa `popup_shell.py` + `gui_popup.ui` (widgets extra em Python).
+At runtime, the app imports the generated `gui_popup_*.py` modules.
 
-Regenerar:
+## Regenerate
 
 ```text
 python tools/generate_popup_uis.py
-powershell -File tools\prepare-designer-desktop.ps1
+.\.venv\Scripts\pyside6-uic.exe src\gui\designer\popups\gui_popup_manual.ui -o src\gui\designer\popups\gui_popup_manual.py
+# or use tools\export_popup_uis.ps1 for all popups
 ```
 
-Abrir: `Desktop\StockTracker-Designer\DESIGNER.bat` → opções 2–5.
+To open these popup files in Designer quickly, use:
+`Desktop\StockTracker-Designer\DESIGNER.bat` (options 2-7).

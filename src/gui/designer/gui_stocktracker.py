@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file 'gui_stocktracker.ui'
@@ -15,11 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QMainWindow,
-    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
-from src.gui.siemens_template.resources import resources_rc
+from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout,
+    QLabel, QLineEdit, QMainWindow, QPushButton,
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+from src.gui.siemens_template.resources import resources_rc  # noqa: F401
 
 class Ui_StockTracker(object):
     def setupUi(self, StockTracker):
@@ -244,54 +243,6 @@ class Ui_StockTracker(object):
 
         self.gridLayout_left.addWidget(self.row_search_entry, 2, 0, 1, 2)
 
-        self.row_supplier_combo = QWidget(self.container_tab1_left)
-        self.row_supplier_combo.setObjectName(u"row_supplier_combo")
-        self.grid_supplier = QGridLayout(self.row_supplier_combo)
-        self.grid_supplier.setObjectName(u"grid_supplier")
-        self.grid_supplier.setContentsMargins(-1, 9, 9, 9)
-        self.label_supplier = QLabel(self.row_supplier_combo)
-        self.label_supplier.setObjectName(u"label_supplier")
-        self.label_supplier.setMinimumSize(QSize(74, 0))
-        sizePolicy2.setHeightForWidth(self.label_supplier.sizePolicy().hasHeightForWidth())
-        self.label_supplier.setSizePolicy(sizePolicy2)
-
-        self.grid_supplier.addWidget(self.label_supplier, 0, 0, 1, 1)
-
-        self.supplier_combo = QComboBox(self.row_supplier_combo)
-        self.supplier_combo.setObjectName(u"supplier_combo")
-        self.supplier_combo.setMinimumSize(QSize(172, 30))
-        self.supplier_combo.setStyleSheet(u"\n"
-"QComboBox {\n"
-"    padding: 5px;\n"
-"    padding-left: 20px;\n"
-"    padding-right: 20px;\n"
-"    min-width: 130;\n"
-"    min-height: 18px;\n"
-"    max-width: 130px;\n"
-"    max-height: 18px;\n"
-"    border-radius: 2px;\n"
-"    border: 1px solid #B3B3BE;\n"
-"    background-color: #00183B;\n"
-"}\n"
-"QComboBox:hover {\n"
-"    background-color: #001F39;\n"
-"    border: 1px solid #00FFB9;\n"
-"}\n"
-"QComboBox QAbstractItemView {\n"
-"    background-color: #2D2D45;\n"
-"    padding: 0px;\n"
-"}\n"
-"QComboBox QAbstractItemView::item:hover {\n"
-"    padding: 0px;\n"
-"    padding-left: 10px;\n"
-"}\n"
-"")
-
-        self.grid_supplier.addWidget(self.supplier_combo, 0, 1, 1, 1)
-
-
-        self.gridLayout_left.addWidget(self.row_supplier_combo, 3, 0, 1, 2)
-
         self.row_barcode_entry = QWidget(self.container_tab1_left)
         self.row_barcode_entry.setObjectName(u"row_barcode_entry")
         self.layout_barcode_entry = QHBoxLayout(self.row_barcode_entry)
@@ -331,8 +282,33 @@ class Ui_StockTracker(object):
 
         self.layout_barcode_entry.addWidget(self.barcode_entry)
 
+        self.btn_copy_barcode_entry = QPushButton(self.row_barcode_entry)
+        self.btn_copy_barcode_entry.setObjectName(u"btn_copy_barcode_entry")
+        self.btn_copy_barcode_entry.setMinimumSize(QSize(60, 0))
+        self.btn_copy_barcode_entry.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_barcode_entry.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
 
-        self.gridLayout_left.addWidget(self.row_barcode_entry, 4, 0, 1, 2)
+        self.layout_barcode_entry.addWidget(self.btn_copy_barcode_entry)
+
+
+        self.gridLayout_left.addWidget(self.row_barcode_entry, 3, 0, 1, 2)
 
         self.row_quantity_entry = QWidget(self.container_tab1_left)
         self.row_quantity_entry.setObjectName(u"row_quantity_entry")
@@ -398,7 +374,7 @@ class Ui_StockTracker(object):
         self.layout_quantity_entry.addWidget(self.btn_scan)
 
 
-        self.gridLayout_left.addWidget(self.row_quantity_entry, 5, 0, 1, 2)
+        self.gridLayout_left.addWidget(self.row_quantity_entry, 4, 0, 1, 2)
 
         self.row_stock_buttons = QWidget(self.container_tab1_left)
         self.row_stock_buttons.setObjectName(u"row_stock_buttons")
@@ -463,11 +439,11 @@ class Ui_StockTracker(object):
         self.layout_stock_buttons.addWidget(self.btn_remove_stock)
 
 
-        self.gridLayout_left.addWidget(self.row_stock_buttons, 6, 0, 1, 2)
+        self.gridLayout_left.addWidget(self.row_stock_buttons, 5, 0, 1, 2)
 
         self.verticalSpacer_left = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_left.addItem(self.verticalSpacer_left, 7, 1, 1, 1)
+        self.gridLayout_left.addItem(self.verticalSpacer_left, 6, 1, 1, 1)
 
 
         self.gridLayout_main.addWidget(self.container_tab1_left, 1, 0, 1, 1)
@@ -528,6 +504,31 @@ class Ui_StockTracker(object):
 
         self.layout_val_mouser.addWidget(self.val_mouser)
 
+        self.btn_copy_val_mouser = QPushButton(self.row_val_mouser)
+        self.btn_copy_val_mouser.setObjectName(u"btn_copy_val_mouser")
+        self.btn_copy_val_mouser.setMinimumSize(QSize(60, 0))
+        self.btn_copy_val_mouser.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_val_mouser.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_val_mouser.addWidget(self.btn_copy_val_mouser)
+
 
         self.gridLayout_right.addWidget(self.row_val_mouser, 1, 0, 1, 2)
 
@@ -567,6 +568,31 @@ class Ui_StockTracker(object):
 "")
 
         self.layout_val_manufacturer.addWidget(self.val_manufacturer)
+
+        self.btn_copy_val_manufacturer = QPushButton(self.row_val_manufacturer)
+        self.btn_copy_val_manufacturer.setObjectName(u"btn_copy_val_manufacturer")
+        self.btn_copy_val_manufacturer.setMinimumSize(QSize(60, 0))
+        self.btn_copy_val_manufacturer.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_val_manufacturer.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_val_manufacturer.addWidget(self.btn_copy_val_manufacturer)
 
 
         self.gridLayout_right.addWidget(self.row_val_manufacturer, 2, 0, 1, 2)
@@ -608,6 +634,31 @@ class Ui_StockTracker(object):
 
         self.layout_val_manufacturer_ref.addWidget(self.val_manufacturer_ref)
 
+        self.btn_copy_val_manufacturer_ref = QPushButton(self.row_val_manufacturer_ref)
+        self.btn_copy_val_manufacturer_ref.setObjectName(u"btn_copy_val_manufacturer_ref")
+        self.btn_copy_val_manufacturer_ref.setMinimumSize(QSize(60, 0))
+        self.btn_copy_val_manufacturer_ref.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_val_manufacturer_ref.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_val_manufacturer_ref.addWidget(self.btn_copy_val_manufacturer_ref)
+
 
         self.gridLayout_right.addWidget(self.row_val_manufacturer_ref, 3, 0, 1, 2)
 
@@ -648,6 +699,31 @@ class Ui_StockTracker(object):
 
         self.layout_val_description.addWidget(self.val_description)
 
+        self.btn_copy_val_description = QPushButton(self.row_val_description)
+        self.btn_copy_val_description.setObjectName(u"btn_copy_val_description")
+        self.btn_copy_val_description.setMinimumSize(QSize(60, 0))
+        self.btn_copy_val_description.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_val_description.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_val_description.addWidget(self.btn_copy_val_description)
+
 
         self.gridLayout_right.addWidget(self.row_val_description, 4, 0, 1, 2)
 
@@ -687,6 +763,31 @@ class Ui_StockTracker(object):
 "")
 
         self.layout_val_stock.addWidget(self.val_stock)
+
+        self.btn_copy_val_stock = QPushButton(self.row_val_stock)
+        self.btn_copy_val_stock.setObjectName(u"btn_copy_val_stock")
+        self.btn_copy_val_stock.setMinimumSize(QSize(60, 0))
+        self.btn_copy_val_stock.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_val_stock.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_val_stock.addWidget(self.btn_copy_val_stock)
 
 
         self.gridLayout_right.addWidget(self.row_val_stock, 5, 0, 1, 2)
@@ -779,6 +880,30 @@ class Ui_StockTracker(object):
 
         self.horizontalLayout_actions.addWidget(self.btn_add_manual)
 
+        self.btn_edit_component = QPushButton(self.widget_actions)
+        self.btn_edit_component.setObjectName(u"btn_edit_component")
+        self.btn_edit_component.setMinimumSize(QSize(124, 0))
+        self.btn_edit_component.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.horizontalLayout_actions.addWidget(self.btn_edit_component)
+
         self.horizontalSpacer_actions = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_actions.addItem(self.horizontalSpacer_actions)
@@ -860,8 +985,11 @@ class Ui_StockTracker(object):
         self.label_user_entry.setText(QCoreApplication.translate("StockTracker", u"User Name", None))
         self.label_search_entry.setText(QCoreApplication.translate("StockTracker", u"Search Component", None))
         self.btn_search.setText(QCoreApplication.translate("StockTracker", u"SEARCH", None))
-        self.label_supplier.setText(QCoreApplication.translate("StockTracker", u"Distributor", None))
         self.label_barcode_entry.setText(QCoreApplication.translate("StockTracker", u"Scan Barcode / Supplier Ref.", None))
+#if QT_CONFIG(tooltip)
+        self.btn_copy_barcode_entry.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_barcode_entry.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.label_quantity_entry.setText(QCoreApplication.translate("StockTracker", u"Quantity", None))
         self.btn_scan.setText(QCoreApplication.translate("StockTracker", u"SCAN", None))
         self.label_stock_btn.setText(QCoreApplication.translate("StockTracker", u"Button", None))
@@ -870,20 +998,40 @@ class Ui_StockTracker(object):
         self.label_details.setText(QCoreApplication.translate("StockTracker", u"Component Details", None))
         self.title_val_mouser.setText(QCoreApplication.translate("StockTracker", u"Supplier Reference", None))
         self.val_mouser.setText("")
+#if QT_CONFIG(tooltip)
+        self.btn_copy_val_mouser.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_val_mouser.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.title_val_manufacturer.setText(QCoreApplication.translate("StockTracker", u"Manufacturer", None))
         self.val_manufacturer.setText("")
+#if QT_CONFIG(tooltip)
+        self.btn_copy_val_manufacturer.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_val_manufacturer.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.title_val_manufacturer_ref.setText(QCoreApplication.translate("StockTracker", u"Manufacturer Reference", None))
         self.val_manufacturer_ref.setText("")
+#if QT_CONFIG(tooltip)
+        self.btn_copy_val_manufacturer_ref.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_val_manufacturer_ref.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.title_val_description.setText(QCoreApplication.translate("StockTracker", u"Description", None))
         self.val_description.setText("")
+#if QT_CONFIG(tooltip)
+        self.btn_copy_val_description.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_val_description.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.title_val_stock.setText(QCoreApplication.translate("StockTracker", u"Current Stock", None))
         self.val_stock.setText("")
+#if QT_CONFIG(tooltip)
+        self.btn_copy_val_stock.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_val_stock.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.btn_history_all.setText(QCoreApplication.translate("StockTracker", u"Last 20", None))
         self.btn_history_component.setText(QCoreApplication.translate("StockTracker", u"Comp. hist.", None))
         self.btn_add_manual.setText(QCoreApplication.translate("StockTracker", u"ADD MANUAL COMPONENT", None))
+        self.btn_edit_component.setText(QCoreApplication.translate("StockTracker", u"EDIT COMPONENT", None))
         self.btn_clear.setText(QCoreApplication.translate("StockTracker", u"CLEAR", None))
         self.btn_exit.setText(QCoreApplication.translate("StockTracker", u"Exit", None))
         self.status_label.setText("")
     # retranslateUi
-
 

@@ -50,6 +50,32 @@ def form_row_xml(row: int, label: str, field_xml: str) -> str:
 """
 
 
+def form_edit_body() -> str:
+    stock_label = f"""          <widget class="QLabel" name="label_current_stock">
+           <property name="styleSheet">
+{prop_string(styles.VALUE_FIELD_STYLE)}           </property>
+           <property name="text"><string>0</string></property>
+          </widget>
+"""
+    rows = [
+        (0, "Supplier Reference", line_edit_xml("supplier_reference")),
+        (1, "Manufacturer", line_edit_xml("manufacturer")),
+        (2, "Manufacturer Reference", line_edit_xml("manufacturer_reference")),
+        (3, "Description", line_edit_xml("description_field")),
+        (4, "Current Stock", stock_label),
+    ]
+    items = "\n".join(form_row_xml(r, lbl, fld) for r, lbl, fld in rows)
+    return f"""      <item>
+       <widget class="QWidget" name="body_form" native="true">
+        <layout class="QFormLayout" name="form_edit">
+         <property name="spacing"><number>{styles.TEMPLATE_ROW_SPACING}</number></property>
+{items}
+        </layout>
+       </widget>
+      </item>
+"""
+
+
 def form_manual_body() -> str:
     rows = [
         (0, "Supplier Reference", line_edit_xml("supplier_reference")),
@@ -229,6 +255,34 @@ def main() -> None:
                 width=900,
                 height=480,
                 body_xml=table_body("table_search", SEARCH_COLUMNS),
+            ),
+        ),
+        (
+            "gui_popup_edit.ui",
+            patch_popup(
+                base,
+                class_name="PopupEdit",
+                title="Edit Component",
+                subtitle="Update component data. Use ADD/REMOVE STOCK to change quantity.",
+                width=641,
+                height=480,
+                body_xml=form_edit_body(),
+                ok_text="Save",
+                cancel_text="Cancel",
+            ),
+        ),
+        (
+            "gui_popup_confirm.ui",
+            patch_popup(
+                base,
+                class_name="PopupConfirm",
+                title="Confirm",
+                subtitle="Please confirm this action.",
+                width=641,
+                height=320,
+                body_xml="",
+                ok_text="Yes",
+                cancel_text="No",
             ),
         ),
     ]

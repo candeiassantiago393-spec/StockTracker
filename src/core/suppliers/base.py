@@ -1,11 +1,32 @@
-"""Modelo comum para resultados de pesquisa em distribuidores."""
+###############################################################################
+# 1. Module Level Documentation
+###############################################################################
+"""
+Common types for distributor search results.
+
+Each supplier module maps its API response to `PartInfo` via `normalize_part`.
+"""
+
+###############################################################################
+# 2. Imports
+###############################################################################
 from typing import Literal, TypedDict
 
+###############################################################################
+# 3. Constants and Global Variables
+###############################################################################
 SupplierId = Literal["mouser", "digikey", "tme", "robert_mauser", "rs"]
+
+###############################################################################
+# 4. Type definitions
+###############################################################################
 
 
 class PartInfo(TypedDict, total=False):
-    """Formato normalizado devolvido por cada fornecedor."""
+    """
+    Class:
+        Normalized part record returned by any supplier adapter.
+    """
 
     supplier: str
     supplier_part_number: str
@@ -19,8 +40,21 @@ class PartInfo(TypedDict, total=False):
     Description: str
 
 
+###############################################################################
+# 5. Public functions
+###############################################################################
+
+
 def normalize_part(raw: dict, supplier: SupplierId) -> PartInfo:
-    """Converte resposta de API para formato unico."""
+    """
+    Public Function:
+        Map a raw API dict to the unified `PartInfo` structure.
+    Args:
+        raw (dict): Supplier-specific response fields.
+        supplier (SupplierId): Internal supplier identifier.
+    Returns:
+        PartInfo: Normalized part dictionary.
+    """
     spn = (
         raw.get("supplier_part_number")
         or raw.get("MouserPartNumber")

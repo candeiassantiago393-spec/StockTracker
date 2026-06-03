@@ -62,13 +62,56 @@ ROW_CLOSE = """            </layout>
 """
 
 
-def input_row_xml(name: str, label: str, row: int) -> str:
+def copy_btn_xml(copy_btn_name: str, *, width: int = 60) -> str:
+    return f"""             <item>
+              <widget class="QPushButton" name="{copy_btn_name}">
+               <property name="minimumSize"><size><width>{width}</width><height>0</height></size></property>
+               <property name="maximumSize"><size><width>{width}</width><height>16777215</height></size></property>
+               <property name="toolTip"><string>Copy to clipboard</string></property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_COPY_STYLE)}               </property>
+               <property name="text"><string>Copy</string></property>
+              </widget>
+             </item>
+"""
+
+
+def input_row_xml(name: str, label: str, row: int, *, with_copy: bool = False) -> str:
+    copy_part = copy_btn_xml(f"btn_copy_{name}") if with_copy else ""
     return (
         row_open(name, row)
         + f"""             <item>
 {template_label_xml(f"label_{name}", label)}
              </item>
              <item>
+              <widget class="QLineEdit" name="{name}">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+{prop_string(styles.LINE_EDIT_STYLE)}               </property>
+              </widget>
+             </item>
+{copy_part}"""
+        + ROW_CLOSE
+    )
+
+
+def input_btn_row_xml(
+    name: str,
+    label: str,
+    btn_name: str,
+    btn_text: str,
+    row: int,
+    *,
+    with_copy: bool = False,
+    copy_before_field: bool = False,
+) -> str:
+    copy_part = copy_btn_xml(f"btn_copy_{name}") if with_copy else ""
+    field_part = f"""             <item>
               <widget class="QLineEdit" name="{name}">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -81,29 +124,7 @@ def input_row_xml(name: str, label: str, row: int) -> str:
               </widget>
              </item>
 """
-        + ROW_CLOSE
-    )
-
-
-def input_btn_row_xml(name: str, label: str, btn_name: str, btn_text: str, row: int) -> str:
-    return (
-        row_open(name, row)
-        + f"""             <item>
-{template_label_xml(f"label_{name}", label)}
-             </item>
-             <item>
-              <widget class="QLineEdit" name="{name}">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="styleSheet">
-{prop_string(styles.LINE_EDIT_STYLE)}               </property>
-              </widget>
-             </item>
-             <item>
+    action_part = f"""             <item>
               <widget class="QPushButton" name="{btn_name}">
                <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
                <property name="styleSheet">
@@ -112,6 +133,18 @@ def input_btn_row_xml(name: str, label: str, btn_name: str, btn_text: str, row: 
               </widget>
              </item>
 """
+    if with_copy and copy_before_field:
+        widgets_block = copy_part + field_part + action_part
+    elif with_copy:
+        widgets_block = field_part + copy_part + action_part
+    else:
+        widgets_block = field_part + action_part
+    return (
+        row_open(name, row)
+        + f"""             <item>
+{template_label_xml(f"label_{name}", label)}
+             </item>
+{widgets_block}"""
         + ROW_CLOSE
     )
 
@@ -180,7 +213,7 @@ def output_row_xml(name: str, label: str, row: int) -> str:
                <property name="text"><string></string></property>
               </widget>
              </item>
-"""
+{copy_btn_xml(f"btn_copy_{name}")}"""
         + ROW_CLOSE
     )
 
@@ -212,9 +245,9 @@ def build_ui() -> str:
     r += 1
     left.append(input_btn_row_xml("search_entry", "Search Component", "btn_search", "SEARCH", r))
     r += 1
-    left.append(combo_row_xml(r))
-    r += 1
-    left.append(input_row_xml("barcode_entry", "Scan Barcode / Supplier Ref.", r))
+    left.append(
+        input_row_xml("barcode_entry", "Scan Barcode / Supplier Ref.", r, with_copy=True)
+    )
     r += 1
     left.append(input_btn_row_xml("quantity_entry", "Quantity", "btn_scan", "SCAN", r))
     r += 1
@@ -258,6 +291,7 @@ def build_ui() -> str:
             footer_btn_xml("btn_history_all", "Last 20"),
             footer_btn_xml("btn_history_component", "Comp. hist."),
             footer_btn_xml("btn_add_manual", "ADD MANUAL COMPONENT"),
+            footer_btn_xml("btn_edit_component", "EDIT COMPONENT"),
             """       <item>
         <spacer name="horizontalSpacer_actions">
          <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>

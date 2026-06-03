@@ -1,34 +1,47 @@
 """Stock Tracker main window — uses StockTracker from src.core.stock."""
+import os
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QStringListModel
-from PySide6.QtWidgets import QCompleter, QDialog, QMainWindow, QMessageBox
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import (
+    QCompleter,
+    QDialog,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPushButton,
+    QWidget,
+)
 
 from src.core.stock import StockTracker
 from src.core.suppliers import supplier_label
 from src.core.suppliers.base import SupplierId
-from src.core.suppliers.credentials import is_configured
 
+from .confirm_dialog import SiemensConfirmDialog
+from .message_dialog import SiemensMessage
+from .edit_component_dialog import EditComponentDialog
 from .history_dialog import HistoryDialog
 from .manual_component_dialog import ManualComponentDialog
 from .search_results_dialog import SearchResultsDialog
+from .user_name_dialog import UserNameDialog
 
 
 def _load_ui_class():
-    """Prefer Qt Designer export when the generated file is complete."""
-    try:
-        from .designer.gui_stocktracker import Ui_StockTracker as DesignerUi
+    """Qt Designer export (gui_stocktracker.ui)."""
+    from .designer.gui_stocktracker import Ui_StockTracker as DesignerUi
 
-        designer_py = Path(__file__).resolve().parent / "designer" / "gui_stocktracker.py"
-        source = designer_py.read_text(encoding="utf-8")
-        required = ("barcode_entry", "supplier_combo", "val_stock", "btn_scan")
-        if all(name in source for name in required):
-            return DesignerUi
-    except (ImportError, OSError):
-        pass
-    from .ui_stock_tracker import Ui_StockTracker
-
-    return Ui_StockTracker
+    designer_py = Path(__file__).resolve().parent / "designer" / "gui_stocktracker.py"
+    source = designer_py.read_text(encoding="utf-8")
+    required = ("barcode_entry", "val_stock", "btn_scan", "user_entry")
+    if not all(name in source for name in required):
+        raise RuntimeError(
+            "gui_stocktracker.py incompleto. Corre: "
+            "python tools/generate_stocktracker_ui.py && "
+            "pyside6-uic src/gui/designer/gui_stocktracker.ui "
+            "-o src/gui/designer/gui_stocktracker.py"
+        )
+    return DesignerUi
 
 
 class StockTrackerWindow(QMainWindow):
@@ -39,7 +52,9 @@ class StockTrackerWindow(QMainWindow):
         self.ui = Ui_StockTracker()
         self.ui.setupUi(self)
         self._connect_signals()
-        self._setup_supplier_combo()
+        self._setup_open_excel_button()
+        self._setup_copy_buttons()
+        self._setup_empty_details_click_targets()
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
 
@@ -53,9 +68,79 @@ class StockTrackerWindow(QMainWindow):
         u.btn_history_component.clicked.connect(lambda: self.open_history(True))
         if hasattr(u, "btn_add_manual"):
             u.btn_add_manual.clicked.connect(self.add_manual_component)
+        if hasattr(u, "btn_edit_component"):
+            u.btn_edit_component.clicked.connect(self.edit_component)
         u.btn_clear.clicked.connect(self.clear_all_fields)
         if hasattr(u, "btn_exit"):
             u.btn_exit.clicked.connect(self.close)
+
+    def _setup_open_excel_button(self) -> None:
+        """Add OPEN EXCEL button near CLEAR/Exit."""
+        actions_layout = getattr(self.ui, "horizontalLayout_actions", None)
+        clear_btn = getattr(self.ui, "btn_clear", None)
+        if actions_layout is None or clear_btn is None:
+            return
+
+        self.btn_open_excel = QPushButton("OPEN EXCEL", self.ui.widget_actions)
+        self.btn_open_excel.setObjectName("btn_open_excel")
+        self.btn_open_excel.setMinimumSize(124, 0)
+        self.btn_open_excel.setStyleSheet(clear_btn.styleSheet())
+        self.btn_open_excel.clicked.connect(self.open_excel_file)
+        actions_layout.insertWidget(actions_layout.indexOf(clear_btn), self.btn_open_excel)
+
+    def _setup_empty_details_click_targets(self) -> None:
+        """Clicking empty detail rows opens manual component popup."""
+        pairs = (
+            ("row_val_mouser", "val_mouser"),
+            ("row_val_manufacturer", "val_manufacturer"),
+            ("row_val_manufacturer_ref", "val_manufacturer_ref"),
+            ("row_val_description", "val_description"),
+            ("row_val_stock", "val_stock"),
+        )
+        self._detail_click_targets: list[tuple[QWidget, QWidget]] = []
+        for row_name, value_name in pairs:
+            row = getattr(self.ui, row_name, None)
+            value = getattr(self.ui, value_name, None)
+            if row is None or value is None:
+                continue
+            self._detail_click_targets.append((row, value))
+            row.mousePressEvent = (  # type: ignore[method-assign]
+                lambda event, widget=value: self._on_empty_detail_click(widget, event)
+            )
+            value.mousePressEvent = (  # type: ignore[method-assign]
+                lambda event, widget=value: self._on_empty_detail_click(widget, event)
+            )
+        self._refresh_empty_detail_cursor()
+
+    @staticmethod
+    def _widget_text(widget: QWidget) -> str:
+        if isinstance(widget, (QLabel, QLineEdit)):
+            return widget.text().strip()
+        return ""
+
+    def _refresh_empty_detail_cursor(self) -> None:
+        for row, value in getattr(self, "_detail_click_targets", []):
+            clickable = self._widget_text(value) == ""
+            cursor = Qt.CursorShape.PointingHandCursor if clickable else Qt.CursorShape.ArrowCursor
+            row.setCursor(cursor)
+            value.setCursor(cursor)
+
+    def _on_empty_detail_click(self, value_widget: QWidget, _event) -> None:
+        if self._widget_text(value_widget):
+            return
+        self.add_manual_component()
+
+    def open_excel_file(self) -> None:
+        """Open stock.xlsx directly in the default spreadsheet app."""
+        try:
+            os.startfile(str(self.tracker.excel_file))
+            self.set_status("Opened Excel file.")
+        except Exception as exc:
+            SiemensMessage.critical(
+                self,
+                "Open Excel failed",
+                f"Could not open {self.tracker.excel_file}.\n\n{exc}",
+            )
 
     def _make_completer(
         self, terms: list[str], filter_mode: Qt.MatchFlag
@@ -66,28 +151,6 @@ class StockTrackerWindow(QMainWindow):
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         completer.setMaxVisibleItems(12)
         return completer
-
-    def _setup_supplier_combo(self) -> None:
-        combo = self.ui.supplier_combo
-        combo.clear()
-        configured = self.tracker.configured_suppliers()
-        if not configured:
-            combo.addItem("No distributor API configured", "")
-            combo.setEnabled(False)
-            return
-        combo.setEnabled(True)
-        for supplier_id in configured:
-            combo.addItem(supplier_label(supplier_id), supplier_id)
-        default = "mouser" if "mouser" in configured else configured[0]
-        index = combo.findData(default)
-        if index >= 0:
-            combo.setCurrentIndex(index)
-
-    def _selected_supplier(self) -> SupplierId | None:
-        supplier_id = self.ui.supplier_combo.currentData()
-        if not supplier_id:
-            return None
-        return supplier_id
 
     def _setup_autocompletes(self) -> None:
         """Excel suggestions for search and barcode/supplier reference fields."""
@@ -121,12 +184,45 @@ class StockTrackerWindow(QMainWindow):
     def set_status(self, text: str) -> None:
         self.ui.status_label.setText(text)
 
+    def _setup_copy_buttons(self) -> None:
+        fields = (
+            ("btn_copy_barcode_entry", "barcode_entry", "Supplier reference"),
+            ("btn_copy_val_mouser", "val_mouser", "Supplier reference"),
+            ("btn_copy_val_manufacturer", "val_manufacturer", "Manufacturer"),
+            ("btn_copy_val_manufacturer_ref", "val_manufacturer_ref", "Manufacturer reference"),
+            ("btn_copy_val_description", "val_description", "Description"),
+            ("btn_copy_val_stock", "val_stock", "Current stock"),
+        )
+        for btn_name, value_name, label in fields:
+            btn = getattr(self.ui, btn_name, None)
+            value = getattr(self.ui, value_name, None)
+            if btn is None or value is None:
+                continue
+            btn.clicked.connect(
+                lambda _checked=False, widget=value, field=label: self._copy_to_clipboard(
+                    widget, field
+                )
+            )
+
+    def _copy_to_clipboard(self, widget, field_name: str) -> None:
+        if isinstance(widget, QLineEdit):
+            text = widget.text().strip()
+        else:
+            text = widget.text().strip()
+        if not text:
+            self.set_status(f"Nothing to copy ({field_name}).")
+            return
+        QGuiApplication.clipboard().setText(text)
+        self.set_status(f"Copied {field_name} to clipboard.")
+
     def validate_user(self) -> bool:
-        if not self.ui.user_entry.text().strip():
-            QMessageBox.warning(self, "Warning", "Please enter user name.")
-            self.ui.user_entry.setFocus()
-            return False
-        return True
+        if self.ui.user_entry.text().strip():
+            return True
+        name = UserNameDialog.ask(self, initial=self.ui.user_entry.text())
+        if name:
+            self.ui.user_entry.setText(name)
+            return True
+        return False
 
     def show_component(self, row) -> None:
         data = self.tracker.row_to_dict(row)
@@ -136,6 +232,7 @@ class StockTrackerWindow(QMainWindow):
         u.val_manufacturer_ref.setText(str(data["manufacturer_ref"]))
         u.val_description.setText(str(data["description"]))
         u.val_stock.setText(str(data["stock"]))
+        self._refresh_empty_detail_cursor()
 
     def clear_inputs_after_action(self) -> None:
         self.ui.search_entry.clear()
@@ -152,6 +249,7 @@ class StockTrackerWindow(QMainWindow):
         u.val_manufacturer_ref.clear()
         u.val_description.clear()
         u.val_stock.clear()
+        self._refresh_empty_detail_cursor()
         self.set_status("")
 
     def scan_component(self) -> None:
@@ -160,7 +258,7 @@ class StockTrackerWindow(QMainWindow):
 
         code = self.ui.barcode_entry.text().strip()
         if not code:
-            QMessageBox.warning(self, "Warning", "Please scan a barcode.")
+            SiemensMessage.warning(self, "Warning", "Please scan a barcode.")
             return
 
         if len(code) < 5:
@@ -181,37 +279,8 @@ class StockTrackerWindow(QMainWindow):
             self.set_status("Component found in Excel.")
             return
 
-        supplier = self._selected_supplier()
-        distributor_name = (
-            supplier_label(supplier) if supplier else "distributor"
-        )
-        answer = QMessageBox.question(
-            self,
-            "Component not found",
-            f"Component not found in Excel.\n\n"
-            f"Search the {distributor_name} catalog?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if answer != QMessageBox.StandardButton.Yes:
-            return
-
-        if supplier is None or not is_configured(supplier, self.tracker._secrets):
-            QMessageBox.critical(
-                self,
-                "API credentials missing",
-                "No distributor API is configured.\n\n"
-                "Edit config/secrets.py (see secrets.example.py).",
-            )
-            return
-
-        part = self.tracker.search_supplier(supplier, part_number)
+        part, found_supplier = self._lookup_distributor_catalogs(part_number)
         if part is None:
-            QMessageBox.critical(
-                self,
-                "Distributor lookup failed",
-                f"Could not search {distributor_name} or no result was found.\n\n"
-                "Check internet, API credentials, and the part number.",
-            )
             return
 
         supplier_reference = self.tracker.part_supplier_reference(
@@ -233,7 +302,7 @@ class StockTrackerWindow(QMainWindow):
                 self.show_component(existing)
                 self.ui.barcode_entry.setText(str(existing[1].value or ""))
                 self.set_status("Component already exists in Excel.")
-                QMessageBox.information(
+                SiemensMessage.information(
                     self,
                     "Already exists",
                     "This component is already in Excel.",
@@ -250,7 +319,7 @@ class StockTrackerWindow(QMainWindow):
         )
 
         if not self.tracker.save_workbook(workbook):
-            QMessageBox.critical(
+            SiemensMessage.critical(
                 self,
                 "Excel file is open",
                 "Close stock.xlsx in Excel before saving.",
@@ -267,15 +336,50 @@ class StockTrackerWindow(QMainWindow):
             self.show_component(added_row)
 
         self._refresh_autocompletes()
+        via = supplier_label(found_supplier) if found_supplier else "distributor"
         self.set_status(
-            "New component added with stock 0. Enter quantity and click ADD STOCK."
+            f"New component added (found via {via}). "
+            "Enter quantity and click ADD STOCK."
         )
-        QMessageBox.information(
+        SiemensMessage.information(
             self,
             "Added",
-            "New component added with stock 0. "
+            f"New component added with stock 0 (found via {via}).\n"
             "Now enter quantity and click ADD STOCK.",
         )
+
+    def _lookup_distributor_catalogs(
+        self, part_number: str
+    ) -> tuple[dict | None, SupplierId | None]:
+        catalogs = self.tracker.search_suppliers_order()
+        if not catalogs:
+            SiemensMessage.critical(
+                self,
+                "API credentials missing",
+                "No distributor API is configured.\n\n"
+                "Edit config/secrets.py (see secrets.example.py).",
+            )
+            return None, None
+
+        catalog_names = self.tracker.configured_supplier_labels()
+        if not SiemensMessage.question(
+            self,
+            "Component not found",
+            "Component not found in Excel.\n\n"
+            f"Search distributor catalogs?\n({catalog_names})",
+        ):
+            return None, None
+
+        part, found_supplier = self.tracker.search_any_supplier(part_number)
+        if part is None:
+            SiemensMessage.critical(
+                self,
+                "Distributor lookup failed",
+                f"No result in any configured catalog.\n\n"
+                f"Tried: {catalog_names}\n\n"
+                "Check internet, API credentials, and the part number.",
+            )
+        return part, found_supplier
 
     def search_component_manual(self) -> None:
         if not self.validate_user():
@@ -283,7 +387,7 @@ class StockTrackerWindow(QMainWindow):
 
         query = self.ui.search_entry.text().strip()
         if not query:
-            QMessageBox.warning(self, "Warning", "Write something to search.")
+            SiemensMessage.warning(self, "Warning", "Write something to search.")
             return
 
         workbook = self.tracker.get_workbook()
@@ -291,7 +395,7 @@ class StockTrackerWindow(QMainWindow):
         matches = self.tracker.search_in_excel_all(sheet, query)
 
         if not matches:
-            QMessageBox.information(self, "Not found", "No component found.")
+            SiemensMessage.information(self, "Not found", "No component found.")
             return
 
         row = matches[0]
@@ -322,7 +426,7 @@ class StockTrackerWindow(QMainWindow):
         quantity_text = self.ui.quantity_entry.text().strip()
 
         if not code or not quantity_text:
-            QMessageBox.warning(
+            SiemensMessage.warning(
                 self,
                 "Warning",
                 "Scan/search component and enter quantity.",
@@ -337,11 +441,11 @@ class StockTrackerWindow(QMainWindow):
         try:
             quantity = int(quantity_text)
         except ValueError:
-            QMessageBox.warning(self, "Warning", "Quantity must be a number.")
+            SiemensMessage.warning(self, "Warning", "Quantity must be a number.")
             return
 
         if quantity <= 0:
-            QMessageBox.warning(self, "Warning", "Quantity must be greater than 0.")
+            SiemensMessage.warning(self, "Warning", "Quantity must be greater than 0.")
             return
 
         part_number = self.tracker.extract_part_number(code)
@@ -349,34 +453,32 @@ class StockTrackerWindow(QMainWindow):
         sheet = self.tracker.get_components_sheet(workbook)
         row = self.tracker.find_component_any(sheet, part_number, code)
         if row is None:
-            QMessageBox.critical(self, "Error", "Component not found.")
+            SiemensMessage.critical(self, "Error", "Component not found.")
             return
 
         current_stock = int(row[6].value or 0)
 
         if movement == "OUT":
             if current_stock < quantity:
-                QMessageBox.critical(self, "Error", "Not enough stock.")
+                SiemensMessage.critical(self, "Error", "Not enough stock.")
                 return
 
             new_stock = current_stock - quantity
-            confirm = QMessageBox.question(
-                self,
+            if not SiemensConfirmDialog.ask(
                 "Confirm stock removal",
                 f"Are you sure you want to remove stock?\n\n"
                 f"Component: {row[1].value}\n"
                 f"Quantity to remove: {quantity}\n"
                 f"Current stock: {current_stock}\n"
                 f"Stock after removal: {new_stock}",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            )
-            if confirm != QMessageBox.StandardButton.Yes:
+                self,
+            ):
                 self.set_status("Stock removal cancelled.")
                 return
 
         user = self.ui.user_entry.text().strip()
         if not self.tracker.update_stock(user, code, quantity, movement):
-            QMessageBox.critical(
+            SiemensMessage.critical(
                 self,
                 "Excel file is open",
                 "Close stock.xlsx in Excel before saving.",
@@ -392,7 +494,7 @@ class StockTrackerWindow(QMainWindow):
         self._refresh_autocompletes()
         self.set_status("Stock updated and history saved.")
         self.clear_inputs_after_action()
-        QMessageBox.information(self, "Success", "Stock updated.")
+        SiemensMessage.information(self, "Success", "Stock updated.")
 
     def open_history(self, component_only: bool) -> None:
         if not self.validate_user():
@@ -429,7 +531,7 @@ class StockTrackerWindow(QMainWindow):
         )
 
         if not ok:
-            QMessageBox.warning(self, "Manual component", message)
+            SiemensMessage.warning(self, "Manual component", message)
             self.set_status(message)
             return
 
@@ -447,3 +549,63 @@ class StockTrackerWindow(QMainWindow):
 
         self._refresh_autocompletes()
         self.set_status(message)
+        SiemensMessage.information(self, "Added", message)
+
+    def edit_component(self) -> None:
+        if not self.validate_user():
+            return
+
+        code = self.ui.barcode_entry.text().strip()
+        mouser_ref = self.ui.val_mouser.text().strip()
+        if not code and not mouser_ref:
+            SiemensMessage.warning(
+                self,
+                "Warning",
+                "Load a component first (search or scan).",
+            )
+            return
+
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_components_sheet(workbook)
+        part_number = self.tracker.extract_part_number(code) if code else ""
+        row = self.tracker.find_component_any(
+            sheet,
+            part_number,
+            code,
+            mouser_ref,
+            self.ui.val_manufacturer_ref.text().strip(),
+        )
+        if row is None:
+            SiemensMessage.critical(self, "Error", "Component not found in Excel.")
+            return
+
+        dialog = EditComponentDialog(self.tracker.row_to_dict(row), self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        payload = dialog.payload()
+        ok, msg = self.tracker.update_component(
+            row,
+            supplier_reference=payload["supplier_reference"],
+            manufacturer=payload["manufacturer"],
+            manufacturer_reference=payload["manufacturer_reference"],
+            description=payload["description"],
+        )
+        if not ok:
+            SiemensMessage.critical(self, "Error", msg)
+            return
+
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_components_sheet(workbook)
+        updated = self.tracker.find_component_any(
+            sheet,
+            payload["supplier_reference"],
+            payload["manufacturer_reference"],
+            payload["manufacturer"],
+        )
+        if updated:
+            self.show_component(updated)
+
+        self._refresh_autocompletes()
+        self.set_status(msg)
+        SiemensMessage.information(self, "Updated", msg)

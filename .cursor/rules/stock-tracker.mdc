@@ -1,5 +1,5 @@
 ---
-description: Stock Tracker — estagio Siemens, arquitetura core/gui
+description: Stock Tracker — architecture and conventions
 globs:
   - "**/*"
 alwaysApply: true
@@ -7,23 +7,17 @@ alwaysApply: true
 
 # Stock Tracker
 
-Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
+## Architecture
 
-## Arquitetura
-
-- Logica: `src/core/stock.py` (classe `StockTracker`)
+- Business logic: `src/core/stock.py` (`StockTracker`)
 - GUI: `src/gui/stock_tracker_window.py`
-- Entrada: `python -m src.main` ou `run.bat`
-- Credenciais: `config/secrets.py` (nao commitar)
-- Dados: `data/stock.xlsx` — fechar Excel antes de gravar
+- Entry: `python -m src.main` or `run.bat` (single GUI; SCAN queries all configured suppliers)
+- Credentials: `config/secrets.py` (never commit)
+- Data: `data/stock.xlsx` — close Excel before saving
 
-## Regras
+## Rules
 
-- Nao colocar logica de negocio na GUI
-- Nao executar modulos `gui/` isoladamente (imports relativos)
-- Diffs minimos; estilo existente
-- Utilizador em portugues — explicacoes claras em PT quando aplicavel
-
-## Nao confundir
-
-`Documents\stock-tracker` — projeto legado separado.
+- No business logic in the GUI layer
+- Do not run `gui/` modules in isolation (relative imports)
+- Minimal diffs; match existing style
+- Documentation: English in `docs/user/`; spec also in `docs/PROJETO_STOCKTRACKER.md`

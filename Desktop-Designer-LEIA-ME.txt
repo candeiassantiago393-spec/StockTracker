@@ -1,20 +1,20 @@
-Stock Tracker — Qt Designer
+Stock Tracker - Qt Designer
 ===========================
 
-Pasta no Ambiente de Trabalho para editar a interface (tutor / visual).
+Desktop package used to edit the UI.
 
-Ficheiros:
-  gui_stocktracker.ui     — janela principal
-  popups\                 — popups Siemens (manual, historico, pesquisa)
-  siemens_template\       — recursos (logos, icones, gui_popup.ui)
+Files:
+  gui_stocktracker.ui     - main window
+  popups\                 - Siemens popups (manual, history, search)
+  siemens_template\       - resources (logos, icons, gui_popup.ui)
 
-Abrir:
-  Duplo clique em DESIGNER.bat  (menu 1–4)
+Open:
+  Double-click DESIGNER.bat (menu 1-4)
 
-Atualizar a partir do projeto (Downloads):
+Refresh from the project (Downloads):
   cd Downloads\StockTracker\StockTracker
   .\tools\prepare-designer-desktop.ps1
 
-Depois de editar .ui no Designer, no projeto principal:
+After editing .ui files in Designer, back in the main project:
   .\tools\export_stocktracker_ui.ps1
   python -m src.main

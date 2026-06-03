@@ -10,4 +10,4 @@ Get-ChildItem $Popups -Filter "*.ui" | ForEach-Object {
     Write-Host "Exported: $py"
 }
 
-Write-Host "Runtime uses siemens_template/gui_popup.py via popup_shell.py"
+Write-Host "Dialogs import from src/gui/designer/popups/gui_popup_*.py"

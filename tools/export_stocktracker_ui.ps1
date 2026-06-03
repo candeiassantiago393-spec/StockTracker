@@ -4,7 +4,9 @@ $Root = Split-Path -Parent $PSScriptRoot
 $UiFile = Join-Path $Root "src\gui\designer\gui_stocktracker.ui"
 $PyFile = Join-Path $Root "src\gui\designer\gui_stocktracker.py"
 
-pyside6-uic $UiFile -o $PyFile
+$Uic = Join-Path $Root ".venv\Scripts\pyside6-uic.exe"
+if (-not (Test-Path $Uic)) { $Uic = "pyside6-uic" }
+& $Uic $UiFile -o $PyFile
 
 $content = Get-Content $PyFile -Raw
 $content = $content.Replace(

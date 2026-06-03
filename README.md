@@ -1,10 +1,10 @@
 # Stock Tracker
 
-**Electronic component inventory — Siemens internship project.**
+**Desktop electronic component inventory with Siemens-style UI.**
 
-Desktop app for stock management with an Excel database, PySide6 GUI (Siemens-style UI), and distributor API integration (Mouser active; DigiKey, TME, RS prepared).
+Stock management using a local Excel database, PySide6 GUI, and optional distributor API integration (Mouser, DigiKey, TME, RS, and extensible suppliers).
 
-> **Documentation in Portuguese:** see [`docs/`](docs/README.md) (architecture, commands, suppliers, internship report draft).
+> Full documentation: [`docs/README.md`](docs/README.md) — specification: [EN](docs/PROJETO_STOCKTRACKER.md) · [PT](docs/PROJETO_STOCKTRACKER_PT.md)
 
 ---
 
@@ -12,12 +12,13 @@ Desktop app for stock management with an Excel database, PySide6 GUI (Siemens-st
 
 - Excel inventory (`Components` + `History` sheets)
 - GUI: search, barcode/scan, stock IN/OUT, history viewer
-- **Multi-match search** in Excel with selection dialog
-- **Autocomplete** from Excel (search field + barcode/Mouser reference field)
-- Mouser API: lookup and import new parts
-- Modular suppliers: `src/core/suppliers/` (Mouser, DigiKey, TME, RS, Robert Mauser stub)
-- Terminal test menu: `python -m src.test_terminal`
-- Clear split: business logic in `core/`, UI in `gui/`
+- Multi-match Excel search with selection dialog
+- Autocomplete from Excel (search and barcode fields)
+- Mouser API: catalog lookup and import
+- **Multi-distributor SCAN**: queries configured APIs in order until a match is found
+- Modular suppliers under `src/core/suppliers/`
+- Optional terminal test menu: `python -m src.test_terminal`
+- Clear separation: business logic in `core/`, UI in `gui/`
 
 ---
 
@@ -25,24 +26,24 @@ Desktop app for stock management with an Excel database, PySide6 GUI (Siemens-st
 
 - Windows 10/11
 - Python 3.10+
-- Internet (Mouser API)
-- Close `data/stock.xlsx` in Excel before saving from the app
+- Network access for distributor APIs (as configured)
+- Close `data/stock.xlsx` in Excel before saving from the application
 
 ---
 
 ## Quick start
 
 ```powershell
-git clone https://github.com/YOUR_USER/StockTracker.git
+git clone https://github.com/YOUR_ORG/StockTracker.git
 cd StockTracker
 python -m venv .venv
-.\.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy config\secrets.example.py config\secrets.py
 ```
 
-1. Edit `config/secrets.py` — set `MOUSER_API_KEY` (and other keys if needed).
-2. Add your inventory file: `data/stock.xlsx` (see [`data/README.md`](data/README.md)).
+1. Edit `config/secrets.py` — set API keys for the suppliers you use.
+2. Add or create `data/stock.xlsx` (see [`data/README.md`](data/README.md)).
 3. Run:
 
 ```powershell
@@ -58,8 +59,8 @@ Or double-click `run.bat`.
 | File | Purpose |
 |------|---------|
 | `config/secrets.py` | API keys (**local only**, not in Git) |
-| `config/secrets.example.py` | Template for secrets |
-| `data/stock.xlsx` | Inventory database (**not in Git** by default) |
+| `config/secrets.example.py` | Credential template |
+| `data/stock.xlsx` | Inventory database (**gitignored** by default) |
 
 Never commit `config/secrets.py` or real API keys.
 
@@ -70,14 +71,15 @@ Never commit `config/secrets.py` or real API keys.
 ```
 StockTracker/
 ├── config/          # credentials loader + secrets.example.py
-├── data/            # stock.xlsx (local, gitignored)
-├── docs/            # user & architecture docs (PT)
+├── data/            # stock.xlsx (local)
+├── docs/            # documentation
 ├── src/
 │   ├── main.py      # GUI entry point
 │   ├── test_terminal.py
 │   ├── core/        # StockTracker + suppliers
 │   └── gui/         # PySide6 UI
 ├── tools/           # maintenance scripts
+├── scripts/         # API test utilities
 ├── requirements.txt
 └── run.bat
 ```
@@ -87,7 +89,7 @@ StockTracker/
 | Entry | `src/main.py` | Starts GUI |
 | Business | `src/core/stock.py` | Excel, stock, history, APIs |
 | UI | `src/gui/` | Events, dialogs, styles |
-| Suppliers | `src/core/suppliers/` | Mouser, DigiKey, TME, RS, … |
+| Suppliers | `src/core/suppliers/` | Distributor integrations |
 
 ---
 
@@ -96,40 +98,28 @@ StockTracker/
 | Document | Content |
 |----------|---------|
 | [docs/README.md](docs/README.md) | Documentation index |
-| [docs/utilizador/COMANDOS.md](docs/utilizador/COMANDOS.md) | Install, run, troubleshooting |
-| [docs/utilizador/ARQUITETURA.md](docs/utilizador/ARQUITETURA.md) | Architecture & flows |
-| [docs/utilizador/FORNECEDORES.md](docs/utilizador/FORNECEDORES.md) | API suppliers |
-| [docs/utilizador/CONTINUAR_AGENTE.md](docs/utilizador/CONTINUAR_AGENTE.md) | Handover notes for development |
-| [docs/utilizador/ORGANIZAR_TRABALHO.md](docs/utilizador/ORGANIZAR_TRABALHO.md) | Organize folders (Desktop, Designer, daily workflow) |
+| [docs/user/COMMANDS.md](docs/user/COMMANDS.md) | Install, run, troubleshooting |
+| [docs/user/ARCHITECTURE.md](docs/user/ARCHITECTURE.md) | Architecture and flows |
+| [docs/user/SUPPLIERS.md](docs/user/SUPPLIERS.md) | Supplier APIs |
+| [docs/user/QT_DESIGNER.md](docs/user/QT_DESIGNER.md) | Qt Designer workflow |
+| [docs/user/DIGIKEY_SETUP.md](docs/user/DIGIKEY_SETUP.md) | DigiKey sandbox setup |
+| [docs/user/GITHUB.md](docs/user/GITHUB.md) | Publishing to GitHub |
 
 ---
 
 ## Publish to GitHub
 
-**Step-by-step (PT):** [docs/utilizador/GITHUB.md](docs/utilizador/GITHUB.md)
-
-1. Create an empty repo on GitHub (no README).
-2. In Cursor terminal:
-
-```powershell
-cd C:\Users\z005027j\Downloads\StockTracker\StockTracker
-git add .
-git status
-git commit -m "Add Siemens UI, Qt Designer, suppliers and demo mode"
-git remote add origin https://github.com/YOUR_USER/StockTracker.git
-git branch -M main
-git push -u origin main
-```
-
-Never commit `config/secrets.py` or real API keys.
-
-## Development notes
-
-- Run as module: `python -m src.main` (do not run `gui/*.py` directly).
-- Legacy project path (do not mix): `Documents\stock-tracker`.
+See [docs/user/GITHUB.md](docs/user/GITHUB.md).
 
 ---
 
-## Resumo (PT)
+## Development notes
 
-Aplicação de inventário de componentes eletrónicos: Excel, interface Siemens (PySide6), API Mouser, pesquisa com lista de resultados e sugestões ao escrever. Projeto de estágio — uso interno.
+- Run as a module: `python -m src.main` (do not run `gui/*.py` directly).
+- Do not mix files from legacy copies of older project folders.
+
+---
+
+## Summary
+
+Desktop inventory for electronic components with Excel persistence, Siemens-style PySide6 UI, and configurable distributor catalog lookup.

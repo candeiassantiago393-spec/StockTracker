@@ -1,11 +1,11 @@
 """
-Testa token DigiKey (sandbox + production). Mostra o erro real da API.
+Test DigiKey OAuth token (sandbox + production). Prints the API response.
 
-Uso:
-  1. Copia config/secrets.example.py para config/secrets.py e preenche DIGIKEY_*
+Usage:
+  1. Copy config/secrets.example.py to config/secrets.py and set DIGIKEY_*
   2. python scripts/test_digikey_auth.py
 
-Ou variaveis de ambiente: DIGIKEY_CLIENT_ID, DIGIKEY_CLIENT_SECRET
+Or environment variables: DIGIKEY_CLIENT_ID, DIGIKEY_CLIENT_SECRET
 """
 import os
 import sys
@@ -23,6 +23,9 @@ HOSTS = {
 
 
 PLACEHOLDERS = (
+    "YOUR_DIGIKEY_CLIENT_ID",
+    "YOUR_DIGIKEY_CLIENT_SECRET",
+    "YOUR_MOUSER_API_KEY",
     "O_SEU_CLIENT_ID_DIGIKEY",
     "O_SEU_CLIENT_SECRET_DIGIKEY",
     "A_SUA_CHAVE",
@@ -58,6 +61,60 @@ def credentials_ready(client_id: str, client_secret: str) -> bool:
     )
 
 
+def try_keyword_search(host: str, client_id: str, client_secret: str) -> None:
+    """Testa pesquisa v4 (mesmo fluxo que a app)."""
+    keyword = "MCP2221A-I/SL-ND"
+    print(f"\n--- keyword search (sandbox) ---")
+    print(f"POST {host}/products/v4/search/keyword  Keywords={keyword!r}")
+    try:
+        tr = requests.post(
+            f"{host}/v1/oauth2/token",
+            data={
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "grant_type": "client_credentials",
+            },
+            timeout=15,
+        )
+        if not tr.ok:
+            print(f"Token falhou: {tr.status_code} {tr.text[:300]}")
+            return
+        token = tr.json().get("access_token", "")
+        sr = requests.post(
+            f"{host}/products/v4/search/keyword",
+            headers={
+                "X-DIGIKEY-Client-Id": client_id,
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            json={"Keywords": keyword, "Limit": 5, "Offset": 0},
+            timeout=15,
+        )
+        print(f"Status: {sr.status_code}")
+        if sr.ok:
+            products = sr.json().get("Products") or []
+            print(f"OK — {len(products)} produto(s) na resposta")
+        else:
+            print(f"Corpo: {sr.text[:500]}")
+            if sr.status_code == 403:
+                try:
+                    cid = sr.json().get("correlationId", "")
+                    if cid:
+                        print(f"correlationId: {cid}")
+                except Exception:
+                    pass
+                print(
+                    "\n403 com portal Approved+Enabled: as chaves estao OK (token 200).\n"
+                    "  A pesquisa e bloqueada pelo servidor DigiKey (sandbox), nao pelo Stock Tracker.\n"
+                    "  Confirma no Swagger (Sandbox Mode) KeywordSearch; se 403 igual,\n"
+                    "  contacta suporte DigiKey com o correlationId acima.\n"
+                    "  Para inventario real: Production App + DIGIKEY_ENV=production (apos aprovacao)."
+                )
+    except Exception as exc:
+        print(f"Erro: {exc}")
+
+
 def try_token(label: str, host: str, client_id: str, client_secret: str) -> None:
     url = f"{host}/v1/oauth2/token"
     print(f"\n--- {label} ---")
@@ -87,10 +144,10 @@ def main() -> None:
     client_id, client_secret = load_credentials()
     if not credentials_ready(client_id, client_secret):
         print(
-            "Credenciais em falta ou ainda sao placeholders.\n"
-            "Edita config/secrets.py — substitui O_SEU_CLIENT_ID_DIGIKEY e\n"
-            "O_SEU_CLIENT_SECRET_DIGIKEY pelos valores da Sandbox App.\n"
-            "Guia: docs/utilizador/DIGIKEY_SETUP.md"
+            "Missing credentials or placeholders still set.\n"
+            "Edit config/secrets.py — set DIGIKEY_CLIENT_ID and\n"
+            "DIGIKEY_CLIENT_SECRET from your DigiKey Sandbox App.\n"
+            "Guide: docs/user/DIGIKEY_SETUP.md"
         )
         sys.exit(1)
 
@@ -98,9 +155,15 @@ def main() -> None:
     for label, host in HOSTS.items():
         try_token(label, host, client_id, client_secret)
 
+    try_keyword_search(HOSTS["sandbox"], client_id, client_secret)
+
     print(
         "\nNa tua app tens 'sandbox-ProductInformation V4' — o que funcionar"
         " aqui deve ser 'sandbox'. No portal Swagger: Switch to Sandbox Mode."
+    )
+    print(
+        "Compara os primeiros caracteres do Client ID acima com o portal"
+        " (Show key) — tem de ser a MESMA app."
     )
 
 

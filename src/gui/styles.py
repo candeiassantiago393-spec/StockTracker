@@ -134,6 +134,25 @@ QPushButton:pressed {
 }
 """
 
+BTN_COPY_STYLE = """
+QPushButton {
+    min-width: 60px;
+    max-width: 60px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+    font-size: 12px;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+"""
+
 BTN_PRIMARY_STYLE = BTN_TEMPLATE_STYLE
 BTN_SUCCESS_STYLE = BTN_TEMPLATE_STYLE
 BTN_DANGER_STYLE = BTN_TEMPLATE_STYLE

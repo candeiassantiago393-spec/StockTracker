@@ -29,8 +29,8 @@ def print_menu() -> None:
     print("  2 - View component by code (simulated scan)")
     print("  3 - Add stock (IN)")
     print("  4 - Remove stock (OUT) [confirmation]")
-    print("  5 - Search distributor catalog (lookup only)")
-    print("  6 - Distributor -> Excel -> add stock")
+    print("  5 - Search all distributor catalogs (lookup only)")
+    print("  6 - Catalogs -> Excel -> add stock")
     print("  7 - List components in Excel")
     print("  8 - View last 20 history entries")
     print("  9 - Change user name")
@@ -258,26 +258,20 @@ def main():
             pause()
 
         elif opcao == "5":
-            supplier = pick_supplier(tracker)
-            if supplier and is_configured(supplier, tracker._secrets):
-                part = input("Part number or keyword: ").strip()
-                if part:
-                    result = tracker.search_supplier(supplier, part)
-                    if result:
-                        print_supplier_part(supplier, result)
-                    else:
-                        print("No result or connection error.")
+            part = input("Part number or keyword: ").strip()
+            if part:
+                result, found = tracker.search_any_supplier(part)
+                if result and found:
+                    print_supplier_part(found, result)
+                else:
+                    print("No result in any configured catalog.")
             pause()
 
         elif opcao == "6":
-            supplier = pick_supplier(tracker)
-            if supplier and is_configured(supplier, tracker._secrets):
-                code = input("Part reference (new or existing): ").strip()
-                qty = ask_positive_int("Quantity to add: ")
-                if code and qty is not None:
-                    tracker.add_from_supplier_and_stock_in(
-                        user, code, qty, supplier
-                    )
+            code = input("Part reference (new or existing): ").strip()
+            qty = ask_positive_int("Quantity to add: ")
+            if code and qty is not None:
+                tracker.add_from_supplier_and_stock_in(user, code, qty)
             pause()
 
         elif opcao == "7":

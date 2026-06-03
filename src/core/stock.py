@@ -1,8 +1,16 @@
+###############################################################################
+# 1. Module Level Documentation
+###############################################################################
 """
-Stock Tracker — camada de negocio (Excel + distribuidores).
+Stock Tracker — business layer (Excel inventory + distributor APIs).
 
-Sem interface grafica. A GUI em src/gui/ consome a classe StockTracker.
+No GUI code in this module. The PySide6 layer in `src/gui/` uses `StockTracker`.
+See `docs/PROJETO_STOCKTRACKER.md` for data model and SCAN flow.
 """
+
+###############################################################################
+# 2. Imports
+###############################################################################
 import re
 import sys
 from datetime import datetime
@@ -11,8 +19,19 @@ from typing import Optional
 
 from openpyxl import Workbook, load_workbook
 
-from .suppliers import search_part
+from .suppliers import search_part, supplier_label
 from .suppliers.base import SupplierId
+
+###############################################################################
+# 3. Constants and Global Variables
+###############################################################################
+_SUPPLIER_SEARCH_ORDER: tuple[SupplierId, ...] = (
+    "mouser",
+    "tme",
+    "rs",
+    "digikey",
+    "robert_mauser",
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
@@ -26,14 +45,23 @@ EXCEL_FILE = DATA_DIR / "stock.xlsx"
 SHEET_COMPONENTS = "Components"
 SHEET_HISTORY = "History"
 
+###############################################################################
+# 4. StockTracker class
+###############################################################################
+
 
 class StockTracker:
     """
-    Class that manages stock (Excel + distributor APIs).
-
+    Class:
+        Manages component inventory in Excel and optional distributor catalog lookup.
+    Args:
+        excel_path (Path | None): Override path to workbook; default `data/stock.xlsx`.
+        api_key (str): Optional Mouser key; otherwise loaded from `config/secrets.py`.
     Example:
         tracker = StockTracker()
-        row = tracker.find_component("581-SR4M3DC12")
+        wb = tracker.get_workbook()
+        sheet = tracker.get_components_sheet(wb)
+        row = tracker.find_component(sheet, "581-SR4M3DC12")
     """
 
     def __init__(self, excel_path: Optional[Path] = None, api_key: str = ""):
@@ -371,6 +399,59 @@ class StockTracker:
 
         return True, "Manual component added successfully."
 
+    def update_component(
+        self,
+        row,
+        supplier_reference: str = "",
+        manufacturer: str = "",
+        manufacturer_reference: str = "",
+        description: str = "",
+    ) -> tuple[bool, str]:
+        supplier_reference = str(supplier_reference).strip()
+        manufacturer = str(manufacturer).strip()
+        manufacturer_reference = str(manufacturer_reference).strip()
+        description = str(description).strip()
+
+        if not supplier_reference and not (manufacturer and manufacturer_reference):
+            return (
+                False,
+                "Provide Supplier Reference OR both Manufacturer and Manufacturer Reference.",
+            )
+
+        workbook = self.get_workbook()
+        sheet = self.get_components_sheet(workbook)
+        target_row = row[0].row
+
+        for other in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(other) or other[0].row == target_row:
+                continue
+            if supplier_reference and self.normalize_ref(
+                other[1].value
+            ) == self.normalize_ref(supplier_reference):
+                return False, "Another component already uses this supplier reference."
+            if (
+                manufacturer
+                and manufacturer_reference
+                and self.normalize_ref(other[2].value)
+                == self.normalize_ref(manufacturer)
+                and self.normalize_ref(other[3].value)
+                == self.normalize_ref(manufacturer_reference)
+            ):
+                return (
+                    False,
+                    "Another component already uses this Manufacturer + Manufacturer Reference.",
+                )
+
+        row[1].value = supplier_reference
+        row[2].value = manufacturer
+        row[3].value = manufacturer_reference
+        row[5].value = description
+
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+
+        return True, "Component updated successfully."
+
     # ------------------------------------------------------------------
     # Distribuidores (Mouser, TME, ...)
     # ------------------------------------------------------------------
@@ -397,6 +478,24 @@ class StockTracker:
         from .suppliers.credentials import configured_suppliers
 
         return configured_suppliers(self._secrets)
+
+    def search_suppliers_order(self) -> list[SupplierId]:
+        """Fornecedores configurados, por ordem de pesquisa (APIs estaveis primeiro)."""
+        configured = set(self.configured_suppliers())
+        return [s for s in _SUPPLIER_SEARCH_ORDER if s in configured]
+
+    def search_any_supplier(
+        self, part_number: str
+    ) -> tuple[Optional[dict], Optional[SupplierId]]:
+        """Pesquisa em cada distribuidor configurado ate encontrar resultado."""
+        for supplier in self.search_suppliers_order():
+            part = self.search_supplier(supplier, part_number)
+            if part is not None:
+                return part, supplier
+        return None, None
+
+    def configured_supplier_labels(self) -> str:
+        return ", ".join(supplier_label(s) for s in self.search_suppliers_order())
 
     # ------------------------------------------------------------------
     # Stock movements
@@ -446,12 +545,12 @@ class StockTracker:
         user: str,
         code: str,
         quantity: int,
-        supplier: SupplierId = "mouser",
+        supplier: SupplierId | None = None,
     ) -> bool:
         """
         Full flow:
         1) If component exists in Excel -> add stock (IN)
-        2) If not -> search distributor API -> add row -> add stock (IN)
+        2) If not -> search distributor API(s) -> add row -> add stock (IN)
         """
         if quantity <= 0:
             print("Quantity must be greater than 0.")
@@ -465,7 +564,10 @@ class StockTracker:
         row = self.find_component_any(sheet, part_number, code)
 
         if row is None:
-            part = self.search_supplier(supplier, part_number)
+            if supplier is not None:
+                part = self.search_supplier(supplier, part_number)
+            else:
+                part, _found = self.search_any_supplier(part_number)
             if part is None:
                 print("Not found in Excel or distributor catalog.")
                 return False
@@ -513,5 +615,5 @@ class StockTracker:
     def add_from_mouser_and_stock_in(
         self, user: str, code: str, quantity: int
     ) -> bool:
-        """Backward-compatible wrapper for Mouser."""
-        return self.add_from_supplier_and_stock_in(user, code, quantity, "mouser")
+        """Pesquisa em todos os distribuidores configurados (nome legado)."""
+        return self.add_from_supplier_and_stock_in(user, code, quantity)
