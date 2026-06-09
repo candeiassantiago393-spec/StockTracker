@@ -7,10 +7,16 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QCompleter,
     QDialog,
+    QGridLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
     QPushButton,
+    QSizePolicy,
+    QSpacerItem,
+    QStackedWidget,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -24,7 +30,26 @@ from .edit_component_dialog import EditComponentDialog
 from .history_dialog import HistoryDialog
 from .manual_component_dialog import ManualComponentDialog
 from .search_results_dialog import SearchResultsDialog
+from .materials_page import MaterialsPage
+from .materials_table_dialog import MaterialsTableDialog
 from .user_name_dialog import UserNameDialog
+
+from . import styles
+
+_ACTION_LABELS = {
+    "components": {
+        "history_all": "Last 20",
+        "history_item": "Comp. hist.",
+        "manual": "ADD MANUAL",
+        "edit": "EDIT",
+    },
+    "materials": {
+        "history_all": "Last 20",
+        "history_item": "Mat. hist.",
+        "manual": "ADD MANUAL",
+        "edit": "EDIT",
+    },
+}
 
 
 def _load_ui_class():
@@ -52,11 +77,112 @@ class StockTrackerWindow(QMainWindow):
         self.ui = Ui_StockTracker()
         self.ui.setupUi(self)
         self._connect_signals()
+        self._setup_page_navigation()
         self._setup_open_excel_button()
         self._setup_copy_buttons()
         self._setup_empty_details_click_targets()
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
+
+    def _setup_page_navigation(self) -> None:
+        """Components vs Materials — stacked pages + header navigation."""
+        body_index = self.ui.verticalLayout.indexOf(self.ui.container_main_body)
+        self.ui.verticalLayout.removeWidget(self.ui.container_main_body)
+
+        # Title stays visible on both pages (same position as original row 0).
+        self.ui.gridLayout_main.removeWidget(self.ui.frame_title)
+        title_wrap = QWidget(self.ui.centralwidget)
+        title_layout = QHBoxLayout(title_wrap)
+        title_layout.setContentsMargins(*styles.TEMPLATE_PAGE_MARGINS)
+        title_layout.setSpacing(0)
+        title_layout.addWidget(self.ui.frame_title)
+        self.ui.verticalLayout.insertWidget(body_index, title_wrap)
+        self._setup_shared_user_row(body_index + 1)
+        styles.apply_two_column_page_grid(self.ui.gridLayout_main)
+
+        self._page_stack = QStackedWidget(self.ui.centralwidget)
+        self._page_stack.addWidget(self.ui.container_main_body)
+        self._materials_page = MaterialsPage(self.tracker, self)
+        self._page_stack.addWidget(self._materials_page)
+        self.ui.verticalLayout.insertWidget(body_index + 2, self._page_stack)
+
+        header_layout = self.ui.horizontalLayout_header
+        header_layout.addItem(
+            QSpacerItem(
+                40,
+                20,
+                QSizePolicy.Policy.Expanding,
+                QSizePolicy.Policy.Minimum,
+            )
+        )
+
+        self.btn_nav_components = QPushButton("COMPONENTS", self.ui.header)
+        self.btn_nav_materials = QPushButton("MATERIALS", self.ui.header)
+        for btn in (self.btn_nav_components, self.btn_nav_materials):
+            btn.setMinimumSize(124, 0)
+            btn.setStyleSheet(styles.BTN_TEMPLATE_STYLE)
+            header_layout.addWidget(btn)
+
+        self.btn_nav_components.clicked.connect(self._show_components_page)
+        self.btn_nav_materials.clicked.connect(self._show_materials_page)
+        self._current_section = "components"
+        self._show_components_page()
+
+    def _apply_action_bar_labels(self, section: str) -> None:
+        labels = _ACTION_LABELS[section]
+        u = self.ui
+        u.btn_history_all.setText(labels["history_all"])
+        u.btn_history_component.setText(labels["history_item"])
+        if hasattr(u, "btn_add_manual"):
+            u.btn_add_manual.setText(labels["manual"])
+            u.btn_add_manual.setToolTip(
+                "Add manual component" if section == "components" else "Add manual material"
+            )
+        if hasattr(u, "btn_edit_component"):
+            u.btn_edit_component.setText(labels["edit"])
+            u.btn_edit_component.setToolTip(
+                "Edit component" if section == "components" else "Edit material"
+            )
+
+    def _setup_shared_user_row(self, insert_index: int) -> None:
+        """User Name — fixed row above both pages (same slot as Components .ui)."""
+        self.ui.gridLayout_left.removeWidget(self.ui.row_user_entry)
+
+        for widget, new_row in (
+            (self.ui.row_search_entry, 1),
+            (self.ui.row_barcode_entry, 2),
+            (self.ui.row_quantity_entry, 3),
+            (self.ui.row_stock_buttons, 4),
+        ):
+            self.ui.gridLayout_left.removeWidget(widget)
+            self.ui.gridLayout_left.addWidget(widget, new_row, 0, 1, 2)
+
+        self.ui.gridLayout_left.removeItem(self.ui.verticalSpacer_left)
+        self.ui.gridLayout_left.addItem(self.ui.verticalSpacer_left, 5, 1, 1, 1)
+
+        user_wrap = QWidget(self.ui.centralwidget)
+        grid = QGridLayout(user_wrap)
+        styles.apply_two_column_page_grid(grid)
+        grid.addWidget(self.ui.row_user_entry, 0, 0)
+        self.ui.verticalLayout.insertWidget(insert_index, user_wrap)
+
+    def _show_components_page(self) -> None:
+        self._current_section = "components"
+        self._page_stack.setCurrentIndex(0)
+        self.ui.tab1_title.setText("Inventory — Components")
+        self._apply_action_bar_labels("components")
+        self.btn_nav_components.setEnabled(False)
+        self.btn_nav_materials.setEnabled(True)
+        self.set_status("")
+
+    def _show_materials_page(self) -> None:
+        self._current_section = "materials"
+        self._page_stack.setCurrentIndex(1)
+        self.ui.tab1_title.setText("Inventory — Materials")
+        self._apply_action_bar_labels("materials")
+        self.btn_nav_components.setEnabled(True)
+        self.btn_nav_materials.setEnabled(False)
+        self.set_status("")
 
     def _connect_signals(self):
         u = self.ui
@@ -64,12 +190,12 @@ class StockTrackerWindow(QMainWindow):
         u.btn_scan.clicked.connect(self.scan_component)
         u.btn_add_stock.clicked.connect(lambda: self.update_stock("IN"))
         u.btn_remove_stock.clicked.connect(lambda: self.update_stock("OUT"))
-        u.btn_history_all.clicked.connect(lambda: self.open_history(False))
-        u.btn_history_component.clicked.connect(lambda: self.open_history(True))
+        u.btn_history_all.clicked.connect(self.open_history_all)
+        u.btn_history_component.clicked.connect(self.open_history_filtered)
         if hasattr(u, "btn_add_manual"):
-            u.btn_add_manual.clicked.connect(self.add_manual_component)
+            u.btn_add_manual.clicked.connect(self.add_manual_entry)
         if hasattr(u, "btn_edit_component"):
-            u.btn_edit_component.clicked.connect(self.edit_component)
+            u.btn_edit_component.clicked.connect(self.edit_current_entry)
         u.btn_clear.clicked.connect(self.clear_all_fields)
         if hasattr(u, "btn_exit"):
             u.btn_exit.clicked.connect(self.close)
@@ -131,10 +257,19 @@ class StockTrackerWindow(QMainWindow):
         self.add_manual_component()
 
     def open_excel_file(self) -> None:
-        """Open stock.xlsx directly in the default spreadsheet app."""
+        """Ensure all inventory sheets exist, then open stock.xlsx in Excel."""
+        if not self.tracker.ensure_workbook_sheets():
+            SiemensMessage.critical(
+                self,
+                "Excel file is open",
+                "Close stock.xlsx in Excel before updating sheets.",
+            )
+            return
         try:
             os.startfile(str(self.tracker.excel_file))
-            self.set_status("Opened Excel file.")
+            self.set_status(
+                "Opened Excel (Components, Materials, History)."
+            )
         except Exception as exc:
             SiemensMessage.critical(
                 self,
@@ -239,7 +374,65 @@ class StockTrackerWindow(QMainWindow):
         self.ui.barcode_entry.clear()
         self.ui.quantity_entry.clear()
 
+    def open_history_all(self) -> None:
+        if self._current_section == "materials":
+            self.open_materials_table(all_materials=True)
+            return
+        self.open_history(False)
+
+    def open_history_filtered(self) -> None:
+        if self._current_section == "materials":
+            self.open_materials_table(all_materials=False)
+            return
+        self.open_history(True)
+
+    def open_materials_table(self, *, all_materials: bool) -> None:
+        if not self.validate_user():
+            return
+
+        workbook = self.tracker.get_workbook()
+        supplier_reference = ""
+        description = ""
+        if not all_materials:
+            supplier_reference = (
+                self._materials_page.val_supplier_reference.text().strip()
+            )
+            description = self._materials_page.val_description.text().strip()
+            if not supplier_reference and not description:
+                SiemensMessage.warning(
+                    self,
+                    "Warning",
+                    "Load a material first (search).",
+                )
+                return
+
+        rows = self.tracker.get_material_rows(
+            workbook,
+            material_only=not all_materials,
+            supplier_reference=supplier_reference,
+            description=description,
+        )
+        title = "Last 20 materials" if all_materials else "Material history"
+        dialog = MaterialsTableDialog(rows, self, title=title)
+        dialog.exec()
+
+    def add_manual_entry(self) -> None:
+        if self._current_section == "materials":
+            self._materials_page.add_material()
+            return
+        self.add_manual_component()
+
+    def edit_current_entry(self) -> None:
+        if self._current_section == "materials":
+            self._materials_page.edit_material()
+            return
+        self.edit_component()
+
     def clear_all_fields(self) -> None:
+        if self._current_section == "materials":
+            self._materials_page.clear_fields()
+            return
+
         u = self.ui
         u.search_entry.clear()
         u.barcode_entry.clear()

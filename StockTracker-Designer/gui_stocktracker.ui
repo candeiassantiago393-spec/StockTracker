@@ -47,6 +47,8 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_header">
        <property name="spacing"><number>16</number></property>
+       <property name="leftMargin"><number>16</number></property>
+       <property name="rightMargin"><number>16</number></property>
        <item>
         <widget class="QLabel" name="brand_identifier">
          <property name="sizePolicy">
@@ -79,6 +81,12 @@
      <widget class="QWidget" name="container_main_body" native="true">
       <layout class="QGridLayout" name="gridLayout_main">
        <property name="leftMargin"><number>16</number></property>
+       <property name="rightMargin"><number>16</number></property>
+       <property name="horizontalSpacing"><number>0</number></property>
+       <property name="columnStretch" stdset="0">
+        <number>1</number>
+        <number>1</number>
+       </property>
        <item row="0" column="0" colspan="2">
         <widget class="QFrame" name="frame_title">
          <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>
@@ -259,62 +267,6 @@ QPushButton:pressed {
           </item>
 
           <item row="3" column="0" colspan="2">
-           <widget class="QWidget" name="row_supplier_combo" native="true">
-            <layout class="QGridLayout" name="grid_supplier">
-             <property name="topMargin"><number>9</number></property>
-             <property name="rightMargin"><number>9</number></property>
-             <property name="bottomMargin"><number>9</number></property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_supplier">
-               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text"><string>Distributor</string></property>
-              </widget>
-
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="supplier_combo">
-               <property name="minimumSize"><size><width>172</width><height>30</height></size></property>
-               <property name="styleSheet">
-   <string notr="true">
-QComboBox {
-    padding: 5px;
-    padding-left: 20px;
-    padding-right: 20px;
-    min-width: 130;
-    min-height: 18px;
-    max-width: 130px;
-    max-height: 18px;
-    border-radius: 2px;
-    border: 1px solid #B3B3BE;
-    background-color: #00183B;
-}
-QComboBox:hover {
-    background-color: #001F39;
-    border: 1px solid #00FFB9;
-}
-QComboBox QAbstractItemView {
-    background-color: #2D2D45;
-    padding: 0px;
-}
-QComboBox QAbstractItemView::item:hover {
-    padding: 0px;
-    padding-left: 10px;
-}
-</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-
-          <item row="4" column="0" colspan="2">
            <widget class="QWidget" name="row_barcode_entry" native="true">
             <layout class="QHBoxLayout" name="layout_barcode_entry">
              <property name="spacing"><number>6</number></property>
@@ -396,7 +348,7 @@ QPushButton:pressed {
            </widget>
           </item>
 
-          <item row="5" column="0" colspan="2">
+          <item row="4" column="0" colspan="2">
            <widget class="QWidget" name="row_quantity_entry" native="true">
             <layout class="QHBoxLayout" name="layout_quantity_entry">
              <property name="spacing"><number>6</number></property>
@@ -476,7 +428,7 @@ QPushButton:pressed {
            </widget>
           </item>
 
-          <item row="6" column="0" colspan="2">
+          <item row="5" column="0" colspan="2">
            <widget class="QWidget" name="row_stock_buttons" native="true">
             <layout class="QHBoxLayout" name="layout_stock_buttons">
              <property name="spacing"><number>6</number></property>
@@ -552,7 +504,7 @@ QPushButton:pressed {
            </widget>
           </item>
 
-          <item row="7" column="1">
+          <item row="6" column="1">
            <spacer name="verticalSpacer_left">
             <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
             <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>

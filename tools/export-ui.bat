@@ -1,5 +1,5 @@
 @echo off
-REM Apos editar gui_stocktracker.ui no Qt Designer, corre isto (NAO uses so pyside6-uic).
+REM Apos editar .ui no Qt Designer, corre isto (exporta janela + materials + popups).
 cd /d "%~dp0.."
 set "PY=%~dp0..\.venv\Scripts\python.exe"
 set "UIC=%~dp0..\.venv\Scripts\pyside6-uic.exe"
@@ -8,5 +8,5 @@ if not exist "%UIC%" (
     pause
     exit /b 1
 )
-powershell -NoProfile -ExecutionPolicy Bypass -File "tools\export_stocktracker_ui.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "tools\export_designer_uis.ps1"
 pause

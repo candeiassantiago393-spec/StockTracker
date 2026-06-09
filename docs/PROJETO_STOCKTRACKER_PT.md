@@ -78,6 +78,15 @@ Permissões (lógicas):
 | Description | F (5) | string | rw | Descrição da peça |
 | Stock  | G (6) | int    | rw        | Quantidade atual |
 
+## Folha: Materials
+
+| Coluna | Índice | Tipo | Permissão | Descrição |
+|:-------|:------:|:-----|:----------|:----------|
+| ID | A (0) | int | w | Identificador auto-incrementado |
+| Description | B (1) | string | rw | Descrição do material |
+| Calibration Date | C (2) | string | rw | Data de calibração (`YYYY-MM-DD`) |
+| Calibration Expiration Date | D (3) | string | rw | Data de expiração da calibração |
+
 ## Folha: History
 
 | Coluna | Índice | Tipo   | Permissão | Descrição |

@@ -1,6 +1,6 @@
-# Siemens Popups (Desktop Designer Package)
+# Siemens Popups (Qt Designer)
 
-This folder contains popup `.ui` files prepared for editing in Qt Designer.
+Complete popup files for editing in Qt Designer (forms, tables, and action buttons).
 
 | File | Designer content |
 |------|------------------|
@@ -10,4 +10,16 @@ This folder contains popup `.ui` files prepared for editing in Qt Designer.
 | `gui_popup_edit.ui` | Edit component form + Save/Cancel |
 | `gui_popup_confirm.ui` | Confirmation dialog (Yes/No) |
 
-Use `DESIGNER.bat` from `StockTracker-Designer` to open these files quickly.
+At runtime, the app imports the generated `gui_popup_*.py` modules.
+
+## Regenerate
+
+```text
+python tools/generate_popup_uis.py
+.\.venv\Scripts\pyside6-uic.exe src\gui\designer\popups\gui_popup_manual.ui -o src\gui\designer\popups\gui_popup_manual.py
+# or use tools\export_popup_uis.ps1 for all popups
+```
+
+To open these files in Designer, use `StockTracker-Designer\DESIGNER.bat` or `tools\ABRIR-DESIGNER.bat`.
+
+Sync the Designer package: `powershell -File tools\sync_designer_package.ps1`

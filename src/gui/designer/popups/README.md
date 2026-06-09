@@ -20,5 +20,6 @@ python tools/generate_popup_uis.py
 # or use tools\export_popup_uis.ps1 for all popups
 ```
 
-To open these popup files in Designer quickly, use:
-`Desktop\StockTracker-Designer\DESIGNER.bat` (options 2-7).
+To open these files in Designer, use `StockTracker-Designer\DESIGNER.bat` or `tools\ABRIR-DESIGNER.bat`.
+
+Sync the Designer package: `powershell -File tools\sync_designer_package.ps1`

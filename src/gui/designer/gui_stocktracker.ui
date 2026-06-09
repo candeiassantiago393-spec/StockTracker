@@ -47,6 +47,8 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_header">
        <property name="spacing"><number>16</number></property>
+       <property name="leftMargin"><number>16</number></property>
+       <property name="rightMargin"><number>16</number></property>
        <item>
         <widget class="QLabel" name="brand_identifier">
          <property name="sizePolicy">
@@ -79,6 +81,12 @@
      <widget class="QWidget" name="container_main_body" native="true">
       <layout class="QGridLayout" name="gridLayout_main">
        <property name="leftMargin"><number>16</number></property>
+       <property name="rightMargin"><number>16</number></property>
+       <property name="horizontalSpacing"><number>0</number></property>
+       <property name="columnStretch" stdset="0">
+        <number>1</number>
+        <number>1</number>
+       </property>
        <item row="0" column="0" colspan="2">
         <widget class="QFrame" name="frame_title">
          <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>

@@ -8,6 +8,17 @@ TEMPLATE_FIELD_WIDTH = 100
 TEMPLATE_COMBO_MIN_SIZE = (172, 30)
 TEMPLATE_ROW_SPACING = 6
 TEMPLATE_ROW_MARGINS = (0, 9, 9, 9)  # left, top, right, bottom
+# Main body grids — match footer bar (left/right 16px).
+TEMPLATE_PAGE_MARGINS = (16, 0, 16, 0)
+
+
+def apply_two_column_page_grid(grid) -> None:
+    """Symmetric 50/50 columns with no gutter (gui_stocktracker.ui / gui_template.ui)."""
+    grid.setContentsMargins(*TEMPLATE_PAGE_MARGINS)
+    grid.setHorizontalSpacing(0)
+    grid.setVerticalSpacing(0)
+    grid.setColumnStretch(0, 1)
+    grid.setColumnStretch(1, 1)
 
 MAIN_WINDOW_STYLE = """
 * {
@@ -114,6 +125,26 @@ QLabel:hover {
 """
 
 STOCK_VALUE_STYLE = VALUE_FIELD_STYLE
+
+# Wider read-only fields (materials description, etc.)
+MATERIAL_VALUE_FIELD_STYLE = """
+QLabel {
+    min-width: 280px;
+    max-width: 480px;
+    min-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLabel:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+"""
 
 BTN_TEMPLATE_STYLE = """
 QPushButton {

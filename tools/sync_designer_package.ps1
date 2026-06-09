@@ -1,0 +1,62 @@
+# Sync Qt Designer editing package (repo StockTracker-Designer and/or Desktop copy).
+param(
+    [ValidateSet("Repo", "Desktop", "All")]
+    [string]$Target = "All"
+)
+
+$ErrorActionPreference = "Stop"
+$Root = Split-Path -Parent $PSScriptRoot
+
+& (Join-Path $Root ".venv\Scripts\python.exe") (Join-Path $Root "tools\generate_all_designer_uis.py") 2>$null
+if (-not $?) {
+    python (Join-Path $Root "tools\generate_all_designer_uis.py")
+}
+
+function Sync-ToDesignerFolder($Designer) {
+    New-Item -ItemType Directory -Force -Path $Designer | Out-Null
+    New-Item -ItemType Directory -Force -Path (Join-Path $Designer "popups") | Out-Null
+
+    function Copy-UiForDesigner($src, $dest) {
+        $text = Get-Content $src -Raw -Encoding UTF8
+        $text = $text.Replace("../siemens_template/", "siemens_template/")
+        Set-Content $dest $text -Encoding UTF8 -NoNewline
+    }
+
+    Copy-UiForDesigner `
+        (Join-Path $Root "src\gui\designer\gui_stocktracker.ui") `
+        (Join-Path $Designer "gui_stocktracker.ui")
+
+    $materialsUi = Join-Path $Root "src\gui\designer\gui_materials.ui"
+    if (Test-Path $materialsUi) {
+        Copy-UiForDesigner $materialsUi (Join-Path $Designer "gui_materials.ui")
+    }
+
+    $popSrc = Join-Path $Root "src\gui\designer\popups"
+    Get-ChildItem $popSrc -Filter "*.ui" | ForEach-Object {
+        Copy-Item $_.FullName (Join-Path (Join-Path $Designer "popups") $_.Name) -Force
+    }
+
+    $st = Join-Path $Root "src\gui\siemens_template"
+    $stDest = Join-Path $Designer "siemens_template"
+    if (Test-Path (Join-Path $Designer "siemens_templates")) {
+        Remove-Item (Join-Path $Designer "siemens_templates") -Recurse -Force
+    }
+    robocopy $st $stDest /E /NFL /NDL /NJH /NJS | Out-Null
+
+    $designerBat = Join-Path $Root "tools\DESIGNER-DESKTOP.bat"
+    if (Test-Path $designerBat) {
+        Copy-Item $designerBat (Join-Path $Designer "DESIGNER.bat") -Force
+    }
+    Copy-Item (Join-Path $Root "src\gui\designer\README.md") (Join-Path $Designer "README.md") -Force -ErrorAction SilentlyContinue
+    Copy-Item (Join-Path $Root "src\gui\designer\popups\README.md") (Join-Path $Designer "popups\README.md") -Force -ErrorAction SilentlyContinue
+    Copy-Item (Join-Path $Root "Desktop-Designer-LEIA-ME.txt") (Join-Path $Designer "LEIA-ME.txt") -Force -ErrorAction SilentlyContinue
+
+    Write-Host "Designer package ready: $Designer"
+}
+
+if ($Target -eq "Repo" -or $Target -eq "All") {
+    Sync-ToDesignerFolder (Join-Path $Root "StockTracker-Designer")
+}
+if ($Target -eq "Desktop" -or $Target -eq "All") {
+    Sync-ToDesignerFolder (Join-Path $env:USERPROFILE "Desktop\StockTracker-Designer")
+}

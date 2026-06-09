@@ -4,31 +4,49 @@
 
 | Ficheiro | Papel |
 |----------|-------|
-| `stock_tracker_window.py` | Janela principal (eventos, SCAN, stock) |
-| `designer/gui_stocktracker.ui` | Layout Qt Designer |
-| `designer/gui_stocktracker.py` | Export `pyside6-uic` do `.ui` |
-| `message_dialog.py` | Avisos / erros / perguntas (template Siemens) |
-| `user_name_dialog.py` | Pedir nome de utilizador no popup |
-| `confirm_dialog.py` | Confirmar remocao de stock |
-| `history_dialog.py` | Historico |
-| `manual_component_dialog.py` | Componente manual |
-| `edit_component_dialog.py` | Editar linha do Excel |
-| `search_results_dialog.py` | Varias linhas no Excel |
-| `styles.py` | Estilos partilhados |
+| `stock_tracker_window.py` | Janela principal (Components + navegacao Materials) |
+| `materials_page.py` | Pagina Materials (logica; layout em `designer/gui_materials.ui`) |
+| `designer/gui_stocktracker.ui` | Layout Components (Qt Designer) |
+| `designer/gui_materials.ui` | Layout Materials (Qt Designer) |
+| `designer/gui_stocktracker.py` | Export `pyside6-uic` — nao editar a mao |
+| `designer/gui_materials.py` | Export `pyside6-uic` — nao editar a mao |
+| `styles.py` | Metricas e estilos Siemens (template) |
 | `gui_config.py` | Caminhos de logos |
+
+### Dialogos
+
+| Ficheiro | Template |
+|----------|----------|
+| `message_dialog.py` | `popups/gui_popup_confirm.ui` |
+| `user_name_dialog.py` | `popups/gui_popup_confirm.ui` |
+| `confirm_dialog.py` | confirm |
+| `history_dialog.py` | `popups/gui_popup_history.ui` |
+| `manual_component_dialog.py` | `popups/gui_popup_manual.ui` |
+| `edit_component_dialog.py` | `popups/gui_popup_edit.ui` |
+| `search_results_dialog.py` | `popups/gui_popup_search.ui` |
+| `material_search_dialog.py` | `popups/gui_popup_search.ui` |
+| `materials_table_dialog.py` | `popups/gui_popup_history.ui` |
+| `material_dialog.py` | Estilos popup Siemens (Python) |
 
 Arranque: `python -m src.main` ou `run.bat` na raiz.
 
 **Nao** executar ficheiros de `gui/` isoladamente (imports relativos).
 
-## Pesquisa em distribuidores
+## Pasta `designer/`
 
-No **SCAN**, se o componente nao estiver no Excel, a app pergunta e pesquisa **todos** os APIs configurados em `config/secrets.py` (ordem: Mouser, TME, RS, DigiKey, …) ate encontrar.
+Ver [designer/README.md](designer/README.md) — gerar, exportar e sincronizar com Qt Designer.
 
-## Popups
-
-Ficheiros em `designer/popups/` — gerar com `python tools/generate_popup_uis.py`.
+Pacote de edicao: `StockTracker-Designer/` na raiz do repo (espelho para o Qt Designer).
 
 ## Template Siemens (`siemens_template/`)
 
-Material de referencia (icones, widgets). A janela principal usa `designer/gui_stocktracker.*`.
+Icones, fontes e widgets de referencia. A janela usa `designer/*.ui`; metricas em `styles.py` alinhadas com `siemens_template/gui_template.ui`.
+
+## Ferramentas (`tools/`)
+
+| Script | Funcao |
+|--------|--------|
+| `generate_all_designer_uis.py` | Regenera todos os `.ui` |
+| `gui_ui_builder.py` | Builders partilhados (template) |
+| `export_designer_uis.ps1` | Exporta `.ui` → `.py` |
+| `sync_designer_package.ps1` | Atualiza `StockTracker-Designer/` |

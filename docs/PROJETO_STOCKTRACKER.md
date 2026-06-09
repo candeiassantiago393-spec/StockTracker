@@ -78,6 +78,15 @@ Permissions (logical):
 | Description | F (5) | string | rw | Part description |
 | Stock  | G (6) | int    | rw         | Current quantity |
 
+## Sheet: Materials
+
+| Column | Index | Type | Permission | Description |
+|:-------|:-----:|:-----|:-----------|:------------|
+| ID | A (0) | int | w | Auto-increment identifier |
+| Description | B (1) | string | rw | Material description |
+| Calibration Date | C (2) | string | rw | Calibration date (`YYYY-MM-DD`) |
+| Calibration Expiration Date | D (3) | string | rw | Calibration expiry date |
+
 ## Sheet: History
 
 | Column | Index | Type   | Permission | Description |

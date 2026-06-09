@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file 'gui_stocktracker.ui'
@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QPushButton,
     QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
-from src.gui.siemens_template.resources import resources_rc  # noqa: F401
+from src.gui.siemens_template.resources import resources_rc
 
 class Ui_StockTracker(object):
     def setupUi(self, StockTracker):
@@ -60,6 +60,7 @@ class Ui_StockTracker(object):
         self.horizontalLayout_header = QHBoxLayout(self.header)
         self.horizontalLayout_header.setSpacing(16)
         self.horizontalLayout_header.setObjectName(u"horizontalLayout_header")
+        self.horizontalLayout_header.setContentsMargins(16, -1, 16, -1)
         self.brand_identifier = QLabel(self.header)
         self.brand_identifier.setObjectName(u"brand_identifier")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
@@ -88,7 +89,9 @@ class Ui_StockTracker(object):
         self.container_main_body.setObjectName(u"container_main_body")
         self.gridLayout_main = QGridLayout(self.container_main_body)
         self.gridLayout_main.setObjectName(u"gridLayout_main")
-        self.gridLayout_main.setContentsMargins(16, -1, -1, -1)
+        self.gridLayout_main.setHorizontalSpacing(0)
+        self.gridLayout_main.setProperty(u"columnStretch", 1)
+        self.gridLayout_main.setContentsMargins(16, -1, 16, -1)
         self.frame_title = QFrame(self.container_main_body)
         self.frame_title.setObjectName(u"frame_title")
         self.frame_title.setFrameShape(QFrame.Shape.StyledPanel)
@@ -1034,4 +1037,5 @@ class Ui_StockTracker(object):
         self.btn_exit.setText(QCoreApplication.translate("StockTracker", u"Exit", None))
         self.status_label.setText("")
     # retranslateUi
+
 

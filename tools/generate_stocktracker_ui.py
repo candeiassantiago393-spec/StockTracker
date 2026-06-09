@@ -11,211 +11,21 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.gui import styles  # noqa: E402
+from tools.gui_ui_builder import (  # noqa: E402
+    PM,
+    RS,
+    esc,
+    header_side_margins_xml,
+    input_btn_row_xml,
+    input_row_xml,
+    page_grid_margins_xml,
+    output_row_xml,
+    prop_string,
+    stock_btn_row_xml,
+    vertical_spacer_xml,
+)
 
 OUT = ROOT / "src" / "gui" / "designer" / "gui_stocktracker.ui"
-LW = styles.TEMPLATE_LABEL_MIN_WIDTH
-RS = styles.TEMPLATE_ROW_SPACING
-RM = styles.TEMPLATE_ROW_MARGINS
-
-
-def esc(text: str) -> str:
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
-
-
-def prop_string(value: str) -> str:
-    return f'   <string notr="true">{esc(value)}</string>\n'
-
-
-def template_label_xml(name: str, text: str) -> str:
-    return f"""              <widget class="QLabel" name="{name}">
-               <property name="minimumSize"><size><width>{LW}</width><height>0</height></size></property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text"><string>{esc(text)}</string></property>
-              </widget>
-"""
-
-
-def row_open(name: str, row: int) -> str:
-    return f"""          <item row="{row}" column="0" colspan="2">
-           <widget class="QWidget" name="row_{name}" native="true">
-            <layout class="QHBoxLayout" name="layout_{name}">
-             <property name="spacing"><number>{RS}</number></property>
-             <property name="topMargin"><number>{RM[1]}</number></property>
-             <property name="rightMargin"><number>{RM[2]}</number></property>
-             <property name="bottomMargin"><number>{RM[3]}</number></property>
-"""
-
-
-ROW_CLOSE = """            </layout>
-           </widget>
-          </item>
-"""
-
-
-def copy_btn_xml(copy_btn_name: str, *, width: int = 60) -> str:
-    return f"""             <item>
-              <widget class="QPushButton" name="{copy_btn_name}">
-               <property name="minimumSize"><size><width>{width}</width><height>0</height></size></property>
-               <property name="maximumSize"><size><width>{width}</width><height>16777215</height></size></property>
-               <property name="toolTip"><string>Copy to clipboard</string></property>
-               <property name="styleSheet">
-{prop_string(styles.BTN_COPY_STYLE)}               </property>
-               <property name="text"><string>Copy</string></property>
-              </widget>
-             </item>
-"""
-
-
-def input_row_xml(name: str, label: str, row: int, *, with_copy: bool = False) -> str:
-    copy_part = copy_btn_xml(f"btn_copy_{name}") if with_copy else ""
-    return (
-        row_open(name, row)
-        + f"""             <item>
-{template_label_xml(f"label_{name}", label)}
-             </item>
-             <item>
-              <widget class="QLineEdit" name="{name}">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="styleSheet">
-{prop_string(styles.LINE_EDIT_STYLE)}               </property>
-              </widget>
-             </item>
-{copy_part}"""
-        + ROW_CLOSE
-    )
-
-
-def input_btn_row_xml(
-    name: str,
-    label: str,
-    btn_name: str,
-    btn_text: str,
-    row: int,
-    *,
-    with_copy: bool = False,
-    copy_before_field: bool = False,
-) -> str:
-    copy_part = copy_btn_xml(f"btn_copy_{name}") if with_copy else ""
-    field_part = f"""             <item>
-              <widget class="QLineEdit" name="{name}">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="styleSheet">
-{prop_string(styles.LINE_EDIT_STYLE)}               </property>
-              </widget>
-             </item>
-"""
-    action_part = f"""             <item>
-              <widget class="QPushButton" name="{btn_name}">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
-{prop_string(styles.BTN_TEMPLATE_STYLE)}               </property>
-               <property name="text"><string>{esc(btn_text)}</string></property>
-              </widget>
-             </item>
-"""
-    if with_copy and copy_before_field:
-        widgets_block = copy_part + field_part + action_part
-    elif with_copy:
-        widgets_block = field_part + copy_part + action_part
-    else:
-        widgets_block = field_part + action_part
-    return (
-        row_open(name, row)
-        + f"""             <item>
-{template_label_xml(f"label_{name}", label)}
-             </item>
-{widgets_block}"""
-        + ROW_CLOSE
-    )
-
-
-def combo_row_xml(row: int) -> str:
-    return f"""          <item row="{row}" column="0" colspan="2">
-           <widget class="QWidget" name="row_supplier_combo" native="true">
-            <layout class="QGridLayout" name="grid_supplier">
-             <property name="topMargin"><number>{RM[1]}</number></property>
-             <property name="rightMargin"><number>{RM[2]}</number></property>
-             <property name="bottomMargin"><number>{RM[3]}</number></property>
-             <item row="0" column="0">
-{template_label_xml("label_supplier", "Distributor")}
-             </item>
-             <item row="0" column="1">
-              <widget class="QComboBox" name="supplier_combo">
-               <property name="minimumSize"><size><width>172</width><height>30</height></size></property>
-               <property name="styleSheet">
-{prop_string(styles.COMBOBOX_STYLE)}               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-"""
-
-
-def stock_btn_row_xml(row: int) -> str:
-    return (
-        row_open("stock_buttons", row)
-        + f"""             <item>
-{template_label_xml("label_stock_btn", "Button")}
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_add_stock">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
-{prop_string(styles.BTN_TEMPLATE_STYLE)}               </property>
-               <property name="text"><string>ADD STOCK</string></property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_remove_stock">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
-{prop_string(styles.BTN_TEMPLATE_STYLE)}               </property>
-               <property name="text"><string>REMOVE STOCK</string></property>
-              </widget>
-             </item>
-"""
-        + ROW_CLOSE
-    )
-
-
-def output_row_xml(name: str, label: str, row: int) -> str:
-    ss = styles.VALUE_FIELD_STYLE
-    return (
-        row_open(name, row)
-        + f"""             <item>
-{template_label_xml(f"title_{name}", label)}
-             </item>
-             <item>
-              <widget class="QLabel" name="{name}">
-               <property name="styleSheet">
-{prop_string(ss)}               </property>
-               <property name="text"><string></string></property>
-              </widget>
-             </item>
-{copy_btn_xml(f"btn_copy_{name}")}"""
-        + ROW_CLOSE
-    )
 
 
 def footer_btn_xml(name: str, text: str) -> str:
@@ -253,12 +63,7 @@ def build_ui() -> str:
     r += 1
     left.append(stock_btn_row_xml(r))
     r += 1
-    left.append(f"""          <item row="{r}" column="1">
-           <spacer name="verticalSpacer_left">
-            <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
-           </spacer>
-          </item>""")
+    left.append(vertical_spacer_xml("verticalSpacer_left", r))
 
     right = []
     rr = 0
@@ -279,12 +84,7 @@ def build_ui() -> str:
     ):
         right.append(output_row_xml(name, label, rr))
         rr += 1
-    right.append(f"""          <item row="{rr}" column="1">
-           <spacer name="verticalSpacer_right">
-            <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
-           </spacer>
-          </item>""")
+    right.append(vertical_spacer_xml("verticalSpacer_right", rr))
 
     footer = "".join(
         [
@@ -337,6 +137,7 @@ def build_ui() -> str:
 {prop_string(styles.HEADER_STYLE)}      </property>
       <layout class="QHBoxLayout" name="horizontalLayout_header">
        <property name="spacing"><number>16</number></property>
+{header_side_margins_xml()}
        <item>
         <widget class="QLabel" name="brand_identifier">
          <property name="sizePolicy">
@@ -363,7 +164,7 @@ def build_ui() -> str:
     <item>
      <widget class="QWidget" name="container_main_body" native="true">
       <layout class="QGridLayout" name="gridLayout_main">
-       <property name="leftMargin"><number>16</number></property>
+{page_grid_margins_xml()}
        <item row="0" column="0" colspan="2">
         <widget class="QFrame" name="frame_title">
          <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>
@@ -413,9 +214,9 @@ def build_ui() -> str:
      <widget class="QWidget" name="widget_actions" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout_actions">
        <property name="spacing"><number>{RS}</number></property>
-       <property name="leftMargin"><number>16</number></property>
+       <property name="leftMargin"><number>{PM[0]}</number></property>
        <property name="topMargin"><number>9</number></property>
-       <property name="rightMargin"><number>16</number></property>
+       <property name="rightMargin"><number>{PM[2]}</number></property>
        <property name="bottomMargin"><number>9</number></property>
 {footer}
       </layout>

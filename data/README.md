@@ -8,6 +8,7 @@ Place your inventory file here: **`stock.xlsx`**
 |-------|---------|
 | `Components` | Parts and stock levels |
 | `History` | Stock movements (IN/OUT) |
+| `Materials` | Calibrated materials (supplier ref, serial number, description, dates) |
 
 The app creates headers automatically if the file is missing or empty.
 

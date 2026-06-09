@@ -44,6 +44,7 @@ EXCEL_FILE = DATA_DIR / "stock.xlsx"
 
 SHEET_COMPONENTS = "Components"
 SHEET_HISTORY = "History"
+SHEET_MATERIALS = "Materials"
 
 ###############################################################################
 # 4. StockTracker class
@@ -120,6 +121,35 @@ class StockTracker:
         except PermissionError:
             print("ERRO: Fecha o stock.xlsx no Excel antes de guardar.")
             return False
+
+    def ensure_workbook_sheets(self) -> bool:
+        """Create Components, Materials and History sheets if missing, then save."""
+        workbook = self.get_workbook()
+        self.get_components_sheet(workbook)
+        self.get_history_sheet(workbook)
+        self.get_materials_sheet(workbook)
+        self._order_workbook_sheets(workbook)
+        self._remove_default_sheet(workbook)
+        return self.save_workbook(workbook)
+
+    @staticmethod
+    def _order_workbook_sheets(workbook) -> None:
+        order = (SHEET_COMPONENTS, SHEET_MATERIALS, SHEET_HISTORY)
+        for target_idx, name in enumerate(order):
+            if name not in workbook.sheetnames:
+                continue
+            current_idx = workbook.sheetnames.index(name)
+            offset = target_idx - current_idx
+            if offset:
+                workbook.move_sheet(name, offset)
+
+    @staticmethod
+    def _remove_default_sheet(workbook) -> None:
+        if "Sheet" not in workbook.sheetnames:
+            return
+        sheet = workbook["Sheet"]
+        if sheet.max_row <= 1 and not sheet["A1"].value:
+            workbook.remove(sheet)
 
     # ------------------------------------------------------------------
     # Search / barcode
@@ -617,3 +647,260 @@ class StockTracker:
     ) -> bool:
         """Pesquisa em todos os distribuidores configurados (nome legado)."""
         return self.add_from_supplier_and_stock_in(user, code, quantity)
+
+    # ------------------------------------------------------------------
+    # Materials (calibration tracking)
+    # ------------------------------------------------------------------
+    def get_materials_sheet(self, workbook):
+        if SHEET_MATERIALS not in workbook.sheetnames:
+            sheet = workbook.create_sheet(SHEET_MATERIALS)
+        else:
+            sheet = workbook[SHEET_MATERIALS]
+
+        if sheet.max_row == 0 or (
+            sheet.max_row == 1 and sheet["A1"].value is None
+        ):
+            headers = [
+                "ID",
+                "Supplier Reference",
+                "Serial Number",
+                "Description",
+                "Calibration Date",
+                "Calibration Expiration Date",
+            ]
+            if sheet.max_row == 0:
+                sheet.append(headers)
+            else:
+                for col, value in enumerate(headers, start=1):
+                    sheet.cell(row=1, column=col, value=value)
+        else:
+            self._migrate_materials_sheet(sheet)
+        return sheet
+
+    @staticmethod
+    def _migrate_materials_sheet(sheet) -> None:
+        """Upgrade legacy Materials sheets to the current column layout."""
+        if str(sheet["A1"].value or "").strip() != "ID":
+            return
+        b1 = str(sheet["B1"].value or "").strip()
+        if b1 == "Description":
+            sheet.insert_cols(2)
+            sheet["B1"] = "Supplier Reference"
+            b1 = "Supplier Reference"
+        c1 = str(sheet["C1"].value or "").strip()
+        if b1 == "Supplier Reference" and c1 == "Description":
+            sheet.insert_cols(3)
+            sheet["C1"] = "Serial Number"
+
+    @staticmethod
+    def normalize_date(text) -> str:
+        """Return YYYY-MM-DD or empty string."""
+        if text is None:
+            return ""
+        value = str(text).strip()
+        if not value:
+            return ""
+        for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"):
+            try:
+                return datetime.strptime(value, fmt).strftime("%Y-%m-%d")
+            except ValueError:
+                continue
+        return value
+
+    @staticmethod
+    def validate_date(text: str) -> tuple[bool, str]:
+        raw = str(text or "").strip()
+        if not raw:
+            return True, ""
+        normalized = StockTracker.normalize_date(raw)
+        try:
+            datetime.strptime(normalized, "%Y-%m-%d")
+            return True, normalized
+        except ValueError:
+            return False, ""
+
+    def search_materials_all(self, sheet, query: str) -> list:
+        """All material rows matching supplier reference or description."""
+        results = []
+        q = self.normalize_ref(query)
+        if not q:
+            return results
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            supplier_ref = self.normalize_ref(row[1].value)
+            serial = self.normalize_ref(row[2].value)
+            desc = self.normalize_ref(row[3].value)
+            if (
+                q in supplier_ref
+                or supplier_ref in q
+                or q in serial
+                or serial in q
+                or q in desc
+                or desc in q
+            ):
+                results.append(row)
+        return results
+
+    def find_material_by_supplier_ref(self, sheet, supplier_ref: str):
+        key = self.normalize_ref(supplier_ref)
+        if not key:
+            return None
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            if self.normalize_ref(row[1].value) == key:
+                return row
+        return None
+
+    def material_row_to_dict(self, row) -> dict:
+        return {
+            "id": row[0].value or "",
+            "supplier_reference": row[1].value or "",
+            "serial_number": row[2].value or "",
+            "description": row[3].value or "",
+            "calibration_date": self.normalize_date(row[4].value),
+            "calibration_expiration": self.normalize_date(row[5].value),
+        }
+
+    def next_material_id(self, sheet) -> int:
+        max_id = 0
+        for row in sheet.iter_rows(min_row=2, min_col=1, max_col=1):
+            try:
+                max_id = max(max_id, int(row[0].value or 0))
+            except (TypeError, ValueError):
+                pass
+        return max_id + 1
+
+    def add_material(
+        self,
+        description: str = "",
+        supplier_reference: str = "",
+        serial_number: str = "",
+        calibration_date: str = "",
+        calibration_expiration: str = "",
+    ) -> tuple[bool, str]:
+        description = str(description).strip()
+        supplier_reference = str(supplier_reference).strip()
+        serial_number = str(serial_number).strip()
+        if not description and not supplier_reference and not serial_number:
+            return False, "Provide Description, Supplier Reference or Serial Number."
+
+        ok, calib = self.validate_date(calibration_date)
+        if not ok:
+            return False, "Invalid calibration date (use YYYY-MM-DD)."
+        ok, expiry = self.validate_date(calibration_expiration)
+        if not ok:
+            return False, "Invalid expiration date (use YYYY-MM-DD)."
+
+        workbook = self.get_workbook()
+        sheet = self.get_materials_sheet(workbook)
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            if supplier_reference and self.normalize_ref(
+                row[1].value
+            ) == self.normalize_ref(supplier_reference):
+                return False, "A material with this supplier reference already exists."
+            if serial_number and self.normalize_ref(
+                row[2].value
+            ) == self.normalize_ref(serial_number):
+                return False, "A material with this serial number already exists."
+            if description and self.normalize_ref(
+                row[3].value
+            ) == self.normalize_ref(description):
+                return False, "A material with this description already exists."
+
+        sheet.append([
+            self.next_material_id(sheet),
+            supplier_reference,
+            serial_number,
+            description,
+            calib,
+            expiry,
+        ])
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Material added successfully."
+
+    def update_material(
+        self,
+        row,
+        description: str = "",
+        supplier_reference: str = "",
+        serial_number: str = "",
+        calibration_date: str = "",
+        calibration_expiration: str = "",
+    ) -> tuple[bool, str]:
+        description = str(description).strip()
+        supplier_reference = str(supplier_reference).strip()
+        serial_number = str(serial_number).strip()
+        if not description and not supplier_reference and not serial_number:
+            return False, "Provide Description, Supplier Reference or Serial Number."
+
+        ok, calib = self.validate_date(calibration_date)
+        if not ok:
+            return False, "Invalid calibration date (use YYYY-MM-DD)."
+        ok, expiry = self.validate_date(calibration_expiration)
+        if not ok:
+            return False, "Invalid expiration date (use YYYY-MM-DD)."
+
+        workbook = self.get_workbook()
+        sheet = self.get_materials_sheet(workbook)
+        target_row = row[0].row
+        ref_norm = self.normalize_ref(supplier_reference)
+        serial_norm = self.normalize_ref(serial_number)
+        desc_norm = self.normalize_ref(description)
+
+        for other in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(other) or other[0].row == target_row:
+                continue
+            if supplier_reference and self.normalize_ref(other[1].value) == ref_norm:
+                return False, "Another material already uses this supplier reference."
+            if serial_number and self.normalize_ref(other[2].value) == serial_norm:
+                return False, "Another material already uses this serial number."
+            if description and self.normalize_ref(other[3].value) == desc_norm:
+                return False, "Another material already uses this description."
+
+        row[1].value = supplier_reference
+        row[2].value = serial_number
+        row[3].value = description
+        row[4].value = calib
+        row[5].value = expiry
+
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Material updated successfully."
+
+    def get_material_rows(
+        self,
+        workbook,
+        material_only: bool = False,
+        supplier_reference: str = "",
+        description: str = "",
+    ) -> list:
+        """Rows for materials table dialog (last 20, newest first)."""
+        sheet = self.get_materials_sheet(workbook)
+        ref_filter = self.normalize_ref(supplier_reference) if material_only else ""
+        desc_filter = self.normalize_ref(description) if material_only else ""
+        rows: list[tuple] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            if material_only and (ref_filter or desc_filter):
+                row_ref = self.normalize_ref(row[1].value)
+                row_desc = self.normalize_ref(row[3].value)
+                if ref_filter and row_ref != ref_filter:
+                    continue
+                if desc_filter and row_desc != desc_filter:
+                    continue
+            data = self.material_row_to_dict(row)
+            rows.append((
+                data["id"],
+                data["supplier_reference"],
+                data["serial_number"],
+                data["description"],
+                data["calibration_date"],
+                data["calibration_expiration"],
+            ))
+        return list(reversed(rows[-20:]))
