@@ -13,10 +13,7 @@ if not exist "%DESIGNER%" (
     where pyside6-designer >nul 2>&1
     if errorlevel 1 (
         echo [ERRO] pyside6-designer nao encontrado.
-        echo.
-        echo Instale PySide6 no .venv do projeto:
         echo   pip install PySide6
-        echo.
         pause
         exit /b 1
     )
@@ -26,80 +23,51 @@ if not exist "%DESIGNER%" (
 echo.
 echo  Stock Tracker - Qt Designer
 echo  Pasta: %~dp0
-echo  Designer: %DESIGNER%
 echo.
-echo  1 - Janela principal (Components)  gui_stocktracker.ui
-echo  2 - Pagina Materials              gui_materials.ui
-echo  3 - Popup manual                  popups\gui_popup_manual.ui
-echo  4 - Popup historico               popups\gui_popup_history.ui
-echo  5 - Popup pesquisa                popups\gui_popup_search.ui
-echo  6 - Template Siemens base         popups\gui_popup_template.ui
-echo  7 - Popup editar componente       popups\gui_popup_edit.ui
-echo  8 - Popup confirmacao             popups\gui_popup_confirm.ui
+echo  Paginas principais
+echo    1 - Components     gui_stocktracker.ui
+echo    2 - Materials      gui_materials.ui
 echo.
-set /p OPCAO=Opcao [1-8, Enter=1]: 
+echo  Popups Components  (popups\components\)
+echo    3 - Manual         gui_popup_manual.ui
+echo    4 - Editar         gui_popup_edit.ui
+echo    5 - Pesquisa       gui_popup_search.ui
+echo    6 - Historico      gui_popup_history.ui
+echo.
+echo  Popups Materials   (popups\materials\)
+echo    7 - Material       gui_popup_material.ui
+echo    8 - Pesquisa       gui_popup_search.ui
+echo    9 - Historico      gui_popup_history.ui
+echo.
+echo  Partilhados        (popups\shared\)
+echo   10 - Confirmacao    gui_popup_confirm.ui
+echo   11 - Template       gui_popup_template.ui
+echo.
+set /p OPCAO=Opcao [1-11, Enter=1]: 
 if "%OPCAO%"=="" set OPCAO=1
 
-if "%OPCAO%"=="1" goto main
-if "%OPCAO%"=="2" goto materials
-if "%OPCAO%"=="3" goto manual
-if "%OPCAO%"=="4" goto history
-if "%OPCAO%"=="5" goto search
-if "%OPCAO%"=="6" goto template
-if "%OPCAO%"=="7" goto edit
-if "%OPCAO%"=="8" goto confirm
+if "%OPCAO%"=="1"  set "FILE=%~dp0gui_stocktracker.ui" & goto open
+if "%OPCAO%"=="2"  set "FILE=%~dp0gui_materials.ui" & goto open
+if "%OPCAO%"=="3"  set "FILE=%~dp0popups\components\gui_popup_manual.ui" & goto open
+if "%OPCAO%"=="4"  set "FILE=%~dp0popups\components\gui_popup_edit.ui" & goto open
+if "%OPCAO%"=="5"  set "FILE=%~dp0popups\components\gui_popup_search.ui" & goto open
+if "%OPCAO%"=="6"  set "FILE=%~dp0popups\components\gui_popup_history.ui" & goto open
+if "%OPCAO%"=="7"  set "FILE=%~dp0popups\materials\gui_popup_material.ui" & goto open
+if "%OPCAO%"=="8"  set "FILE=%~dp0popups\materials\gui_popup_search.ui" & goto open
+if "%OPCAO%"=="9"  set "FILE=%~dp0popups\materials\gui_popup_history.ui" & goto open
+if "%OPCAO%"=="10" set "FILE=%~dp0popups\shared\gui_popup_confirm.ui" & goto open
+if "%OPCAO%"=="11" set "FILE=%~dp0popups\shared\gui_popup_template.ui" & goto open
 echo Opcao invalida.
 pause
 exit /b 1
 
-:main
-set "FILE=%~dp0gui_stocktracker.ui"
-goto open
-
-:materials
-set "FILE=%~dp0gui_materials.ui"
-goto open
-
-:manual
-set "FILE=%~dp0popups\gui_popup_manual.ui"
-goto open
-
-:history
-set "FILE=%~dp0popups\gui_popup_history.ui"
-goto open
-
-:search
-set "FILE=%~dp0popups\gui_popup_search.ui"
-goto open
-
-:template
-set "FILE=%~dp0popups\gui_popup_template.ui"
-goto open
-
-:edit
-set "FILE=%~dp0popups\gui_popup_edit.ui"
-goto open
-
-:confirm
-set "FILE=%~dp0popups\gui_popup_confirm.ui"
-goto open
-
 :open
 if not exist "%FILE%" (
-    echo [ERRO] Ficheiro em falta:
-    echo   %FILE%
-    echo.
-    echo No projeto execute:
-    echo   python tools\generate_all_designer_uis.py
-    echo   powershell -File tools\sync_designer_package.ps1
+    echo [ERRO] Ficheiro em falta: %FILE%
+    echo Execute tools\ORGANIZAR-DESKTOP.bat no projeto.
     pause
     exit /b 1
 )
 echo A abrir: %FILE%
 "%DESIGNER%" "%FILE%"
-if errorlevel 1 (
-    echo.
-    echo [ERRO] Qt Designer nao abriu o ficheiro.
-    pause
-)
 exit /b 0

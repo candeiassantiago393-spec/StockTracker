@@ -28,9 +28,12 @@ Regenerar a partir do codigo (so se mudou generate_materials_ui.py):
      python tools\generate_materials_ui.py
 
 Atualizar esta pasta (repo + Ambiente de Trabalho):
-     ORGANIZAR-DESKTOP.bat   (na raiz do projeto)
+     tools\ORGANIZAR-DESKTOP.bat
 
-Popups Materials (reutilizam templates existentes):
-  - Pesquisa:   popups\gui_popup_search.ui
-  - Historico:  popups\gui_popup_history.ui
-  - Add/Edit:   material_dialog.py (Python; popup dedicado em breve)
+Popups Materials (pasta popups\materials\):
+  - Add/Edit:   gui_popup_material.ui     (DESIGNER.bat opcao 7)
+  - Pesquisa:   gui_popup_search.ui       (opcao 8)
+  - Historico:  gui_popup_history.ui      (opcao 9)
+
+Popups Components: popups\components\
+Popups partilhados: popups\shared\  (confirmacao, template)

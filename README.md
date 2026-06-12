@@ -82,9 +82,8 @@ StockTracker/
 │   └── gui/
 │       ├── designer/       # canonical .ui files
 │       └── siemens_template/
-├── tools/                  # maintenance scripts
+├── tools/                  # maintenance scripts (ORGANIZAR-DESKTOP.bat, export, Designer)
 ├── scripts/                # API test utilities
-├── ORGANIZAR-DESKTOP.bat   # sync Designer + Desktop copy
 ├── requirements.txt
 └── run.bat
 ```

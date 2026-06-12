@@ -31,7 +31,7 @@ Portuguese Materials guide: `src/gui/designer/MATERIALS-LEIA-ME.txt`
 Refresh everything (repo + Desktop):
 
 ```text
-ORGANIZAR-DESKTOP.bat
+tools\ORGANIZAR-DESKTOP.bat
 ```
 
 or:

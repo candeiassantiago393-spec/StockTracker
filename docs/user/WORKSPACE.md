@@ -24,7 +24,7 @@ That folder must contain:
 Refresh both from the canonical repo:
 
 ```text
-ORGANIZAR-DESKTOP.bat
+tools\ORGANIZAR-DESKTOP.bat
 ```
 
 or:

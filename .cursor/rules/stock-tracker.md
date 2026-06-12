@@ -22,7 +22,7 @@ Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
 
 - Canónico: `src/gui/designer/`
 - Pacote edição: `StockTracker-Designer/` (repo) e `Desktop\StockTracker-Designer`
-- Sincronizar: `ORGANIZAR-DESKTOP.bat`
+- Sincronizar: `tools\ORGANIZAR-DESKTOP.bat`
 - Métricas template: `src/gui/styles.py`, `tools/gui_ui_builder.py`
 - Guia Materials (PT): `src/gui/designer/MATERIALS-LEIA-ME.txt`
 

@@ -82,7 +82,7 @@
 </string>
            </property>
            <property name="text">
-            <string>Search results</string>
+            <string>Component search results</string>
            </property>
           </widget>
          </item>

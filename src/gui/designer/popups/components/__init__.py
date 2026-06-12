@@ -1,0 +1,1 @@
+# Components popups (Qt Designer).

@@ -7,7 +7,9 @@ Ficheiros:
   gui_stocktracker.ui     - pagina Components     (DESIGNER.bat opcao 1)
   gui_materials.ui        - pagina Materials      (DESIGNER.bat opcao 2)
   MATERIALS-LEIA-ME.txt   - guia rapido Materials
-  popups\                 - popups Siemens (manual, historico, pesquisa, ...)
+  popups\components\      - popups Components (manual, edit, pesquisa, historico)
+  popups\materials\       - popups Materials (material, pesquisa, historico)
+  popups\shared\          - confirmacao + template Siemens
   siemens_template\       - recursos (logos, icones, templates)
 
 Abrir:
@@ -15,7 +17,7 @@ Abrir:
 
 Atualizar a partir do projeto:
   cd Downloads\StockTracker\StockTracker
-  ORGANIZAR-DESKTOP.bat
+  tools\ORGANIZAR-DESKTOP.bat
 
 Depois de editar .ui no Designer, no projeto principal:
   tools\export-ui.bat

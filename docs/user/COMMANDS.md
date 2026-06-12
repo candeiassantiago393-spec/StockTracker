@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 | Action | Command |
 |--------|---------|
-| Full sync | `ORGANIZAR-DESKTOP.bat` |
+| Full sync | `tools\ORGANIZAR-DESKTOP.bat` |
 | Same (PowerShell) | `powershell -File tools\organizar-ambiente.ps1` |
 | Designer package only | `powershell -File tools\sync_designer_package.ps1 -Target All` |
 
@@ -98,7 +98,7 @@ If `src` is missing, change to the repository root.
 | `ImportError: relative import` | GUI file run directly | `python -m src.main` |
 | Excel not saved | `stock.xlsx` open in Excel | Close the file |
 | API no response | Keys / network / part number | Check `config/secrets.py` |
-| Designer missing Materials | Stale Desktop copy | `ORGANIZAR-DESKTOP.bat` |
+| Designer missing Materials | Stale Desktop copy | `tools\ORGANIZAR-DESKTOP.bat` |
 
 ---
 

@@ -18,7 +18,7 @@ These are not required to run the app.
 | `sync_designer_package.ps1` | Syncs `StockTracker-Designer/` (repo and/or Desktop) |
 | `DESIGNER-DESKTOP.bat` | Launcher copied into Designer package |
 | `organizar-ambiente.ps1` | Regenerates UI, syncs Designer (repo + Desktop), copies project to Desktop |
-| `ORGANIZAR-DESKTOP.bat` | Wrapper for `organizar-ambiente.ps1` (run from project root) |
+| `ORGANIZAR-DESKTOP.bat` | Wrapper for `organizar-ambiente.ps1` (in this folder) |
 | `sincronizar-desktop.ps1` | Legacy: copies project + Designer (use `organizar-ambiente.ps1` instead) |
 | `build_project_docx.py` | Builds `word/StockTracker_Documentacao_Projeto.docx` |
 

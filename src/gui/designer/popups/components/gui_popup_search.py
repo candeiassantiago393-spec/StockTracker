@@ -196,7 +196,7 @@ class Ui_PopupSearch(object):
 
     def retranslateUi(self, PopupSearch):
         PopupSearch.setWindowTitle(QCoreApplication.translate("PopupSearch", u"Dialog", None))
-        self.tittle.setText(QCoreApplication.translate("PopupSearch", u"Search results", None))
+        self.tittle.setText(QCoreApplication.translate("PopupSearch", u"Component search results", None))
         self.description.setText(QCoreApplication.translate("PopupSearch", u"Select a row and press Ok, or double-click a row.", None))
         ___qtablewidgetitem = self.table_search.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("PopupSearch", u"Supplier Reference", None))

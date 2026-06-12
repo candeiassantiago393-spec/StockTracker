@@ -200,7 +200,7 @@ class Ui_PopupHistory(object):
 
     def retranslateUi(self, PopupHistory):
         PopupHistory.setWindowTitle(QCoreApplication.translate("PopupHistory", u"Dialog", None))
-        self.tittle.setText(QCoreApplication.translate("PopupHistory", u"History", None))
+        self.tittle.setText(QCoreApplication.translate("PopupHistory", u"Component History", None))
         self.description.setText(QCoreApplication.translate("PopupHistory", u"Popup description", None))
         ___qtablewidgetitem = self.table_history.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("PopupHistory", u"Date", None))

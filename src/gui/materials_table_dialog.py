@@ -1,7 +1,7 @@
 """Read-only table of materials from Excel."""
 from PySide6.QtWidgets import QDialog
 
-from .designer.popups.gui_popup_history import Ui_PopupHistory
+from .designer.popups.materials.gui_popup_history import Ui_PopupMaterialHistory as Ui_PopupHistory
 from .siemens_template.popup_shell import fill_readonly_table
 
 COLUMNS = (

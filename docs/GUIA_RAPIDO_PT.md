@@ -55,7 +55,9 @@ Fechar o Excel antes de gravar. Ver [data/README.md](../data/README.md).
 |----------|--------|
 | `gui_stocktracker.ui` | Components (DESIGNER.bat opção **1**) |
 | `gui_materials.ui` | Materials (DESIGNER.bat opção **2**) |
-| `popups/gui_popup_*.ui` | Diálogos (opções **3–8**) |
+| `popups/components/gui_popup_*.ui` | Diálogos Components (opções **3–6**) |
+| `popups/materials/gui_popup_*.ui` | Diálogos Materials (opções **7–9**) |
+| `popups/shared/gui_popup_*.ui` | Confirm + template (opções **10–11**) |
 
 Guia Materials: `src/gui/designer/MATERIALS-LEIA-ME.txt`
 
@@ -64,7 +66,7 @@ Guia Materials: `src/gui/designer/MATERIALS-LEIA-ME.txt`
 Na raiz do projeto:
 
 ```text
-ORGANIZAR-DESKTOP.bat
+tools\ORGANIZAR-DESKTOP.bat
 ```
 
 Regenera `.ui`, exporta `.py`, sincroniza Designer e copia o projeto para `Desktop\StockTracker-Projeto`.

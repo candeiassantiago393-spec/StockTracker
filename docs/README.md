@@ -55,7 +55,7 @@ Reference layouts for documentation style: [modelos/README.md](modelos/README.md
 
 | Script | Purpose |
 |--------|---------|
-| `ORGANIZAR-DESKTOP.bat` | Sync Designer + Desktop project |
+| `tools/ORGANIZAR-DESKTOP.bat` | Sync Designer + Desktop project |
 | `generate_all_designer_uis.py` | Regenerate all `.ui` files |
 | `export-ui.bat` | Export `.ui` → `.py` |
 

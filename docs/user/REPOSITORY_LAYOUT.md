@@ -41,7 +41,7 @@ GUI map (Portuguese): [src/gui/ESTRUTURA.md](../../src/gui/ESTRUTURA.md)
 | File | Role |
 |------|------|
 | `run.bat` | Start the GUI |
-| `ORGANIZAR-DESKTOP.bat` | Sync Designer packages + Desktop project copy |
+| `tools/ORGANIZAR-DESKTOP.bat` | Sync Designer packages + Desktop project copy |
 
 ---
 
@@ -68,7 +68,7 @@ Always run from the **repository root** (directory that contains `src/`, `config
 ## Optional Desktop copies
 
 ```powershell
-.\ORGANIZAR-DESKTOP.bat
+tools\ORGANIZAR-DESKTOP.bat
 ```
 
 Creates/updates:

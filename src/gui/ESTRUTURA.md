@@ -17,16 +17,16 @@
 
 | Ficheiro | Template |
 |----------|----------|
-| `message_dialog.py` | `popups/gui_popup_confirm.ui` |
-| `user_name_dialog.py` | `popups/gui_popup_confirm.ui` |
+| `message_dialog.py` | `popups/shared/gui_popup_confirm.ui` |
+| `user_name_dialog.py` | `popups/shared/gui_popup_confirm.ui` |
 | `confirm_dialog.py` | confirm |
-| `history_dialog.py` | `popups/gui_popup_history.ui` |
-| `manual_component_dialog.py` | `popups/gui_popup_manual.ui` |
-| `edit_component_dialog.py` | `popups/gui_popup_edit.ui` |
-| `search_results_dialog.py` | `popups/gui_popup_search.ui` |
-| `material_search_dialog.py` | `popups/gui_popup_search.ui` |
-| `materials_table_dialog.py` | `popups/gui_popup_history.ui` |
-| `material_dialog.py` | Estilos popup Siemens (Python) |
+| `history_dialog.py` | `popups/components/gui_popup_history.ui` |
+| `manual_component_dialog.py` | `popups/components/gui_popup_manual.ui` |
+| `edit_component_dialog.py` | `popups/components/gui_popup_edit.ui` |
+| `search_results_dialog.py` | `popups/components/gui_popup_search.ui` |
+| `material_search_dialog.py` | `popups/materials/gui_popup_search.ui` |
+| `materials_table_dialog.py` | `popups/materials/gui_popup_history.ui` |
+| `material_dialog.py` | `popups/materials/gui_popup_material.ui` |
 
 Arranque: `python -m src.main` ou `run.bat` na raiz.
 
@@ -46,7 +46,7 @@ Icones, fontes e widgets de referencia. A janela usa `designer/*.ui`; metricas e
 
 | Comando / script | Funcao |
 |------------------|--------|
-| `ORGANIZAR-DESKTOP.bat` | Regenera `.ui`, exporta `.py`, sincroniza Designer + Desktop |
+| `tools/ORGANIZAR-DESKTOP.bat` | Regenera `.ui`, exporta `.py`, sincroniza Designer + Desktop |
 | `tools/generate_all_designer_uis.py` | Regenera todos os `.ui` |
 | `tools/gui_ui_builder.py` | Builders partilhados (template) |
 | `tools/export-ui.bat` | Exporta `.ui` → `.py` |

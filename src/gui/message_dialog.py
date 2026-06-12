@@ -1,7 +1,7 @@
 """Siemens-styled alert and question dialogs (gui_popup_confirm.ui)."""
 from PySide6.QtWidgets import QDialog
 
-from .designer.popups.gui_popup_confirm import Ui_PopupConfirm
+from .designer.popups.shared.gui_popup_confirm import Ui_PopupConfirm
 
 
 class SiemensMessageDialog(QDialog):

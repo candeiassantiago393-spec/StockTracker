@@ -1,7 +1,7 @@
 """Add manual component — Qt Designer gui_popup_manual.ui."""
 from PySide6.QtWidgets import QDialog
 
-from .designer.popups.gui_popup_manual import Ui_PopupManual
+from .designer.popups.components.gui_popup_manual import Ui_PopupManual
 from .message_dialog import SiemensMessage
 
 

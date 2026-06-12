@@ -162,7 +162,7 @@ Entregável formal: `word/StockTracker_Documentacao_Projeto.docx` (regenerar com
 
 - Página **Materials** e folha Excel correspondente;
 - Layout simétrico Siemens (Components + Materials), pacote Qt Designer;
-- `ORGANIZAR-DESKTOP.bat` — sincronizar Designer e cópia no Ambiente de Trabalho;
+- `tools\ORGANIZAR-DESKTOP.bat` — sincronizar Designer e cópia no Ambiente de Trabalho;
 - SCAN multi-distribuidor, diagnósticos DigiKey, OPEN EXCEL com criação de folhas.
 
 Guia rápido: [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md).

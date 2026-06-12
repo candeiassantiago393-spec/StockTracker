@@ -1,7 +1,7 @@
 """Pick one Excel match — Qt Designer gui_popup_search.ui."""
 from PySide6.QtWidgets import QDialog, QTableWidget
 
-from .designer.popups.gui_popup_search import Ui_PopupSearch
+from .designer.popups.components.gui_popup_search import Ui_PopupSearch
 from .siemens_template.popup_shell import fill_readonly_table
 
 COLUMNS = (

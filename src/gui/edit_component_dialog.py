@@ -1,7 +1,7 @@
 """Edit component — Qt Designer gui_popup_edit.ui."""
 from PySide6.QtWidgets import QDialog
 
-from .designer.popups.gui_popup_edit import Ui_PopupEdit
+from .designer.popups.components.gui_popup_edit import Ui_PopupEdit
 from .message_dialog import SiemensMessage
 
 

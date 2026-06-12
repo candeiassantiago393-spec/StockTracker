@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PopupHistory</class>
- <widget class="QDialog" name="PopupHistory">
+ <class>PopupMaterial</class>
+ <widget class="QDialog" name="PopupMaterial">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>850</width>
-    <height>480</height>
+    <width>641</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,7 +82,7 @@
 </string>
            </property>
            <property name="text">
-            <string>History</string>
+            <string>Material</string>
            </property>
           </widget>
          </item>
@@ -91,12 +91,6 @@
       </item>
       <item>
        <widget class="QWidget" name="widget" native="true">
-        <property name="maximumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="topMargin">
           <number>20</number>
@@ -119,7 +113,7 @@ color: #f3f3f0;
 border: 1px solid #009999;</string>
            </property>
            <property name="text">
-            <string>Popup description</string>
+            <string>Provide Supplier Reference, Serial Number or Description.</string>
            </property>
           </widget>
          </item>
@@ -127,47 +121,165 @@ border: 1px solid #009999;</string>
        </widget>
       </item>
       <item>
-       <widget class="QTableWidget" name="table_history">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>280</height>
-         </size>
-        </property>
-        <property name="styleSheet">
+       <widget class="QWidget" name="body_form" native="true">
+        <layout class="QFormLayout" name="form_material">
+         <property name="spacing"><number>6</number></property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_Supplier Reference">
+           <property name="text"><string>Supplier Reference</string></property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="supplier_reference">
+           <property name="styleSheet">
    <string notr="true">
-QTableWidget {
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
     background-color: #00183B;
-    gridline-color: #333353;
-    border: 1px solid #B3B3BE;
-}
-QHeaderView::section {
-    background-color: #333353;
     color: #FFFFFF;
-    padding: 6px;
-    border: 1px solid #B3B3BE;
-    font-weight: bold;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
 }
 </string>
-        </property>
-         <column>
-          <property name="text"><string>Date</string></property>
-         </column>
-         <column>
-          <property name="text"><string>User</string></property>
-         </column>
-         <column>
-          <property name="text"><string>Supplier Reference</string></property>
-         </column>
-         <column>
-          <property name="text"><string>Movement</string></property>
-         </column>
-         <column>
-          <property name="text"><string>Quantity</string></property>
-         </column>
-         <column>
-          <property name="text"><string>Stock After</string></property>
-         </column>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_Serial Number">
+           <property name="text"><string>Serial Number</string></property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="serial_number">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_Description">
+           <property name="text"><string>Description</string></property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="description_field">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_Calibration Date">
+           <property name="text"><string>Calibration Date</string></property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="calibration_date">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_Calibration Expiration">
+           <property name="text"><string>Calibration Expiration</string></property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="calibration_expiration">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+        </layout>
        </widget>
       </item>
       <item>
@@ -236,13 +348,12 @@ QPushButton:pressed {
             </size>
            </property>
            <property name="text">
-            <string>Close</string>
+            <string>Save</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="btn_cancel">
-           <property name="visible"><bool>false</bool></property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
              <horstretch>0</horstretch>

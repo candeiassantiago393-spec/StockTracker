@@ -129,7 +129,7 @@ def table_body(name: str, columns: tuple[str, ...]) -> str:
 """
 
 
-HISTORY_COLUMNS = (
+COMPONENT_HISTORY_COLUMNS = (
     "Date",
     "User",
     "Supplier Reference",
@@ -137,13 +137,60 @@ HISTORY_COLUMNS = (
     "Quantity",
     "Stock After",
 )
-SEARCH_COLUMNS = (
+COMPONENT_SEARCH_COLUMNS = (
     "Supplier Reference",
     "Manufacturer",
     "Manufacturer Reference",
     "Description",
     "Stock",
 )
+MATERIAL_HISTORY_COLUMNS = (
+    "ID",
+    "Supplier Reference",
+    "Serial Number",
+    "Description",
+    "Calibration Date",
+    "Calibration Expiration",
+)
+MATERIAL_SEARCH_COLUMNS = (
+    "Supplier Reference",
+    "Serial Number",
+    "Description",
+    "Calibration Date",
+    "Calibration Expiration",
+)
+
+COMPONENTS_DIR = OUT_DIR / "components"
+MATERIALS_DIR = OUT_DIR / "materials"
+SHARED_DIR = OUT_DIR / "shared"
+
+
+def form_material_body() -> str:
+    rows = [
+        (0, "Supplier Reference", line_edit_xml("supplier_reference")),
+        (1, "Serial Number", line_edit_xml("serial_number")),
+        (2, "Description", line_edit_xml("description_field")),
+        (3, "Calibration Date", line_edit_xml("calibration_date")),
+        (4, "Calibration Expiration", line_edit_xml("calibration_expiration")),
+    ]
+    items = "\n".join(form_row_xml(r, lbl, fld) for r, lbl, fld in rows)
+    return f"""      <item>
+       <widget class="QWidget" name="body_form" native="true">
+        <layout class="QFormLayout" name="form_material">
+         <property name="spacing"><number>{styles.TEMPLATE_ROW_SPACING}</number></property>
+{items}
+        </layout>
+       </widget>
+      </item>
+"""
+
+
+def _cleanup_legacy_popups() -> None:
+    """Remove flat popups/*.ui from before components/materials/shared split."""
+    for pattern in ("gui_popup_*.ui", "gui_popup_*.py"):
+        for path in OUT_DIR.glob(pattern):
+            path.unlink()
+            print(f"Removed legacy {path.name}")
 
 
 def patch_popup(
@@ -212,10 +259,14 @@ def patch_popup(
 def main() -> None:
     base = TEMPLATE.read_text(encoding="utf-8")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    COMPONENTS_DIR.mkdir(parents=True, exist_ok=True)
+    MATERIALS_DIR.mkdir(parents=True, exist_ok=True)
+    SHARED_DIR.mkdir(parents=True, exist_ok=True)
+    _cleanup_legacy_popups()
 
-    variants = [
+    component_variants = [
         (
-            "gui_popup_manual.ui",
+            COMPONENTS_DIR / "gui_popup_manual.ui",
             patch_popup(
                 base,
                 class_name="PopupManual",
@@ -232,33 +283,33 @@ def main() -> None:
             ),
         ),
         (
-            "gui_popup_history.ui",
+            COMPONENTS_DIR / "gui_popup_history.ui",
             patch_popup(
                 base,
                 class_name="PopupHistory",
-                title="History",
+                title="Component History",
                 subtitle=None,
                 width=850,
                 height=480,
-                body_xml=table_body("table_history", HISTORY_COLUMNS),
+                body_xml=table_body("table_history", COMPONENT_HISTORY_COLUMNS),
                 ok_text="Close",
                 show_cancel=False,
             ),
         ),
         (
-            "gui_popup_search.ui",
+            COMPONENTS_DIR / "gui_popup_search.ui",
             patch_popup(
                 base,
                 class_name="PopupSearch",
-                title="Search results",
+                title="Component search results",
                 subtitle="Select a row and press Ok, or double-click a row.",
                 width=900,
                 height=480,
-                body_xml=table_body("table_search", SEARCH_COLUMNS),
+                body_xml=table_body("table_search", COMPONENT_SEARCH_COLUMNS),
             ),
         ),
         (
-            "gui_popup_edit.ui",
+            COMPONENTS_DIR / "gui_popup_edit.ui",
             patch_popup(
                 base,
                 class_name="PopupEdit",
@@ -271,8 +322,56 @@ def main() -> None:
                 cancel_text="Cancel",
             ),
         ),
+    ]
+
+    material_variants = [
         (
-            "gui_popup_confirm.ui",
+            MATERIALS_DIR / "gui_popup_material.ui",
+            patch_popup(
+                base,
+                class_name="PopupMaterial",
+                title="Material",
+                subtitle=(
+                    "Provide Supplier Reference, Serial Number or Description."
+                ),
+                width=641,
+                height=520,
+                body_xml=form_material_body(),
+                ok_text="Save",
+                cancel_text="Cancel",
+            ),
+        ),
+        (
+            MATERIALS_DIR / "gui_popup_history.ui",
+            patch_popup(
+                base,
+                class_name="PopupMaterialHistory",
+                title="Materials",
+                subtitle=None,
+                width=950,
+                height=480,
+                body_xml=table_body("table_history", MATERIAL_HISTORY_COLUMNS),
+                ok_text="Close",
+                show_cancel=False,
+            ),
+        ),
+        (
+            MATERIALS_DIR / "gui_popup_search.ui",
+            patch_popup(
+                base,
+                class_name="PopupMaterialSearch",
+                title="Material search results",
+                subtitle="Select a row and press Ok, or double-click a row.",
+                width=950,
+                height=480,
+                body_xml=table_body("table_search", MATERIAL_SEARCH_COLUMNS),
+            ),
+        ),
+    ]
+
+    shared_variants = [
+        (
+            SHARED_DIR / "gui_popup_confirm.ui",
             patch_popup(
                 base,
                 class_name="PopupConfirm",
@@ -287,15 +386,18 @@ def main() -> None:
         ),
     ]
 
-    for filename, content in variants:
-        path = OUT_DIR / filename
+    for path, content in (
+        *component_variants,
+        *material_variants,
+        *shared_variants,
+    ):
         path.write_text(content, encoding="utf-8")
         print(f"Wrote {path}")
 
-    template_copy = OUT_DIR / "gui_popup_template.ui"
+    template_copy = SHARED_DIR / "gui_popup_template.ui"
     template_copy.write_text(base, encoding="utf-8")
     print(f"Wrote {template_copy}")
-    print("Open via DESIGNER.bat (options 2-5) or Qt Designer directly.")
+    print("Popups: popups/components/, popups/materials/, popups/shared/")
 
 
 if __name__ == "__main__":

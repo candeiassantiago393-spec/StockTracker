@@ -1,25 +1,38 @@
 # Siemens Popups (Qt Designer)
 
-Complete popup files for editing in Qt Designer (forms, tables, and action buttons).
+Popups are split by section. **Materials popups are not the same as Components** (different columns and forms).
 
-| File | Designer content |
-|------|------------------|
-| `gui_popup_manual.ui` | Manual component form + Save/Cancel |
-| `gui_popup_history.ui` | History table + Close |
-| `gui_popup_search.ui` | Search results table + Ok/Cancel |
-| `gui_popup_edit.ui` | Edit component form + Save/Cancel |
-| `gui_popup_confirm.ui` | Confirmation dialog (Yes/No) |
+## `components/`
 
-At runtime, the app imports the generated `gui_popup_*.py` modules.
+| File | Used by |
+|------|---------|
+| `gui_popup_manual.ui` | Add manual component |
+| `gui_popup_edit.ui` | Edit component |
+| `gui_popup_search.ui` | Excel search results (components) |
+| `gui_popup_history.ui` | Component movement history |
+
+## `materials/`
+
+| File | Used by |
+|------|---------|
+| `gui_popup_material.ui` | Add / edit material |
+| `gui_popup_search.ui` | Material search results |
+| `gui_popup_history.ui` | Materials table (Last 20 / Mat. hist.) |
+
+## `shared/`
+
+| File | Used by |
+|------|---------|
+| `gui_popup_confirm.ui` | Yes/No, user name, alerts |
+| `gui_popup_template.ui` | Siemens base template reference |
 
 ## Regenerate
 
 ```text
 python tools/generate_popup_uis.py
-.\.venv\Scripts\pyside6-uic.exe src\gui\designer\popups\gui_popup_manual.ui -o src\gui\designer\popups\gui_popup_manual.py
-# or use tools\export_popup_uis.ps1 for all popups
+tools\export-ui.bat
 ```
 
-To open these files in Designer, use `StockTracker-Designer\DESIGNER.bat` or `tools\ABRIR-DESIGNER.bat`.
+Open in Designer: `StockTracker-Designer\DESIGNER.bat` (options 3–11).
 
-Sync the Designer package: `powershell -File tools\sync_designer_package.ps1`
+Sync package: `tools\ORGANIZAR-DESKTOP.bat`

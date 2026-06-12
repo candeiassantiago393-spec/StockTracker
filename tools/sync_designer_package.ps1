@@ -32,9 +32,18 @@ function Sync-ToDesignerFolder($Designer) {
     }
 
     $popSrc = Join-Path $Root "src\gui\designer\popups"
-    Get-ChildItem $popSrc -Filter "*.ui" | ForEach-Object {
-        Copy-Item $_.FullName (Join-Path (Join-Path $Designer "popups") $_.Name) -Force
+    $popDest = Join-Path $Designer "popups"
+    if (Test-Path $popDest) {
+        Get-ChildItem $popDest -Filter "gui_popup_*.ui" -File -ErrorAction SilentlyContinue |
+            ForEach-Object { Remove-Item $_.FullName -Force }
     }
+    Get-ChildItem $popSrc -Filter "*.ui" -Recurse | ForEach-Object {
+        $rel = $_.FullName.Substring($popSrc.Length + 1)
+        $destPath = Join-Path $popDest $rel
+        New-Item -ItemType Directory -Force -Path (Split-Path $destPath) | Out-Null
+        Copy-Item $_.FullName $destPath -Force
+    }
+    Copy-Item (Join-Path $popSrc "README.md") (Join-Path $popDest "README.md") -Force -ErrorAction SilentlyContinue
 
     $st = Join-Path $Root "src\gui\siemens_template"
     $stDest = Join-Path $Designer "siemens_template"

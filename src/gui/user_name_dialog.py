@@ -1,7 +1,7 @@
 """Pedir nome de utilizador no popup Siemens (sem voltar ao ecra principal)."""
 from PySide6.QtWidgets import QDialog, QLineEdit
 
-from .designer.popups.gui_popup_confirm import Ui_PopupConfirm
+from .designer.popups.shared.gui_popup_confirm import Ui_PopupConfirm
 
 _LINE_EDIT_STYLE = """
 background-color: #333353;

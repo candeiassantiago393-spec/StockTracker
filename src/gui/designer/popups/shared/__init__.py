@@ -1,0 +1,1 @@
+# Shared popups (confirm, template).

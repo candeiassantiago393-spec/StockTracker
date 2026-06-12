@@ -162,7 +162,7 @@ Formal deliverable: `word/StockTracker_Documentacao_Projeto.docx` (regenerate wi
 
 - **Materials** inventory page and Excel sheet;
 - Symmetric Siemens layout (Components + Materials), Qt Designer package;
-- `ORGANIZAR-DESKTOP.bat` — sync Designer and Desktop copies;
+- `tools\ORGANIZAR-DESKTOP.bat` — sync Designer and Desktop copies;
 - Multi-distributor SCAN, DigiKey diagnostics, OPEN EXCEL with sheet ensure.
 
 # TODO
