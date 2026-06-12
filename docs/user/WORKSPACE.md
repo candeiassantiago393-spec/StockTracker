@@ -41,9 +41,11 @@ powershell -File tools\organizar-ambiente.ps1
 |------|------|
 | `gui_stocktracker.ui` | Components (`DESIGNER.bat` option **1**) |
 | `gui_materials.ui` | Materials (`DESIGNER.bat` option **2**) |
-| `popups\gui_popup_*.ui` | Dialogs (options **3–8**) |
+| `popups\components\` | Components dialogs (options **3–6**) |
+| `popups\materials\` | Materials dialogs (options **7–9**) |
+| `popups\shared\` | Confirm + Siemens template |
 
-Materials quick guide (Portuguese): `StockTracker-Designer\MATERIALS-LEIA-ME.txt`
+Quick guides (Portuguese): `StockTracker-Designer\LEIA-ME.txt` · `MATERIALS-LEIA-ME.txt`
 
 **Workflow after editing `.ui` on Desktop:**
 

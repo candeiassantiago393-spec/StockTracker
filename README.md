@@ -74,7 +74,7 @@ StockTracker/
 ├── config/                 # credentials loader + secrets.example.py
 ├── data/                   # stock.xlsx (local)
 ├── docs/                   # documentation (EN + PT quick guide)
-├── StockTracker-Designer/  # Qt Designer package (Components + Materials .ui)
+├── StockTracker-Designer/  # Qt Designer package (.ui + LEIA-ME.txt)
 ├── src/
 │   ├── main.py             # GUI entry point
 │   ├── test_terminal.py

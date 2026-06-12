@@ -8,7 +8,7 @@
 | `src/gui/` | PySide6 application UI |
 | `src/gui/designer/` | Canonical Qt Designer `.ui` + exported `.py` |
 | `src/gui/siemens_template/` | Siemens UI templates, icons, fonts |
-| `StockTracker-Designer/` | Designer editing package (mirror of `.ui` + resources) |
+| `StockTracker-Designer/` | Designer editing package (mirror of `.ui` + resources; see `LEIA-ME.txt`) |
 | `data/` | Local Excel database (`stock.xlsx`) |
 | `config/` | Local credentials (`secrets.py`, not in Git) |
 | `docs/` | Project documentation |
