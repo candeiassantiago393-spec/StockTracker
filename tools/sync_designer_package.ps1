@@ -50,6 +50,10 @@ function Sync-ToDesignerFolder($Designer) {
     Copy-Item (Join-Path $Root "src\gui\designer\README.md") (Join-Path $Designer "README.md") -Force -ErrorAction SilentlyContinue
     Copy-Item (Join-Path $Root "src\gui\designer\popups\README.md") (Join-Path $Designer "popups\README.md") -Force -ErrorAction SilentlyContinue
     Copy-Item (Join-Path $Root "Desktop-Designer-LEIA-ME.txt") (Join-Path $Designer "LEIA-ME.txt") -Force -ErrorAction SilentlyContinue
+    $materialsReadme = Join-Path $Root "src\gui\designer\MATERIALS-LEIA-ME.txt"
+    if (Test-Path $materialsReadme) {
+        Copy-Item $materialsReadme (Join-Path $Designer "MATERIALS-LEIA-ME.txt") -Force
+    }
 
     Write-Host "Designer package ready: $Designer"
 }

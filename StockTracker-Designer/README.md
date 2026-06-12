@@ -7,7 +7,7 @@ Canonical `.ui` files for the running app. Metrics come from `styles.py` and Sie
 | File | Runtime |
 |------|---------|
 | `gui_stocktracker.ui` | Components page (`stock_tracker_window.py`) |
-| `gui_materials.ui` | Materials page (`materials_page.py`) |
+| `gui_materials.ui` | Materials page (`materials_page.py`) — see `MATERIALS-LEIA-ME.txt` |
 | `popups/gui_popup_*.ui` | Dialogs (manual, edit, search, history, confirm) |
 
 ## Regenerate from Python (template-aligned)

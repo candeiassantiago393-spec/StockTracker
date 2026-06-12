@@ -6,8 +6,8 @@ Aplicação desktop para gestão de inventário de componentes eletrónicos.
 
 # Especificações
 
-- Inventário local em Excel (`data/stock.xlsx`);
-- Interface gráfica PySide6 com templates de UI corporativa Siemens;
+- Inventário local em Excel (`data/stock.xlsx`) — folhas **Components**, **Materials** e **History**;
+- Interface gráfica PySide6 com templates Siemens — páginas **Components** e **Materials**;
 - Pesquisa de componentes no Excel (referência do distribuidor, fabricante, MPN, descrição);
 - Leitura de código de barras / etiqueta (padrões tipo Mouser `P…Q`);
 - Movimentos de stock **IN** / **OUT** com registo na folha **History**;
@@ -83,9 +83,11 @@ Permissões (lógicas):
 | Coluna | Índice | Tipo | Permissão | Descrição |
 |:-------|:------:|:-----|:----------|:----------|
 | ID | A (0) | int | w | Identificador auto-incrementado |
-| Description | B (1) | string | rw | Descrição do material |
-| Calibration Date | C (2) | string | rw | Data de calibração (`YYYY-MM-DD`) |
-| Calibration Expiration Date | D (3) | string | rw | Data de expiração da calibração |
+| Supplier Reference | B (1) | string | rw | Referência do fornecedor / código |
+| Serial Number | C (2) | string | rw | Número de série |
+| Description | D (3) | string | rw | Descrição do material |
+| Calibration Date | E (4) | string | rw | Data de calibração (`YYYY-MM-DD`) |
+| Calibration Expiration Date | F (5) | string | rw | Data de expiração da calibração |
 
 ## Folha: History
 
@@ -109,7 +111,19 @@ Permissões (lógicas):
 | Histórico          | Botões History | `get_history_rows` |
 | Componente manual  | Popup manual | `add_manual_component` |
 | Editar componente  | Edit / clique em detalhes vazios | `update_component` |
-| Abrir Excel        | OPEN EXCEL | `startfile` do SO em `stock.xlsx` |
+| Abrir Excel        | OPEN EXCEL | `ensure_workbook_sheets` + `startfile` em `stock.xlsx` |
+
+## GUI — página Materials
+
+| Operação | Gatilho | Método(s) core |
+|:---------|:--------|:---------------|
+| Pesquisar materiais | SEARCH | `search_materials_all`, `MaterialSearchDialog` |
+| Referência fornecedor | Enter no campo scan | `find_material_by_supplier_ref` |
+| Adicionar material | ADD MANUAL | `add_material` |
+| Editar material | EDIT | `update_material` |
+| Tabelas histórico | Last 20 / Mat. hist. | `get_material_rows`, `MaterialsTableDialog` |
+
+Layout: `src/gui/designer/gui_materials.ui` — ver [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md).
 
 ## Regras de utilizador (GUI)
 
@@ -122,7 +136,9 @@ Permissões (lógicas):
 
 ```
 src/main.py
-    └── src/gui/stock_tracker_window.py  (PySide6)
+    └── src/gui/stock_tracker_window.py  (PySide6, QStackedWidget)
+            ├── Components  ← designer/gui_stocktracker.ui
+            ├── Materials   ← materials_page.py + designer/gui_materials.ui
             └── src/core/stock.py        (StockTracker)
                     ├── openpyxl → data/stock.xlsx
                     └── src/core/suppliers/* → APIs REST
@@ -144,9 +160,12 @@ Entregável formal: `word/StockTracker_Documentacao_Projeto.docx` (regenerar com
 
 ## Alterações atuais
 
-- Pesquisa multi-distribuidor sem combo de fornecedor na janela principal;
-- Diagnósticos DigiKey sandbox e mensagens 403;
-- Diálogo de nome de utilizador, OPEN EXCEL, componente manual a partir de detalhes vazios.
+- Página **Materials** e folha Excel correspondente;
+- Layout simétrico Siemens (Components + Materials), pacote Qt Designer;
+- `ORGANIZAR-DESKTOP.bat` — sincronizar Designer e cópia no Ambiente de Trabalho;
+- SCAN multi-distribuidor, diagnósticos DigiKey, OPEN EXCEL com criação de folhas.
+
+Guia rápido: [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md).
 
 # TODO
 

@@ -10,8 +10,9 @@ Stock management using a local Excel database, PySide6 GUI, and optional distrib
 
 ## Features
 
-- Excel inventory (`Components` + `History` sheets)
-- GUI: search, barcode/scan, stock IN/OUT, history viewer
+- Excel inventory (`Components`, `Materials`, and `History` sheets)
+- GUI: **Components** (search, barcode/scan, stock IN/OUT) and **Materials** (calibrated items)
+- Header navigation COMPONENTS / MATERIALS with shared action bar
 - Multi-match Excel search with selection dialog
 - Autocomplete from Excel (search and barcode fields)
 - Mouser API: catalog lookup and import
@@ -70,16 +71,20 @@ Never commit `config/secrets.py` or real API keys.
 
 ```
 StockTracker/
-├── config/          # credentials loader + secrets.example.py
-├── data/            # stock.xlsx (local)
-├── docs/            # documentation
+├── config/                 # credentials loader + secrets.example.py
+├── data/                   # stock.xlsx (local)
+├── docs/                   # documentation (EN + PT quick guide)
+├── StockTracker-Designer/  # Qt Designer package (Components + Materials .ui)
 ├── src/
-│   ├── main.py      # GUI entry point
+│   ├── main.py             # GUI entry point
 │   ├── test_terminal.py
-│   ├── core/        # StockTracker + suppliers
-│   └── gui/         # PySide6 UI
-├── tools/           # maintenance scripts
-├── scripts/         # API test utilities
+│   ├── core/               # StockTracker + suppliers
+│   └── gui/
+│       ├── designer/       # canonical .ui files
+│       └── siemens_template/
+├── tools/                  # maintenance scripts
+├── scripts/                # API test utilities
+├── ORGANIZAR-DESKTOP.bat   # sync Designer + Desktop copy
 ├── requirements.txt
 └── run.bat
 ```
@@ -102,6 +107,8 @@ StockTracker/
 | [docs/user/ARCHITECTURE.md](docs/user/ARCHITECTURE.md) | Architecture and flows |
 | [docs/user/SUPPLIERS.md](docs/user/SUPPLIERS.md) | Supplier APIs |
 | [docs/user/QT_DESIGNER.md](docs/user/QT_DESIGNER.md) | Qt Designer workflow |
+| [docs/GUIA_RAPIDO_PT.md](docs/GUIA_RAPIDO_PT.md) | Quick guide (Portuguese) |
+| [docs/user/WORKSPACE.md](docs/user/WORKSPACE.md) | Desktop copies and Designer packages |
 | [docs/user/DIGIKEY_SETUP.md](docs/user/DIGIKEY_SETUP.md) | DigiKey sandbox setup |
 | [docs/user/GITHUB.md](docs/user/GITHUB.md) | Publishing to GitHub |
 

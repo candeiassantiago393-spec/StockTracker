@@ -1,4 +1,4 @@
-# Configuration
+# Configuration — Stock Tracker
 
 | File | In Git? | Description |
 |------|---------|-------------|

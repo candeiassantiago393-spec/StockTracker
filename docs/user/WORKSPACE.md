@@ -2,37 +2,54 @@
 
 ## Canonical repository
 
-Develop, run tests, and use Git in **one** primary clone of the repository (the folder you open in your IDE).
+Develop, run tests, and use Git in **one** primary clone:
+
+`Downloads\StockTracker\StockTracker`
 
 That folder must contain:
 
 - `src/`, `config/`, `data/`, `docs/`, `tools/`
 - `run.bat`, `requirements.txt`, `.venv/` (local)
+- `StockTracker-Designer/` — Qt Designer package (mirror for editing `.ui`)
 
 ---
 
-## Optional mirror (backup or USB)
+## Desktop folders (optional)
 
-Script: `tools/sincronizar-desktop.ps1`
+| Folder | Purpose |
+|--------|---------|
+| `Desktop\StockTracker-Projeto` | Full project copy (no `.git`, no `secrets.py`, no `.venv`) |
+| `Desktop\StockTracker-Designer` | Qt Designer only — edit `.ui` files |
 
-Copies the project to a destination folder (configured in the script). It **excludes**:
+Refresh both from the canonical repo:
 
-- `config/secrets.py`
-- `.venv/`
-- `.git/` (depending on script options)
+```text
+ORGANIZAR-DESKTOP.bat
+```
 
-Run after meaningful changes if you keep an offline copy.
+or:
+
+```powershell
+powershell -File tools\organizar-ambiente.ps1
+```
 
 ---
 
-## Qt Designer–only folder (optional)
+## Qt Designer — Components and Materials
 
-Some teams keep a slim folder with:
+| File | Page |
+|------|------|
+| `gui_stocktracker.ui` | Components (`DESIGNER.bat` option **1**) |
+| `gui_materials.ui` | Materials (`DESIGNER.bat` option **2**) |
+| `popups\gui_popup_*.ui` | Dialogs (options **3–8**) |
 
-- `gui_stocktracker.ui`
-- `src/gui/siemens_template/` resources
+Materials quick guide (Portuguese): `StockTracker-Designer\MATERIALS-LEIA-ME.txt`
 
-for layout review on a machine without the full dev environment. The full application still builds from the main repository.
+**Workflow after editing `.ui` on Desktop:**
+
+1. Copy changed `.ui` to `src\gui\designer\` in the main repo
+2. Run `tools\export-ui.bat`
+3. Run `python -m src.main`
 
 ---
 

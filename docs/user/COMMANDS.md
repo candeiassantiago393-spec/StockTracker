@@ -3,7 +3,7 @@
 Run all commands from the **repository root** (folder containing `src/`, `config/`, `run.bat`).
 
 ```powershell
-cd path\to\StockTracker
+cd path\to\StockTracker\StockTracker
 ```
 
 ---
@@ -27,13 +27,37 @@ pip install -r requirements.txt
 
 ---
 
+## Organize workspace (Designer + Desktop)
+
+| Action | Command |
+|--------|---------|
+| Full sync | `ORGANIZAR-DESKTOP.bat` |
+| Same (PowerShell) | `powershell -File tools\organizar-ambiente.ps1` |
+| Designer package only | `powershell -File tools\sync_designer_package.ps1 -Target All` |
+
+---
+
+## Qt Designer workflow
+
+| Step | Command |
+|------|---------|
+| Open Designer (repo) | `tools\ABRIR-DESIGNER.bat` |
+| Regenerate all `.ui` | `python tools\generate_all_designer_uis.py` |
+| Export `.ui` → `.py` | `tools\export-ui.bat` |
+
+After editing `.ui` on Desktop, copy files to `src\gui\designer\` then run `export-ui.bat`.
+
+See [QT_DESIGNER.md](QT_DESIGNER.md) and [../GUIA_RAPIDO_PT.md](../GUIA_RAPIDO_PT.md).
+
+---
+
 ## Configure API keys
 
 ```powershell
 copy config\secrets.example.py config\secrets.py
 ```
 
-Edit `config/secrets.py` with your keys. See [SUPPLIERS.md](SUPPLIERS.md) and [DIGIKEY_SETUP.md](DIGIKEY_SETUP.md).
+Edit `config/secrets.py`. See [SUPPLIERS.md](SUPPLIERS.md) and [DIGIKEY_SETUP.md](DIGIKEY_SETUP.md).
 
 ---
 
@@ -44,7 +68,7 @@ dir src
 dir config
 ```
 
-If `src` is missing, change to the repository root (not a parent or child folder by mistake).
+If `src` is missing, change to the repository root.
 
 ---
 
@@ -74,7 +98,7 @@ If `src` is missing, change to the repository root (not a parent or child folder
 | `ImportError: relative import` | GUI file run directly | `python -m src.main` |
 | Excel not saved | `stock.xlsx` open in Excel | Close the file |
 | API no response | Keys / network / part number | Check `config/secrets.py` |
-| Insufficient stock | OUT quantity too high | Check current stock |
+| Designer missing Materials | Stale Desktop copy | `ORGANIZAR-DESKTOP.bat` |
 
 ---
 

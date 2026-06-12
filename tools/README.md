@@ -17,7 +17,9 @@ These are not required to run the app.
 | `export_popup_uis.ps1` | Exports popup `.ui` files to `.py` |
 | `sync_designer_package.ps1` | Syncs `StockTracker-Designer/` (repo and/or Desktop) |
 | `DESIGNER-DESKTOP.bat` | Launcher copied into Designer package |
-| `sincronizar-desktop.ps1` | Syncs the project to Desktop (optional workflow) |
+| `organizar-ambiente.ps1` | Regenerates UI, syncs Designer (repo + Desktop), copies project to Desktop |
+| `ORGANIZAR-DESKTOP.bat` | Wrapper for `organizar-ambiente.ps1` (run from project root) |
+| `sincronizar-desktop.ps1` | Legacy: copies project + Designer (use `organizar-ambiente.ps1` instead) |
 | `build_project_docx.py` | Builds `word/StockTracker_Documentacao_Projeto.docx` |
 
 ## Run the App

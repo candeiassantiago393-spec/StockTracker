@@ -42,11 +42,15 @@ Pacote de edicao: `StockTracker-Designer/` na raiz do repo (espelho para o Qt De
 
 Icones, fontes e widgets de referencia. A janela usa `designer/*.ui`; metricas em `styles.py` alinhadas com `siemens_template/gui_template.ui`.
 
-## Ferramentas (`tools/`)
+## Ferramentas
 
-| Script | Funcao |
-|--------|--------|
-| `generate_all_designer_uis.py` | Regenera todos os `.ui` |
-| `gui_ui_builder.py` | Builders partilhados (template) |
-| `export_designer_uis.ps1` | Exporta `.ui` → `.py` |
-| `sync_designer_package.ps1` | Atualiza `StockTracker-Designer/` |
+| Comando / script | Funcao |
+|------------------|--------|
+| `ORGANIZAR-DESKTOP.bat` | Regenera `.ui`, exporta `.py`, sincroniza Designer + Desktop |
+| `tools/generate_all_designer_uis.py` | Regenera todos os `.ui` |
+| `tools/gui_ui_builder.py` | Builders partilhados (template) |
+| `tools/export-ui.bat` | Exporta `.ui` → `.py` |
+| `tools/sync_designer_package.ps1` | Atualiza `StockTracker-Designer/` (repo e/ou Desktop) |
+| `tools/ABRIR-DESIGNER.bat` | Abre Components ou Materials no Designer |
+
+Documentacao: [docs/GUIA_RAPIDO_PT.md](../../docs/GUIA_RAPIDO_PT.md) · [designer/MATERIALS-LEIA-ME.txt](designer/MATERIALS-LEIA-ME.txt)

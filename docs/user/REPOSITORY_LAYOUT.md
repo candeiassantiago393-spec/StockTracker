@@ -6,7 +6,9 @@
 |-----------|---------|
 | `src/core/` | Business logic (`StockTracker`, supplier APIs) |
 | `src/gui/` | PySide6 application UI |
-| `src/gui/siemens_template/` | Official Siemens UI templates and resources |
+| `src/gui/designer/` | Canonical Qt Designer `.ui` + exported `.py` |
+| `src/gui/siemens_template/` | Siemens UI templates, icons, fonts |
+| `StockTracker-Designer/` | Designer editing package (mirror of `.ui` + resources) |
 | `data/` | Local Excel database (`stock.xlsx`) |
 | `config/` | Local credentials (`secrets.py`, not in Git) |
 | `docs/` | Project documentation |
@@ -21,12 +23,25 @@
 |------|------|
 | `main.py` | Application entry point (GUI) |
 | `test_terminal.py` | Terminal test console (development) |
-| `core/stock.py` | `StockTracker` — Excel, stock movements, catalog lookup |
-| `gui/stock_tracker_window.py` | Main window and event handlers |
-| `gui/designer/gui_stocktracker.ui` | Main layout (Qt Designer) |
-| `gui/designer/gui_stocktracker.py` | Generated UI module (do not edit by hand) |
-| `gui/history_dialog.py` | History viewer dialog |
-| `gui/styles.py` | Siemens visual styling |
+| `core/stock.py` | `StockTracker` — Excel, components, materials, history, APIs |
+| `gui/stock_tracker_window.py` | Main window, Components page, navigation |
+| `gui/materials_page.py` | Materials page logic |
+| `gui/designer/gui_stocktracker.ui` | Components layout (Qt Designer) |
+| `gui/designer/gui_materials.ui` | Materials layout (Qt Designer) |
+| `gui/designer/gui_*.py` | Generated UI modules (do not edit by hand) |
+| `gui/styles.py` | Siemens metrics and styles |
+| `gui/*_dialog.py` | Popup behaviour on top of `designer/popups/` |
+
+GUI map (Portuguese): [src/gui/ESTRUTURA.md](../../src/gui/ESTRUTURA.md)
+
+---
+
+## Root-level helpers
+
+| File | Role |
+|------|------|
+| `run.bat` | Start the GUI |
+| `ORGANIZAR-DESKTOP.bat` | Sync Designer packages + Desktop project copy |
 
 ---
 
@@ -34,7 +49,7 @@
 
 1. Copy `config/secrets.example.py` to `config/secrets.py`
 2. Set API keys for the suppliers you use
-3. Place or update `data/stock.xlsx`
+3. Place or update `data/stock.xlsx` (sheets: Components, Materials, History)
 4. Close Excel before the application saves the workbook
 
 ---
@@ -50,18 +65,21 @@ Always run from the **repository root** (directory that contains `src/`, `config
 
 ---
 
-## Legacy reference
+## Optional Desktop copies
 
-An older implementation may exist outside this repository. Use **only this repo** as the maintained codebase; do not mix files from legacy copies.
+```powershell
+.\ORGANIZAR-DESKTOP.bat
+```
+
+Creates/updates:
+
+- `Desktop\StockTracker-Designer` — Qt Designer only
+- `Desktop\StockTracker-Projeto` — full project copy (no `.git`, no `secrets.py`, no `.venv`)
+
+See [WORKSPACE.md](WORKSPACE.md).
 
 ---
 
-## Optional workspace copy
+## Legacy reference
 
-To mirror the project to another folder (backup or second machine), use:
-
-```powershell
-.\tools\sincronizar-desktop.ps1
-```
-
-The script does not copy `config/secrets.py` or `.venv/`. See [WORKSPACE.md](WORKSPACE.md) if present, or `tools/README.md`.
+An older implementation may exist outside this repository. Use **only this repo** as the maintained codebase.

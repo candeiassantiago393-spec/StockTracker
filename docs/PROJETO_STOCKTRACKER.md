@@ -83,9 +83,11 @@ Permissions (logical):
 | Column | Index | Type | Permission | Description |
 |:-------|:-----:|:-----|:-----------|:------------|
 | ID | A (0) | int | w | Auto-increment identifier |
-| Description | B (1) | string | rw | Material description |
-| Calibration Date | C (2) | string | rw | Calibration date (`YYYY-MM-DD`) |
-| Calibration Expiration Date | D (3) | string | rw | Calibration expiry date |
+| Supplier Reference | B (1) | string | rw | Supplier / barcode reference |
+| Serial Number | C (2) | string | rw | Serial number |
+| Description | D (3) | string | rw | Material description |
+| Calibration Date | E (4) | string | rw | Calibration date (`YYYY-MM-DD`) |
+| Calibration Expiration Date | F (5) | string | rw | Calibration expiry date |
 
 ## Sheet: History
 
@@ -109,7 +111,19 @@ Permissions (logical):
 | History          | History buttons | `get_history_rows` |
 | Manual component | Manual popup | `add_manual_component` |
 | Edit component   | Edit / empty details click | `update_component` |
-| Open Excel       | OPEN EXCEL | OS `startfile` on `stock.xlsx` |
+| Open Excel       | OPEN EXCEL | `ensure_workbook_sheets` + OS `startfile` on `stock.xlsx` |
+
+## GUI — Materials page
+
+| Operation | Trigger | Core method(s) |
+|:----------|:--------|:---------------|
+| Search materials | SEARCH | `search_materials_all`, `MaterialSearchDialog` |
+| Lookup by supplier ref | Enter on scan field | `find_material_by_supplier_ref` |
+| Add material | ADD MANUAL | `add_material` |
+| Edit material | EDIT | `update_material` |
+| History tables | Last 20 / Mat. hist. | `get_material_rows`, `MaterialsTableDialog` |
+
+Layout: `src/gui/designer/gui_materials.ui` — see [user/QT_DESIGNER.md](user/QT_DESIGNER.md).
 
 ## User rules (GUI)
 
@@ -122,7 +136,9 @@ Permissions (logical):
 
 ```
 src/main.py
-    └── src/gui/stock_tracker_window.py  (PySide6)
+    └── src/gui/stock_tracker_window.py  (PySide6, QStackedWidget)
+            ├── Components  ← designer/gui_stocktracker.ui
+            ├── Materials   ← materials_page.py + designer/gui_materials.ui
             └── src/core/stock.py        (StockTracker)
                     ├── openpyxl → data/stock.xlsx
                     └── src/core/suppliers/* → REST APIs
@@ -144,9 +160,10 @@ Formal deliverable: `word/StockTracker_Documentacao_Projeto.docx` (regenerate wi
 
 ## Current changes
 
-- Multi-distributor search without distributor combo in main window;
-- DigiKey sandbox diagnostics and 403 messaging;
-- User name dialog, OPEN EXCEL, manual component from empty details.
+- **Materials** inventory page and Excel sheet;
+- Symmetric Siemens layout (Components + Materials), Qt Designer package;
+- `ORGANIZAR-DESKTOP.bat` — sync Designer and Desktop copies;
+- Multi-distributor SCAN, DigiKey diagnostics, OPEN EXCEL with sheet ensure.
 
 # TODO
 

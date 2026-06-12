@@ -7,17 +7,32 @@ alwaysApply: true
 
 # Stock Tracker
 
-## Architecture
+Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
 
-- Business logic: `src/core/stock.py` (`StockTracker`)
-- GUI: `src/gui/stock_tracker_window.py`
-- Entry: `python -m src.main` or `run.bat` (single GUI; SCAN queries all configured suppliers)
-- Credentials: `config/secrets.py` (never commit)
-- Data: `data/stock.xlsx` — close Excel before saving
+## Arquitetura
 
-## Rules
+- Lógica: `src/core/stock.py` (classe `StockTracker` — Components, Materials, History)
+- GUI Components: `src/gui/stock_tracker_window.py` + `designer/gui_stocktracker.ui`
+- GUI Materials: `src/gui/materials_page.py` + `designer/gui_materials.ui`
+- Entrada: `python -m src.main` ou `run.bat`
+- Credenciais: `config/secrets.py` (não commitar)
+- Dados: `data/stock.xlsx` — fechar Excel antes de gravar
 
-- No business logic in the GUI layer
-- Do not run `gui/` modules in isolation (relative imports)
-- Minimal diffs; match existing style
-- Documentation: English in `docs/user/`; spec also in `docs/PROJETO_STOCKTRACKER.md`
+## Qt Designer
+
+- Canónico: `src/gui/designer/`
+- Pacote edição: `StockTracker-Designer/` (repo) e `Desktop\StockTracker-Designer`
+- Sincronizar: `ORGANIZAR-DESKTOP.bat`
+- Métricas template: `src/gui/styles.py`, `tools/gui_ui_builder.py`
+- Guia Materials (PT): `src/gui/designer/MATERIALS-LEIA-ME.txt`
+
+## Regras
+
+- Não colocar lógica de negócio na GUI
+- Não executar módulos `gui/` isoladamente (imports relativos)
+- Diffs minimos; estilo existente
+- Documentação EN em `docs/user/`; guia PT em `docs/GUIA_RAPIDO_PT.md`
+
+## Não confundir
+
+`Documents\stock-tracker` — projeto legado separado.
