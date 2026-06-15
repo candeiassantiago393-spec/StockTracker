@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = (
     "generate_stocktracker_ui.py",
-    "generate_materials_ui.py",
+    "generate_equipments_ui.py",
     "generate_popup_uis.py",
 )
 

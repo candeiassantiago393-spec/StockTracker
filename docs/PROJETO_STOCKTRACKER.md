@@ -78,14 +78,14 @@ Permissions (logical):
 | Description | F (5) | string | rw | Part description |
 | Stock  | G (6) | int    | rw         | Current quantity |
 
-## Sheet: Materials
+## Sheet: Equipments
 
 | Column | Index | Type | Permission | Description |
 |:-------|:-----:|:-----|:-----------|:------------|
 | ID | A (0) | int | w | Auto-increment identifier |
 | Supplier Reference | B (1) | string | rw | Supplier / barcode reference |
 | Serial Number | C (2) | string | rw | Serial number |
-| Description | D (3) | string | rw | Material description |
+| Description | D (3) | string | rw | Equipment description |
 | Calibration Date | E (4) | string | rw | Calibration date (`YYYY-MM-DD`) |
 | Calibration Expiration Date | F (5) | string | rw | Calibration expiry date |
 
@@ -113,17 +113,17 @@ Permissions (logical):
 | Edit component   | Edit / empty details click | `update_component` |
 | Open Excel       | OPEN EXCEL | `ensure_workbook_sheets` + OS `startfile` on `stock.xlsx` |
 
-## GUI — Materials page
+## GUI — Equipments page
 
 | Operation | Trigger | Core method(s) |
 |:----------|:--------|:---------------|
-| Search materials | SEARCH | `search_materials_all`, `MaterialSearchDialog` |
-| Lookup by supplier ref | Enter on scan field | `find_material_by_supplier_ref` |
-| Add material | ADD MANUAL | `add_material` |
-| Edit material | EDIT | `update_material` |
-| History tables | Last 20 / Mat. hist. | `get_material_rows`, `MaterialsTableDialog` |
+| Search equipments | SEARCH | `search_equipments_all`, `EquipmentSearchDialog` |
+| Lookup by supplier ref | Enter on scan field | `find_equipment_by_supplier_ref` |
+| Add equipment | ADD MANUAL | `add_equipment` |
+| Edit equipment | EDIT | `update_equipment` |
+| History tables | Last 20 / Eq. hist. | `get_equipment_rows`, `EquipmentsTableDialog` |
 
-Layout: `src/gui/designer/gui_materials.ui` — see [user/QT_DESIGNER.md](user/QT_DESIGNER.md).
+Layout: `src/gui/designer/gui_equipments.ui` — see [user/QT_DESIGNER.md](user/QT_DESIGNER.md).
 
 ## User rules (GUI)
 
@@ -138,7 +138,7 @@ Layout: `src/gui/designer/gui_materials.ui` — see [user/QT_DESIGNER.md](user/Q
 src/main.py
     └── src/gui/stock_tracker_window.py  (PySide6, QStackedWidget)
             ├── Components  ← designer/gui_stocktracker.ui
-            ├── Materials   ← materials_page.py + designer/gui_materials.ui
+            ├── Equipments   ← equipments_page.py + designer/gui_equipments.ui
             └── src/core/stock.py        (StockTracker)
                     ├── openpyxl → data/stock.xlsx
                     └── src/core/suppliers/* → REST APIs
@@ -160,8 +160,8 @@ Formal deliverable: `word/StockTracker_Documentacao_Projeto.docx` (regenerate wi
 
 ## Current changes
 
-- **Materials** inventory page and Excel sheet;
-- Symmetric Siemens layout (Components + Materials), Qt Designer package;
+- **Equipments** inventory page and Excel sheet;
+- Symmetric Siemens layout (Components + Equipments), Qt Designer package;
 - `tools\ORGANIZAR-DESKTOP.bat` — sync Designer and Desktop copies;
 - Multi-distributor SCAN, DigiKey diagnostics, OPEN EXCEL with sheet ensure.
 

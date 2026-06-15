@@ -11,9 +11,9 @@ Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
 
 ## Arquitetura
 
-- Lógica: `src/core/stock.py` (classe `StockTracker` — Components, Materials, History)
+- Lógica: `src/core/stock.py` (classe `StockTracker` — Components, Equipments, History)
 - GUI Components: `src/gui/stock_tracker_window.py` + `designer/gui_stocktracker.ui`
-- GUI Materials: `src/gui/materials_page.py` + `designer/gui_materials.ui`
+- GUI Equipments: `src/gui/equipments_page.py` + `designer/gui_equipments.ui`
 - Entrada: `python -m src.main` ou `run.bat`
 - Credenciais: `config/secrets.py` (não commitar)
 - Dados: `data/stock.xlsx` — fechar Excel antes de gravar
@@ -24,7 +24,7 @@ Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
 - Pacote edição: `StockTracker-Designer/` (repo) e `Desktop\StockTracker-Designer`
 - Sincronizar: `tools\ORGANIZAR-DESKTOP.bat`
 - Métricas template: `src/gui/styles.py`, `tools/gui_ui_builder.py`
-- Guia Materials (PT): `src/gui/designer/MATERIALS-LEIA-ME.txt`
+- Guia Equipments (PT): `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 
 ## Regras
 

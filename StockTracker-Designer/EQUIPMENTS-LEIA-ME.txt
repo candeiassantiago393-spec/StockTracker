@@ -1,0 +1,44 @@
+Stock Tracker - Equipments no Qt Designer
+
+=========================================
+
+
+
+Ficheiro principal:  gui_equipments.ui
+
+
+
+Layout (coluna esquerda):
+
+  Operations
+
+    - Search Equipment  + SEARCH
+
+    - Scan Barcode / Supplier Ref.
+
+  Support Documentation (subtitulo compacto, 16px)
+
+    - Search doc  + campo + SEARCH + OPEN
+
+    - doc_results_list  (lista compacta, ~3 linhas)
+
+    - Folder  + OPEN FOLDER
+
+    - Add     + ADD DOC
+
+
+
+Pasta: data\support_documentation\
+
+
+
+Regenerar:
+
+  python tools\generate_equipments_ui.py
+
+  tools\export-ui.bat
+
+
+
+Popups: popups\equipments\ (DESIGNER.bat opcoes 7-9)
+

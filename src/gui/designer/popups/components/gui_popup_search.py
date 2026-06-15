@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QGridLayout,
-    QHBoxLayout, QHeaderView, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractScrollArea, QApplication, QDialog, QFrame,
+    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
+    QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 
 class Ui_PopupSearch(object):
     def setupUi(self, PopupSearch):
@@ -114,6 +114,10 @@ class Ui_PopupSearch(object):
         self.table_search.setHorizontalHeaderItem(4, __qtablewidgetitem4)
         self.table_search.setObjectName(u"table_search")
         self.table_search.setMinimumSize(QSize(0, 280))
+        self.table_search.setMaximumSize(QSize(16777215, 280))
+        self.table_search.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.table_search.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.table_search.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustIgnored)
         self.table_search.setStyleSheet(u"\n"
 "QTableWidget {\n"
 "    background-color: #00183B;\n"
@@ -126,6 +130,35 @@ class Ui_PopupSearch(object):
 "    padding: 6px;\n"
 "    border: 1px solid #B3B3BE;\n"
 "    font-weight: bold;\n"
+"}\n"
+"QTableWidget QScrollBar:vertical {\n"
+"    background-color: #00183B;\n"
+"    width: 12px;\n"
+"    margin: 0;\n"
+"}\n"
+"QTableWidget QScrollBar::handle:vertical {\n"
+"    background-color: #00CCCC;\n"
+"    min-height: 24px;\n"
+"    border-radius: 4px;\n"
+"}\n"
+"QTableWidget QScrollBar::add-line:vertical,\n"
+"QTableWidget QScrollBar::sub-line:vertical {\n"
+"    height: 0;\n"
+"}\n"
+"QTableWidget QScrollBar:horizontal {\n"
+"    background-color: #00183B;\n"
+"    height: 12px;\n"
+"    margin: 0;\n"
+"}\n"
+"QTableWidget QScrollBar::handle:horizontal {\n"
+"    background-color: #00CCCC;\n"
+"    min-width: 24px;\n"
+"    border-radius: 4px;\n"
+"}\n"
+"QTableWidget QScrollBar::add-line:horizontal,\n"
+"QTableWidget QSc"
+                        "rollBar::sub-line:horizontal {\n"
+"    width: 0;\n"
 "}\n"
 "")
 

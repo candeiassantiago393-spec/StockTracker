@@ -26,9 +26,9 @@ function Sync-ToDesignerFolder($Designer) {
         (Join-Path $Root "src\gui\designer\gui_stocktracker.ui") `
         (Join-Path $Designer "gui_stocktracker.ui")
 
-    $materialsUi = Join-Path $Root "src\gui\designer\gui_materials.ui"
-    if (Test-Path $materialsUi) {
-        Copy-UiForDesigner $materialsUi (Join-Path $Designer "gui_materials.ui")
+    $equipmentsUi = Join-Path $Root "src\gui\designer\gui_equipments.ui"
+    if (Test-Path $equipmentsUi) {
+        Copy-UiForDesigner $equipmentsUi (Join-Path $Designer "gui_equipments.ui")
     }
 
     $popSrc = Join-Path $Root "src\gui\designer\popups"
@@ -59,12 +59,13 @@ function Sync-ToDesignerFolder($Designer) {
     Copy-Item (Join-Path $Root "src\gui\designer\README.md") (Join-Path $Designer "README.md") -Force -ErrorAction SilentlyContinue
     Copy-Item (Join-Path $Root "src\gui\designer\popups\README.md") (Join-Path $Designer "popups\README.md") -Force -ErrorAction SilentlyContinue
     $leiaMe = Join-Path $Root "StockTracker-Designer\LEIA-ME.txt"
-    if (Test-Path $leiaMe) {
-        Copy-Item $leiaMe (Join-Path $Designer "LEIA-ME.txt") -Force
+    $leiaMeDest = Join-Path $Designer "LEIA-ME.txt"
+    if ((Test-Path $leiaMe) -and ($leiaMe -ne $leiaMeDest)) {
+        Copy-Item $leiaMe $leiaMeDest -Force
     }
-    $materialsReadme = Join-Path $Root "src\gui\designer\MATERIALS-LEIA-ME.txt"
-    if (Test-Path $materialsReadme) {
-        Copy-Item $materialsReadme (Join-Path $Designer "MATERIALS-LEIA-ME.txt") -Force
+    $equipmentsReadme = Join-Path $Root "src\gui\designer\EQUIPMENTS-LEIA-ME.txt"
+    if (Test-Path $equipmentsReadme) {
+        Copy-Item $equipmentsReadme (Join-Path $Designer "EQUIPMENTS-LEIA-ME.txt") -Force
     }
 
     Write-Host "Designer package ready: $Designer"

@@ -10,9 +10,9 @@ Stock management using a local Excel database, PySide6 GUI, and optional distrib
 
 ## Features
 
-- Excel inventory (`Components`, `Materials`, and `History` sheets)
-- GUI: **Components** (search, barcode/scan, stock IN/OUT) and **Materials** (calibrated items)
-- Header navigation COMPONENTS / MATERIALS with shared action bar
+- Excel inventory (`Components`, `Equipments`, and `History` sheets)
+- GUI: **Components** (search, barcode/scan, stock IN/OUT) and **Equipments** (calibrated items)
+- Header navigation COMPONENTS / EQUIPMENTS with shared action bar
 - Multi-match Excel search with selection dialog
 - Autocomplete from Excel (search and barcode fields)
 - Mouser API: catalog lookup and import

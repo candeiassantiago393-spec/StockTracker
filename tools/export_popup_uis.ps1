@@ -12,4 +12,4 @@ Get-ChildItem $Popups -Filter "*.ui" -Recurse | ForEach-Object {
     Write-Host "Exported: $py"
 }
 
-Write-Host "Dialogs import from src/gui/designer/popups/{components,materials,shared}/"
+Write-Host "Dialogs import from src/gui/designer/popups/{components,equipments,shared}/"

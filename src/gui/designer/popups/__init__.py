@@ -1,1 +1,1 @@
-# Qt Designer popups: components/, materials/, shared/
+# Qt Designer popups: components/, equipments/, shared/

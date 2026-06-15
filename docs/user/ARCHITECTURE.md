@@ -14,10 +14,10 @@ The UI **does not** implement stock rules. It collects input, validates the oper
 
 | Area | Main methods |
 |------|----------------|
-| Excel | `get_workbook`, `get_components_sheet`, `get_materials_sheet`, `get_history_sheet`, `save_workbook`, `ensure_workbook_sheets` |
+| Excel | `get_workbook`, `get_components_sheet`, `get_equipments_sheet`, `get_history_sheet`, `save_workbook`, `ensure_workbook_sheets` |
 | Components search | `search_in_excel`, `search_in_excel_all`, `find_component_any`, `extract_part_number` |
 | Stock | `update_stock` (IN/OUT), `add_history`, `add_manual_component`, `update_component` |
-| Materials | `add_material`, `update_material`, `search_materials_all`, `find_material_by_supplier_ref` |
+| Equipments | `add_equipment`, `update_equipment`, `search_equipments_all`, `find_equipment_by_supplier_ref` |
 | Suppliers | `search_supplier`, `search_any_supplier`, `add_from_supplier_and_stock_in` |
 
 ---
@@ -26,21 +26,21 @@ The UI **does not** implement stock rules. It collects input, validates the oper
 
 | Component | Responsibility |
 |-----------|----------------|
-| `StockTrackerWindow` | Navigation (Components / Materials), shared title, user row, action bar |
+| `StockTrackerWindow` | Navigation (Components / Equipments), shared title, user row, action bar |
 | `Ui_StockTracker` | Components layout (from `gui_stocktracker.ui`) |
-| `MaterialsPage` + `Ui_MaterialsPage` | Materials layout and events (`gui_materials.ui`) |
-| Dialog modules | History, confirm, search, manual/edit component, materials table/search |
+| `EquipmentsPage` + `Ui_EquipmentsPage` | Equipments layout and events (`gui_equipments.ui`) |
+| Dialog modules | History, confirm, search, manual/edit component, equipments table/search |
 | `styles.py` | Siemens visual identity and layout metrics |
 
 ### Navigation
 
-- `QStackedWidget`: page 0 = Components (`container_main_body`), page 1 = Materials
-- Header buttons **COMPONENTS** / **MATERIALS** switch pages
+- `QStackedWidget`: page 0 = Components (`container_main_body`), page 1 = Equipments
+- Header buttons **COMPONENTS** / **EQUIPMENTS** switch pages
 - Shared: title `Inventory — …`, user name row, bottom action bar (labels change per section)
 
 ### GUI rules
 
-- Operator name required before stock/material operations
+- Operator name required before stock/equipment operations
 - Explicit confirmation before stock OUT
 - Minimum reference length on component scan (validated in GUI)
 - Clear errors when Excel is locked or an API call fails
@@ -57,12 +57,12 @@ The UI **does not** implement stock rules. It collects input, validates the oper
 
 ---
 
-## Materials flow
+## Equipments flow
 
-1. User searches by text or supplier reference on Materials page
-2. Core reads/writes `Materials` sheet (no distributor SCAN)
-3. ADD MANUAL / EDIT open `MaterialDialog` (Python popup, Siemens styles)
-4. History buttons show material rows via `MaterialsTableDialog` (reuses history popup layout)
+1. User searches by text or supplier reference on Equipments page
+2. Core reads/writes `Equipments` sheet (no distributor SCAN)
+3. ADD MANUAL / EDIT open `EquipmentDialog` (Python popup, Siemens styles)
+4. History buttons show equipment rows via `EquipmentsTableDialog` (reuses history popup layout)
 
 ---
 
@@ -72,7 +72,7 @@ The UI **does not** implement stock rules. It collects input, validates the oper
 
 ID, Supplier Reference, Manufacturer, Manufacturer Reference, Value, Description, Stock
 
-### Materials sheet
+### Equipments sheet
 
 ID, Supplier Reference, Serial Number, Description, Calibration Date, Calibration Expiration Date
 

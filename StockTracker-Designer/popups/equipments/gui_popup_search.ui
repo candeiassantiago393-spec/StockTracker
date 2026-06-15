@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PopupMaterialSearch</class>
- <widget class="QDialog" name="PopupMaterialSearch">
+ <class>PopupEquipmentSearch</class>
+ <widget class="QDialog" name="PopupEquipmentSearch">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -82,7 +82,7 @@
 </string>
            </property>
            <property name="text">
-            <string>Material search results</string>
+            <string>Equipment search results</string>
            </property>
           </widget>
          </item>

@@ -17,11 +17,11 @@ $content = $content.Replace(
 Set-Content $MainPy $content -Encoding UTF8
 Write-Host "Exported: $MainPy"
 
-$MaterialsUi = Join-Path $DesignerDir "gui_materials.ui"
-$MaterialsPy = Join-Path $DesignerDir "gui_materials.py"
-if (Test-Path $MaterialsUi) {
-    & $Uic $MaterialsUi -o $MaterialsPy
-    Write-Host "Exported: $MaterialsPy"
+$EquipmentsUi = Join-Path $DesignerDir "gui_equipments.ui"
+$EquipmentsPy = Join-Path $DesignerDir "gui_equipments.py"
+if (Test-Path $EquipmentsUi) {
+    & $Uic $EquipmentsUi -o $EquipmentsPy
+    Write-Host "Exported: $EquipmentsPy"
 }
 
 & (Join-Path $PSScriptRoot "export_popup_uis.ps1")

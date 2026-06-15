@@ -1,5 +1,5 @@
 @echo off
-REM Apos editar .ui no Qt Designer, corre isto (exporta janela + materials + popups).
+REM Apos editar .ui no Qt Designer, corre isto (exporta janela + equipments + popups).
 cd /d "%~dp0.."
 set "PY=%~dp0..\.venv\Scripts\python.exe"
 set "UIC=%~dp0..\.venv\Scripts\pyside6-uic.exe"

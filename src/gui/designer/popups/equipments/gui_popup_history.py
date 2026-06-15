@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'gui_popup_search.ui'
+## Form generated from reading UI file 'gui_popup_history.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.1
 ##
@@ -15,17 +15,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QGridLayout,
-    QHBoxLayout, QHeaderView, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractScrollArea, QApplication, QDialog, QFrame,
+    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
+    QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 
-class Ui_PopupMaterialSearch(object):
-    def setupUi(self, PopupMaterialSearch):
-        if not PopupMaterialSearch.objectName():
-            PopupMaterialSearch.setObjectName(u"PopupMaterialSearch")
-        PopupMaterialSearch.resize(950, 480)
-        PopupMaterialSearch.setStyleSheet(u"*{\n"
+class Ui_PopupEquipmentHistory(object):
+    def setupUi(self, PopupEquipmentHistory):
+        if not PopupEquipmentHistory.objectName():
+            PopupEquipmentHistory.setObjectName(u"PopupEquipmentHistory")
+        PopupEquipmentHistory.resize(950, 480)
+        PopupEquipmentHistory.setStyleSheet(u"*{\n"
 "	border:none;\n"
 "	background: #000028;\n"
 "	padding: 0;\n"
@@ -35,9 +35,9 @@ class Ui_PopupMaterialSearch(object):
 "	font-size: 14px;\n"
 "}\n"
 "")
-        self.gridLayout = QGridLayout(PopupMaterialSearch)
+        self.gridLayout = QGridLayout(PopupEquipmentHistory)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.container_main_body = QWidget(PopupMaterialSearch)
+        self.container_main_body = QWidget(PopupEquipmentHistory)
         self.container_main_body.setObjectName(u"container_main_body")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -80,6 +80,7 @@ class Ui_PopupMaterialSearch(object):
 
         self.widget = QWidget(self.container_main_body)
         self.widget.setObjectName(u"widget")
+        self.widget.setMaximumSize(QSize(0, 0))
         self.horizontalLayout_2 = QHBoxLayout(self.widget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(-1, 20, -1, -1)
@@ -99,22 +100,28 @@ class Ui_PopupMaterialSearch(object):
 
         self.verticalLayout.addWidget(self.widget)
 
-        self.table_search = QTableWidget(self.container_main_body)
-        if (self.table_search.columnCount() < 5):
-            self.table_search.setColumnCount(5)
+        self.table_history = QTableWidget(self.container_main_body)
+        if (self.table_history.columnCount() < 6):
+            self.table_history.setColumnCount(6)
         __qtablewidgetitem = QTableWidgetItem()
-        self.table_search.setHorizontalHeaderItem(0, __qtablewidgetitem)
+        self.table_history.setHorizontalHeaderItem(0, __qtablewidgetitem)
         __qtablewidgetitem1 = QTableWidgetItem()
-        self.table_search.setHorizontalHeaderItem(1, __qtablewidgetitem1)
+        self.table_history.setHorizontalHeaderItem(1, __qtablewidgetitem1)
         __qtablewidgetitem2 = QTableWidgetItem()
-        self.table_search.setHorizontalHeaderItem(2, __qtablewidgetitem2)
+        self.table_history.setHorizontalHeaderItem(2, __qtablewidgetitem2)
         __qtablewidgetitem3 = QTableWidgetItem()
-        self.table_search.setHorizontalHeaderItem(3, __qtablewidgetitem3)
+        self.table_history.setHorizontalHeaderItem(3, __qtablewidgetitem3)
         __qtablewidgetitem4 = QTableWidgetItem()
-        self.table_search.setHorizontalHeaderItem(4, __qtablewidgetitem4)
-        self.table_search.setObjectName(u"table_search")
-        self.table_search.setMinimumSize(QSize(0, 280))
-        self.table_search.setStyleSheet(u"\n"
+        self.table_history.setHorizontalHeaderItem(4, __qtablewidgetitem4)
+        __qtablewidgetitem5 = QTableWidgetItem()
+        self.table_history.setHorizontalHeaderItem(5, __qtablewidgetitem5)
+        self.table_history.setObjectName(u"table_history")
+        self.table_history.setMinimumSize(QSize(0, 280))
+        self.table_history.setMaximumSize(QSize(16777215, 280))
+        self.table_history.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.table_history.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.table_history.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustIgnored)
+        self.table_history.setStyleSheet(u"\n"
 "QTableWidget {\n"
 "    background-color: #00183B;\n"
 "    gridline-color: #333353;\n"
@@ -127,9 +134,38 @@ class Ui_PopupMaterialSearch(object):
 "    border: 1px solid #B3B3BE;\n"
 "    font-weight: bold;\n"
 "}\n"
+"QTableWidget QScrollBar:vertical {\n"
+"    background-color: #00183B;\n"
+"    width: 12px;\n"
+"    margin: 0;\n"
+"}\n"
+"QTableWidget QScrollBar::handle:vertical {\n"
+"    background-color: #00CCCC;\n"
+"    min-height: 24px;\n"
+"    border-radius: 4px;\n"
+"}\n"
+"QTableWidget QScrollBar::add-line:vertical,\n"
+"QTableWidget QScrollBar::sub-line:vertical {\n"
+"    height: 0;\n"
+"}\n"
+"QTableWidget QScrollBar:horizontal {\n"
+"    background-color: #00183B;\n"
+"    height: 12px;\n"
+"    margin: 0;\n"
+"}\n"
+"QTableWidget QScrollBar::handle:horizontal {\n"
+"    background-color: #00CCCC;\n"
+"    min-width: 24px;\n"
+"    border-radius: 4px;\n"
+"}\n"
+"QTableWidget QScrollBar::add-line:horizontal,\n"
+"QTableWidget QSc"
+                        "rollBar::sub-line:horizontal {\n"
+"    width: 0;\n"
+"}\n"
 "")
 
-        self.verticalLayout.addWidget(self.table_search)
+        self.verticalLayout.addWidget(self.table_history)
 
         self.container_button = QWidget(self.container_main_body)
         self.container_button.setObjectName(u"container_button")
@@ -169,6 +205,7 @@ class Ui_PopupMaterialSearch(object):
 
         self.btn_cancel = QPushButton(self.container_button)
         self.btn_cancel.setObjectName(u"btn_cancel")
+        self.btn_cancel.setVisible(False)
         sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
@@ -189,26 +226,28 @@ class Ui_PopupMaterialSearch(object):
         self.gridLayout.addWidget(self.container_main_body, 0, 0, 1, 1)
 
 
-        self.retranslateUi(PopupMaterialSearch)
+        self.retranslateUi(PopupEquipmentHistory)
 
-        QMetaObject.connectSlotsByName(PopupMaterialSearch)
+        QMetaObject.connectSlotsByName(PopupEquipmentHistory)
     # setupUi
 
-    def retranslateUi(self, PopupMaterialSearch):
-        PopupMaterialSearch.setWindowTitle(QCoreApplication.translate("PopupMaterialSearch", u"Dialog", None))
-        self.tittle.setText(QCoreApplication.translate("PopupMaterialSearch", u"Material search results", None))
-        self.description.setText(QCoreApplication.translate("PopupMaterialSearch", u"Select a row and press Ok, or double-click a row.", None))
-        ___qtablewidgetitem = self.table_search.horizontalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("PopupMaterialSearch", u"Supplier Reference", None))
-        ___qtablewidgetitem1 = self.table_search.horizontalHeaderItem(1)
-        ___qtablewidgetitem1.setText(QCoreApplication.translate("PopupMaterialSearch", u"Serial Number", None))
-        ___qtablewidgetitem2 = self.table_search.horizontalHeaderItem(2)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("PopupMaterialSearch", u"Description", None))
-        ___qtablewidgetitem3 = self.table_search.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("PopupMaterialSearch", u"Calibration Date", None))
-        ___qtablewidgetitem4 = self.table_search.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("PopupMaterialSearch", u"Calibration Expiration", None))
-        self.btn_ok.setText(QCoreApplication.translate("PopupMaterialSearch", u"Ok", None))
-        self.btn_cancel.setText(QCoreApplication.translate("PopupMaterialSearch", u"Cancel", None))
+    def retranslateUi(self, PopupEquipmentHistory):
+        PopupEquipmentHistory.setWindowTitle(QCoreApplication.translate("PopupEquipmentHistory", u"Dialog", None))
+        self.tittle.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Equipments", None))
+        self.description.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Popup description", None))
+        ___qtablewidgetitem = self.table_history.horizontalHeaderItem(0)
+        ___qtablewidgetitem.setText(QCoreApplication.translate("PopupEquipmentHistory", u"ID", None))
+        ___qtablewidgetitem1 = self.table_history.horizontalHeaderItem(1)
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Supplier Reference", None))
+        ___qtablewidgetitem2 = self.table_history.horizontalHeaderItem(2)
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Serial Number", None))
+        ___qtablewidgetitem3 = self.table_history.horizontalHeaderItem(3)
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Description", None))
+        ___qtablewidgetitem4 = self.table_history.horizontalHeaderItem(4)
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Calibration Date", None))
+        ___qtablewidgetitem5 = self.table_history.horizontalHeaderItem(5)
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Calibration Expiration", None))
+        self.btn_ok.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Close", None))
+        self.btn_cancel.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Cancel", None))
     # retranslateUi
 

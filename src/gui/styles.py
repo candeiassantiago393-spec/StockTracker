@@ -57,6 +57,14 @@ QLabel {
 }
 """
 
+SUBSECTION_TITLE_STYLE = """
+QLabel {
+    font-size: 16px;
+    font-weight: bold;
+    padding-top: 4px;
+}
+"""
+
 FIELD_LABEL_STYLE = ""
 
 LINE_EDIT_STYLE = """
@@ -126,8 +134,8 @@ QLabel:hover {
 
 STOCK_VALUE_STYLE = VALUE_FIELD_STYLE
 
-# Wider read-only fields (materials description, etc.)
-MATERIAL_VALUE_FIELD_STYLE = """
+# Wider read-only fields (equipments description, etc.)
+EQUIPMENT_VALUE_FIELD_STYLE = """
 QLabel {
     min-width: 280px;
     max-width: 480px;
@@ -210,6 +218,83 @@ QHeaderView::section {
     padding: 6px;
     border: 1px solid #B3B3BE;
     font-weight: bold;
+}
+QTableWidget QScrollBar:vertical {
+    background-color: #00183B;
+    width: 12px;
+    margin: 0;
+}
+QTableWidget QScrollBar::handle:vertical {
+    background-color: #00CCCC;
+    min-height: 24px;
+    border-radius: 4px;
+}
+QTableWidget QScrollBar::add-line:vertical,
+QTableWidget QScrollBar::sub-line:vertical {
+    height: 0;
+}
+QTableWidget QScrollBar:horizontal {
+    background-color: #00183B;
+    height: 12px;
+    margin: 0;
+}
+QTableWidget QScrollBar::handle:horizontal {
+    background-color: #00CCCC;
+    min-width: 24px;
+    border-radius: 4px;
+}
+QTableWidget QScrollBar::add-line:horizontal,
+QTableWidget QScrollBar::sub-line:horizontal {
+    width: 0;
+}
+"""
+
+POPUP_TABLE_MAX_HEIGHT = 280
+
+LIST_WIDGET_STYLE = """
+QListWidget {
+    background-color: #00183B;
+    border: 1px solid #B3B3BE;
+    color: #FFFFFF;
+    padding: 2px;
+    font-size: 12px;
+}
+QListWidget::item {
+    padding: 2px 4px;
+    min-height: 18px;
+}
+QListWidget::item:selected {
+    background-color: #333353;
+    border: 1px solid #00FFB9;
+}
+QListWidget::item:hover {
+    background-color: #001F39;
+}
+QListWidget QScrollBar:vertical {
+    background-color: #00183B;
+    width: 12px;
+}
+QListWidget QScrollBar::handle:vertical {
+    background-color: #00CCCC;
+    min-height: 24px;
+    border-radius: 4px;
+}
+"""
+
+BTN_WIDE_ACTION_STYLE = """
+QPushButton {
+    min-height: 28px;
+    padding: 6px 12px;
+    border-radius: 2px;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
 }
 """
 

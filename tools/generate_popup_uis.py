@@ -121,6 +121,21 @@ def table_body(name: str, columns: tuple[str, ...]) -> str:
           <height>280</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>280</height>
+         </size>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
+        </property>
         <property name="styleSheet">
 {prop_string(styles.TABLE_STYLE)}        </property>
 {cols}
@@ -144,7 +159,7 @@ COMPONENT_SEARCH_COLUMNS = (
     "Description",
     "Stock",
 )
-MATERIAL_HISTORY_COLUMNS = (
+EQUIPMENT_HISTORY_COLUMNS = (
     "ID",
     "Supplier Reference",
     "Serial Number",
@@ -152,7 +167,7 @@ MATERIAL_HISTORY_COLUMNS = (
     "Calibration Date",
     "Calibration Expiration",
 )
-MATERIAL_SEARCH_COLUMNS = (
+EQUIPMENT_SEARCH_COLUMNS = (
     "Supplier Reference",
     "Serial Number",
     "Description",
@@ -161,22 +176,23 @@ MATERIAL_SEARCH_COLUMNS = (
 )
 
 COMPONENTS_DIR = OUT_DIR / "components"
-MATERIALS_DIR = OUT_DIR / "materials"
+EQUIPMENTS_DIR = OUT_DIR / "equipments"
 SHARED_DIR = OUT_DIR / "shared"
 
 
-def form_material_body() -> str:
+def form_equipment_body() -> str:
     rows = [
         (0, "Supplier Reference", line_edit_xml("supplier_reference")),
         (1, "Serial Number", line_edit_xml("serial_number")),
         (2, "Description", line_edit_xml("description_field")),
         (3, "Calibration Date", line_edit_xml("calibration_date")),
         (4, "Calibration Expiration", line_edit_xml("calibration_expiration")),
+        (5, "Datasheet", line_edit_xml("datasheet")),
     ]
     items = "\n".join(form_row_xml(r, lbl, fld) for r, lbl, fld in rows)
     return f"""      <item>
        <widget class="QWidget" name="body_form" native="true">
-        <layout class="QFormLayout" name="form_material">
+        <layout class="QFormLayout" name="form_equipment">
          <property name="spacing"><number>{styles.TEMPLATE_ROW_SPACING}</number></property>
 {items}
         </layout>
@@ -186,7 +202,7 @@ def form_material_body() -> str:
 
 
 def _cleanup_legacy_popups() -> None:
-    """Remove flat popups/*.ui from before components/materials/shared split."""
+    """Remove flat popups/*.ui from before components/equipments/shared split."""
     for pattern in ("gui_popup_*.ui", "gui_popup_*.py"):
         for path in OUT_DIR.glob(pattern):
             path.unlink()
@@ -260,7 +276,7 @@ def main() -> None:
     base = TEMPLATE.read_text(encoding="utf-8")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     COMPONENTS_DIR.mkdir(parents=True, exist_ok=True)
-    MATERIALS_DIR.mkdir(parents=True, exist_ok=True)
+    EQUIPMENTS_DIR.mkdir(parents=True, exist_ok=True)
     SHARED_DIR.mkdir(parents=True, exist_ok=True)
     _cleanup_legacy_popups()
 
@@ -324,47 +340,47 @@ def main() -> None:
         ),
     ]
 
-    material_variants = [
+    equipment_variants = [
         (
-            MATERIALS_DIR / "gui_popup_material.ui",
+            EQUIPMENTS_DIR / "gui_popup_equipment.ui",
             patch_popup(
                 base,
-                class_name="PopupMaterial",
-                title="Material",
+                class_name="PopupEquipment",
+                title="Equipment",
                 subtitle=(
                     "Provide Supplier Reference, Serial Number or Description."
                 ),
                 width=641,
                 height=520,
-                body_xml=form_material_body(),
+                body_xml=form_equipment_body(),
                 ok_text="Save",
                 cancel_text="Cancel",
             ),
         ),
         (
-            MATERIALS_DIR / "gui_popup_history.ui",
+            EQUIPMENTS_DIR / "gui_popup_history.ui",
             patch_popup(
                 base,
-                class_name="PopupMaterialHistory",
-                title="Materials",
+                class_name="PopupEquipmentHistory",
+                title="Equipments",
                 subtitle=None,
                 width=950,
                 height=480,
-                body_xml=table_body("table_history", MATERIAL_HISTORY_COLUMNS),
+                body_xml=table_body("table_history", EQUIPMENT_HISTORY_COLUMNS),
                 ok_text="Close",
                 show_cancel=False,
             ),
         ),
         (
-            MATERIALS_DIR / "gui_popup_search.ui",
+            EQUIPMENTS_DIR / "gui_popup_search.ui",
             patch_popup(
                 base,
-                class_name="PopupMaterialSearch",
-                title="Material search results",
+                class_name="PopupEquipmentSearch",
+                title="Equipment search results",
                 subtitle="Select a row and press Ok, or double-click a row.",
                 width=950,
                 height=480,
-                body_xml=table_body("table_search", MATERIAL_SEARCH_COLUMNS),
+                body_xml=table_body("table_search", EQUIPMENT_SEARCH_COLUMNS),
             ),
         ),
     ]
@@ -388,7 +404,7 @@ def main() -> None:
 
     for path, content in (
         *component_variants,
-        *material_variants,
+        *equipment_variants,
         *shared_variants,
     ):
         path.write_text(content, encoding="utf-8")
@@ -397,7 +413,7 @@ def main() -> None:
     template_copy = SHARED_DIR / "gui_popup_template.ui"
     template_copy.write_text(base, encoding="utf-8")
     print(f"Wrote {template_copy}")
-    print("Popups: popups/components/, popups/materials/, popups/shared/")
+    print("Popups: popups/components/, popups/equipments/, popups/shared/")
 
 
 if __name__ == "__main__":

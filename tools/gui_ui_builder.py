@@ -51,14 +51,15 @@ def template_label_xml(name: str, text: str) -> str:
 """
 
 
-def row_open(name: str, row: int) -> str:
+def row_open(name: str, row: int, *, compact: bool = False) -> str:
+    top, bottom = (4, 4) if compact else (RM[1], RM[3])
     return f"""          <item row="{row}" column="0" colspan="2">
            <widget class="QWidget" name="row_{name}" native="true">
             <layout class="QHBoxLayout" name="layout_{name}">
              <property name="spacing"><number>{RS}</number></property>
-             <property name="topMargin"><number>{RM[1]}</number></property>
+             <property name="topMargin"><number>{top}</number></property>
              <property name="rightMargin"><number>{RM[2]}</number></property>
-             <property name="bottomMargin"><number>{RM[3]}</number></property>
+             <property name="bottomMargin"><number>{bottom}</number></property>
 """
 
 
@@ -115,6 +116,32 @@ def input_row_xml(
     )
 
 
+def input_dual_btn_row_xml(
+    name: str,
+    label: str,
+    primary_btn: str,
+    primary_text: str,
+    secondary_btn: str,
+    secondary_text: str,
+    row: int,
+    *,
+    compact: bool = False,
+    secondary_width: int = 60,
+) -> str:
+    secondary_part = f"""             <item>
+              <widget class="QPushButton" name="{secondary_btn}">
+               <property name="minimumSize"><size><width>{secondary_width}</width><height>0</height></size></property>
+               <property name="maximumSize"><size><width>{secondary_width}</width><height>16777215</height></size></property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_COPY_STYLE)}               </property>
+               <property name="text"><string>{esc(secondary_text)}</string></property>
+              </widget>
+             </item>
+"""
+    base = input_btn_row_xml(name, label, primary_btn, primary_text, row, compact=compact)
+    return base.replace(ROW_CLOSE, secondary_part + ROW_CLOSE)
+
+
 def input_btn_row_xml(
     name: str,
     label: str,
@@ -125,6 +152,7 @@ def input_btn_row_xml(
     with_copy: bool = False,
     copy_before_field: bool = False,
     copy_btn_name: str | None = None,
+    compact: bool = False,
 ) -> str:
     copy_part = ""
     if with_copy:
@@ -158,7 +186,7 @@ def input_btn_row_xml(
     else:
         widgets_block = field_part + action_part
     return (
-        row_open(name, row)
+        row_open(name, row, compact=compact)
         + f"""             <item>
 {template_label_xml(f"label_{name}", label)}
              </item>
@@ -194,6 +222,64 @@ def stock_btn_row_xml(row: int) -> str:
     )
 
 
+def input_scan_copy_row_xml(
+    name: str,
+    label: str,
+    scan_btn_name: str,
+    row: int,
+    *,
+    copy_btn_name: str | None = None,
+    compact: bool = False,
+) -> str:
+    copy_name = copy_btn_name or f"btn_copy_{name}"
+    return (
+        row_open(name, row, compact=compact)
+        + f"""             <item>
+{template_label_xml(f"label_{name}", label)}
+             </item>
+             <item>
+              <widget class="QLineEdit" name="{name}">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+{prop_string(styles.LINE_EDIT_STYLE)}               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="{scan_btn_name}">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_TEMPLATE_STYLE)}               </property>
+               <property name="text"><string>SCAN</string></property>
+              </widget>
+             </item>
+{copy_btn_xml(copy_name)}"""
+        + ROW_CLOSE
+    )
+
+
+def output_row_wide_xml(name: str, label: str, row: int) -> str:
+    return (
+        row_open(name, row)
+        + f"""             <item>
+{template_label_xml(f"title_{name}", label)}
+             </item>
+             <item>
+              <widget class="QLabel" name="{name}">
+               <property name="styleSheet">
+{prop_string(styles.EQUIPMENT_VALUE_FIELD_STYLE)}               </property>
+               <property name="text"><string></string></property>
+              </widget>
+             </item>
+{copy_btn_xml(f"btn_copy_{name}")}"""
+        + ROW_CLOSE
+    )
+
+
 def output_row_xml(name: str, label: str, row: int) -> str:
     return (
         row_open(name, row)
@@ -212,6 +298,17 @@ def output_row_xml(name: str, label: str, row: int) -> str:
     )
 
 
+def subsection_title_xml(name: str, text: str, row: int, *, colspan: int = 1) -> str:
+    span = f' colspan="{colspan}"' if colspan > 1 else ""
+    return f"""          <item row="{row}" column="0"{span}>
+           <widget class="QLabel" name="{name}">
+            <property name="styleSheet">
+{prop_string(styles.SUBSECTION_TITLE_STYLE)}            </property>
+            <property name="text"><string>{esc(text)}</string></property>
+           </widget>
+          </item>"""
+
+
 def section_title_xml(name: str, text: str, row: int, *, col: int = 0, colspan: int = 1) -> str:
     span = f' colspan="{colspan}"' if colspan > 1 else ""
     return f"""          <item row="{row}" column="{col}"{span}>
@@ -219,6 +316,97 @@ def section_title_xml(name: str, text: str, row: int, *, col: int = 0, colspan: 
             <property name="styleSheet">
 {prop_string(styles.SECTION_TITLE_STYLE)}            </property>
             <property name="text"><string>{esc(text)}</string></property>
+           </widget>
+          </item>"""
+
+
+def wide_button_row_xml(
+    btn_name: str,
+    btn_text: str,
+    row: int,
+    *,
+    label: str = "Action",
+    min_width: int = 280,
+) -> str:
+    return (
+        row_open(btn_name, row)
+        + f"""             <item>
+{template_label_xml(f"label_{btn_name}", label)}
+             </item>
+             <item>
+              <widget class="QPushButton" name="{btn_name}">
+               <property name="minimumSize"><size><width>{min_width}</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_WIDE_ACTION_STYLE)}               </property>
+               <property name="text"><string>{esc(btn_text)}</string></property>
+              </widget>
+             </item>
+"""
+        + ROW_CLOSE
+    )
+
+
+def label_button_row_xml(
+    btn_name: str,
+    label: str,
+    btn_text: str,
+    row: int,
+    *,
+    compact: bool = False,
+) -> str:
+    return (
+        row_open(btn_name, row, compact=compact)
+        + f"""             <item>
+{template_label_xml(f"label_{btn_name}", label)}
+             </item>
+             <item>
+              <widget class="QPushButton" name="{btn_name}">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_TEMPLATE_STYLE)}               </property>
+               <property name="text"><string>{esc(btn_text)}</string></property>
+              </widget>
+             </item>
+"""
+        + ROW_CLOSE
+    )
+
+
+def full_width_button_row_xml(btn_name: str, btn_text: str, row: int) -> str:
+    return f"""          <item row="{row}" column="0" colspan="2">
+           <widget class="QPushButton" name="{btn_name}">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+{prop_string(styles.BTN_WIDE_ACTION_STYLE)}            </property>
+            <property name="text"><string>{esc(btn_text)}</string></property>
+           </widget>
+          </item>"""
+
+
+def list_widget_row_xml(
+    name: str,
+    row: int,
+    *,
+    min_height: int = 52,
+    max_height: int = 64,
+) -> str:
+    return f"""          <item row="{row}" column="0" colspan="2">
+           <widget class="QListWidget" name="{name}">
+            <property name="minimumSize"><size><width>0</width><height>{min_height}</height></size></property>
+            <property name="maximumSize"><size><width>16777215</width><height>{max_height}</height></size></property>
+            <property name="styleSheet">
+{prop_string(styles.LIST_WIDGET_STYLE)}            </property>
            </widget>
           </item>"""
 

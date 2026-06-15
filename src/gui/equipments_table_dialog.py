@@ -1,7 +1,7 @@
-"""Read-only table of materials from Excel."""
+"""Read-only table of equipments from Excel."""
 from PySide6.QtWidgets import QDialog
 
-from .designer.popups.materials.gui_popup_history import Ui_PopupMaterialHistory as Ui_PopupHistory
+from .designer.popups.equipments.gui_popup_history import Ui_PopupEquipmentHistory as Ui_PopupHistory
 from .siemens_template.popup_shell import fill_readonly_table
 
 COLUMNS = (
@@ -14,8 +14,8 @@ COLUMNS = (
 )
 
 
-class MaterialsTableDialog(QDialog):
-    def __init__(self, rows, parent=None, *, title: str = "Materials"):
+class EquipmentsTableDialog(QDialog):
+    def __init__(self, rows, parent=None, *, title: str = "Equipments"):
         super().__init__(parent)
         self.ui = Ui_PopupHistory()
         self.ui.setupUi(self)

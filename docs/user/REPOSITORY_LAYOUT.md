@@ -23,11 +23,11 @@
 |------|------|
 | `main.py` | Application entry point (GUI) |
 | `test_terminal.py` | Terminal test console (development) |
-| `core/stock.py` | `StockTracker` — Excel, components, materials, history, APIs |
+| `core/stock.py` | `StockTracker` — Excel, components, equipments, history, APIs |
 | `gui/stock_tracker_window.py` | Main window, Components page, navigation |
-| `gui/materials_page.py` | Materials page logic |
+| `gui/equipments_page.py` | Equipments page logic |
 | `gui/designer/gui_stocktracker.ui` | Components layout (Qt Designer) |
-| `gui/designer/gui_materials.ui` | Materials layout (Qt Designer) |
+| `gui/designer/gui_equipments.ui` | Equipments layout (Qt Designer) |
 | `gui/designer/gui_*.py` | Generated UI modules (do not edit by hand) |
 | `gui/styles.py` | Siemens metrics and styles |
 | `gui/*_dialog.py` | Popup behaviour on top of `designer/popups/` |
@@ -49,7 +49,7 @@ GUI map (Portuguese): [src/gui/ESTRUTURA.md](../../src/gui/ESTRUTURA.md)
 
 1. Copy `config/secrets.example.py` to `config/secrets.py`
 2. Set API keys for the suppliers you use
-3. Place or update `data/stock.xlsx` (sheets: Components, Materials, History)
+3. Place or update `data/stock.xlsx` (sheets: Components, Equipments, History)
 4. Close Excel before the application saves the workbook
 
 ---

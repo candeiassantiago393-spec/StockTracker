@@ -1,6 +1,6 @@
 # Qt Designer — Siemens UI (Stock Tracker)
 
-The application uses **Siemens template** layouts in Qt Widgets Designer. Layout lives in `.ui` files and is exported to Python with `pyside6-uic`. Business logic stays in Python (`stock_tracker_window.py`, `materials_page.py`).
+The application uses **Siemens template** layouts in Qt Widgets Designer. Layout lives in `.ui` files and is exported to Python with `pyside6-uic`. Business logic stays in Python (`stock_tracker_window.py`, `equipments_page.py`).
 
 ---
 
@@ -9,14 +9,14 @@ The application uses **Siemens template** layouts in Qt Widgets Designer. Layout
 | File | Runtime | Designer menu |
 |------|---------|---------------|
 | `src/gui/designer/gui_stocktracker.ui` | Components page | Option **1** |
-| `src/gui/designer/gui_materials.ui` | Materials page | Option **2** |
+| `src/gui/designer/gui_equipments.ui` | Equipments page | Option **2** |
 | `src/gui/designer/popups/gui_popup_*.ui` | Dialogs | Options **3–8** |
 
-Generated modules (`gui_stocktracker.py`, `gui_materials.py`, `gui_popup_*.py`) — **do not edit by hand**.
+Generated modules (`gui_stocktracker.py`, `gui_equipments.py`, `gui_popup_*.py`) — **do not edit by hand**.
 
 Reference: `src/gui/siemens_template/gui_template.ui`  
 Shared metrics: `src/gui/styles.py`, `tools/gui_ui_builder.py`  
-Portuguese Materials guide: `src/gui/designer/MATERIALS-LEIA-ME.txt`
+Portuguese Equipments guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 
 ---
 
@@ -50,7 +50,7 @@ powershell -File tools\organizar-ambiente.ps1
 .\tools\ABRIR-DESIGNER.bat
 ```
 
-Choose **1** (Components) or **2** (Materials).
+Choose **1** (Components) or **2** (Equipments).
 
 **From Desktop package:**
 
@@ -70,7 +70,7 @@ Individual generators:
 
 ```powershell
 python tools/generate_stocktracker_ui.py
-python tools/generate_materials_ui.py
+python tools/generate_equipments_ui.py
 python tools/generate_popup_uis.py
 ```
 
@@ -94,7 +94,7 @@ Then restart: `python -m src.main`
 
 ---
 
-## Shared layout rules (Components + Materials)
+## Shared layout rules (Components + Equipments)
 
 | Rule | Value |
 |------|-------|
@@ -118,7 +118,7 @@ Then restart: `python -m src.main`
 
 ---
 
-## Materials — key objectNames
+## Equipments — key objectNames
 
 **Left:** `search_entry`, `btn_search`, `supplier_ref_entry`, `btn_copy_supplier_ref`
 
@@ -131,9 +131,9 @@ Then restart: `python -m src.main`
 | Layer | Location |
 |-------|----------|
 | Components layout | `gui_stocktracker.ui` → `gui_stocktracker.py` |
-| Materials layout | `gui_materials.ui` → `gui_materials.py` |
+| Equipments layout | `gui_equipments.ui` → `gui_equipments.py` |
 | Components behaviour | `stock_tracker_window.py` |
-| Materials behaviour | `materials_page.py` |
+| Equipments behaviour | `equipments_page.py` |
 | Popups | `*_dialog.py` + `designer/popups/` |
 
 See also: [WORKSPACE.md](WORKSPACE.md), [ARCHITECTURE.md](ARCHITECTURE.md), [../GUIA_RAPIDO_PT.md](../GUIA_RAPIDO_PT.md).

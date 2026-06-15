@@ -1,1 +1,0 @@
-# Materials popups (Qt Designer).

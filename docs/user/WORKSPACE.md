@@ -35,17 +35,17 @@ powershell -File tools\organizar-ambiente.ps1
 
 ---
 
-## Qt Designer — Components and Materials
+## Qt Designer — Components and Equipments
 
 | File | Page |
 |------|------|
 | `gui_stocktracker.ui` | Components (`DESIGNER.bat` option **1**) |
-| `gui_materials.ui` | Materials (`DESIGNER.bat` option **2**) |
+| `gui_equipments.ui` | Equipments (`DESIGNER.bat` option **2**) |
 | `popups\components\` | Components dialogs (options **3–6**) |
-| `popups\materials\` | Materials dialogs (options **7–9**) |
+| `popups\equipments\` | Equipments dialogs (options **7–9**) |
 | `popups\shared\` | Confirm + Siemens template |
 
-Quick guides (Portuguese): `StockTracker-Designer\LEIA-ME.txt` · `MATERIALS-LEIA-ME.txt`
+Quick guides (Portuguese): `StockTracker-Designer\LEIA-ME.txt` · `EQUIPMENTS-LEIA-ME.txt`
 
 **Workflow after editing `.ui` on Desktop:**
 

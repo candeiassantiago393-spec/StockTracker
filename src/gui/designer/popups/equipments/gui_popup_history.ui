@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PopupMaterialSearch</class>
- <widget class="QDialog" name="PopupMaterialSearch">
+ <class>PopupEquipmentHistory</class>
+ <widget class="QDialog" name="PopupEquipmentHistory">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -82,7 +82,7 @@
 </string>
            </property>
            <property name="text">
-            <string>Material search results</string>
+            <string>Equipments</string>
            </property>
           </widget>
          </item>
@@ -91,6 +91,12 @@
       </item>
       <item>
        <widget class="QWidget" name="widget" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="topMargin">
           <number>20</number>
@@ -113,7 +119,7 @@ color: #f3f3f0;
 border: 1px solid #009999;</string>
            </property>
            <property name="text">
-            <string>Select a row and press Ok, or double-click a row.</string>
+            <string>Popup description</string>
            </property>
           </widget>
          </item>
@@ -121,12 +127,27 @@ border: 1px solid #009999;</string>
        </widget>
       </item>
       <item>
-       <widget class="QTableWidget" name="table_search">
+       <widget class="QTableWidget" name="table_history">
         <property name="minimumSize">
          <size>
           <width>0</width>
           <height>280</height>
          </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>280</height>
+         </size>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
         </property>
         <property name="styleSheet">
    <string notr="true">
@@ -142,8 +163,39 @@ QHeaderView::section {
     border: 1px solid #B3B3BE;
     font-weight: bold;
 }
+QTableWidget QScrollBar:vertical {
+    background-color: #00183B;
+    width: 12px;
+    margin: 0;
+}
+QTableWidget QScrollBar::handle:vertical {
+    background-color: #00CCCC;
+    min-height: 24px;
+    border-radius: 4px;
+}
+QTableWidget QScrollBar::add-line:vertical,
+QTableWidget QScrollBar::sub-line:vertical {
+    height: 0;
+}
+QTableWidget QScrollBar:horizontal {
+    background-color: #00183B;
+    height: 12px;
+    margin: 0;
+}
+QTableWidget QScrollBar::handle:horizontal {
+    background-color: #00CCCC;
+    min-width: 24px;
+    border-radius: 4px;
+}
+QTableWidget QScrollBar::add-line:horizontal,
+QTableWidget QScrollBar::sub-line:horizontal {
+    width: 0;
+}
 </string>
         </property>
+         <column>
+          <property name="text"><string>ID</string></property>
+         </column>
          <column>
           <property name="text"><string>Supplier Reference</string></property>
          </column>
@@ -227,12 +279,13 @@ QPushButton:pressed {
             </size>
            </property>
            <property name="text">
-            <string>Ok</string>
+            <string>Close</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="btn_cancel">
+           <property name="visible"><bool>false</bool></property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
              <horstretch>0</horstretch>

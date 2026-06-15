@@ -7,9 +7,9 @@ Canonical `.ui` files for the running app. Metrics come from `styles.py` and Sie
 | File | Runtime |
 |------|---------|
 | `gui_stocktracker.ui` | Components page (`stock_tracker_window.py`) |
-| `gui_materials.ui` | Materials page (`materials_page.py`) — see `MATERIALS-LEIA-ME.txt` |
+| `gui_equipments.ui` | Equipments page — support docs list (`doc_results_list`), see `EQUIPMENTS-LEIA-ME.txt` |
 | `popups/components/gui_popup_*.ui` | Component dialogs |
-| `popups/materials/gui_popup_*.ui` | Material dialogs |
+| `popups/equipments/gui_popup_*.ui` | Equipment dialogs |
 | `popups/shared/gui_popup_*.ui` | Confirm + template |
 
 ## Regenerate from Python (template-aligned)
@@ -22,7 +22,7 @@ Or individually:
 
 ```text
 python tools/generate_stocktracker_ui.py
-python tools/generate_materials_ui.py
+python tools/generate_equipments_ui.py
 python tools/generate_popup_uis.py
 ```
 

@@ -1,5 +1,5 @@
 # Organiza projeto + pacotes Qt Designer (repo, Desktop Designer, Desktop Projeto).
-# Inclui pagina Materials (gui_materials.ui).
+# Inclui pagina Equipments (gui_equipments.ui).
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $Desktop = [Environment]::GetFolderPath("Desktop")
@@ -11,7 +11,7 @@ Write-Host ""
 Write-Host "=== Stock Tracker - organizar ambiente ===" -ForegroundColor Cyan
 Write-Host ""
 
-# 1) Regenerar .ui canonicos (Components + Materials + popups)
+# 1) Regenerar .ui canonicos (Components + Equipments + popups)
 Write-Host "[1/4] Gerar .ui a partir dos templates..." -ForegroundColor Yellow
 & (Join-Path $Root ".venv\Scripts\python.exe") (Join-Path $Root "tools\generate_all_designer_uis.py") 2>$null
 if (-not $?) { python (Join-Path $Root "tools\generate_all_designer_uis.py") }
@@ -34,11 +34,11 @@ Write-Host ""
 Write-Host "=== Verificacao ===" -ForegroundColor Cyan
 
 $checks = @(
-    @{ Label = "Repo: gui_materials.ui";           Path = Join-Path $Root "src\gui\designer\gui_materials.ui" },
-    @{ Label = "Repo: materials_page.py";           Path = Join-Path $Root "src\gui\materials_page.py" },
-    @{ Label = "Designer (repo): gui_materials.ui"; Path = Join-Path $DesignerRepo "gui_materials.ui" },
-    @{ Label = "Designer (Desktop): gui_materials.ui"; Path = Join-Path $DesignerDesktop "gui_materials.ui" },
-    @{ Label = "Desktop Projeto: materials";        Path = Join-Path $ProjetoDesktop "src\gui\designer\gui_materials.ui" },
+    @{ Label = "Repo: gui_equipments.ui";            Path = Join-Path $Root "src\gui\designer\gui_equipments.ui" },
+    @{ Label = "Repo: equipments_page.py";          Path = Join-Path $Root "src\gui\equipments_page.py" },
+    @{ Label = "Designer (repo): gui_equipments.ui"; Path = Join-Path $DesignerRepo "gui_equipments.ui" },
+    @{ Label = "Designer (Desktop): gui_equipments.ui"; Path = Join-Path $DesignerDesktop "gui_equipments.ui" },
+    @{ Label = "Desktop Projeto: equipments";       Path = Join-Path $ProjetoDesktop "src\gui\designer\gui_equipments.ui" },
     @{ Label = "Designer (Desktop): DESIGNER.bat";  Path = Join-Path $DesignerDesktop "DESIGNER.bat" }
 )
 
@@ -57,9 +57,9 @@ Write-Host "  Projeto (Git):     $Root"
 Write-Host "  Qt Designer:       $DesignerDesktop"
 Write-Host "  Copia Desktop:     $ProjetoDesktop"
 Write-Host ""
-Write-Host "Qt Designer - Materials: duplo-clique em" -ForegroundColor Cyan
+Write-Host "Qt Designer - Equipments: duplo-clique em" -ForegroundColor Cyan
 Write-Host "  $DesignerDesktop\DESIGNER.bat" -ForegroundColor White
-Write-Host "  Opcao 2 = gui_materials.ui"
+Write-Host "  Opcao 2 = gui_equipments.ui"
 Write-Host ""
 
 if (-not $ok) {

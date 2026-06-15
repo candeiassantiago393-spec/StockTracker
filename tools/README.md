@@ -7,11 +7,11 @@ These are not required to run the app.
 |------|---------|
 | `ABRIR-DESIGNER.bat` | Opens `gui_stocktracker.ui` in Qt Designer |
 | `abrir-qt-designer.ps1` | Same as above (PowerShell) |
-| `export-ui.bat` / `export_designer_uis.ps1` | Exports main + materials + popup `.ui` → `.py` |
+| `export-ui.bat` / `export_designer_uis.ps1` | Exports main + equipments + popup `.ui` → `.py` |
 | `export_stocktracker_ui.ps1` | Exports only `gui_stocktracker.ui` (legacy) |
 | `generate_all_designer_uis.py` | Regenerates all `.ui` from Python builders |
 | `generate_stocktracker_ui.py` | Regenerates `gui_stocktracker.ui` |
-| `generate_materials_ui.py` | Regenerates `gui_materials.ui` |
+| `generate_equipments_ui.py` | Regenerates `gui_equipments.ui` |
 | `gui_ui_builder.py` | Shared Siemens layout XML builders |
 | `generate_popup_uis.py` | Regenerates popup `.ui` files |
 | `export_popup_uis.ps1` | Exports popup `.ui` files to `.py` |
@@ -21,6 +21,7 @@ These are not required to run the app.
 | `ORGANIZAR-DESKTOP.bat` | Wrapper for `organizar-ambiente.ps1` (in this folder) |
 | `sincronizar-desktop.ps1` | Legacy: copies project + Designer (use `organizar-ambiente.ps1` instead) |
 | `build_project_docx.py` | Builds `word/StockTracker_Documentacao_Projeto.docx` |
+| `seed_example_equipments.py` | Adds 5 demo equipments + sample datasheets in `data/` |
 
 ## Run the App
 

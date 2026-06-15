@@ -98,7 +98,7 @@ If `src` is missing, change to the repository root.
 | `ImportError: relative import` | GUI file run directly | `python -m src.main` |
 | Excel not saved | `stock.xlsx` open in Excel | Close the file |
 | API no response | Keys / network / part number | Check `config/secrets.py` |
-| Designer missing Materials | Stale Desktop copy | `tools\ORGANIZAR-DESKTOP.bat` |
+| Designer missing Equipments | Stale Desktop copy | `tools\ORGANIZAR-DESKTOP.bat` |
 
 ---
 

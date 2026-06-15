@@ -1,7 +1,7 @@
-"""Pick one material row from Excel search results."""
+"""Pick one equipment row from Excel search results."""
 from PySide6.QtWidgets import QDialog, QTableWidget
 
-from .designer.popups.materials.gui_popup_search import Ui_PopupMaterialSearch as Ui_PopupSearch
+from .designer.popups.equipments.gui_popup_search import Ui_PopupEquipmentSearch as Ui_PopupSearch
 from .siemens_template.popup_shell import fill_readonly_table
 
 COLUMNS = (
@@ -13,7 +13,7 @@ COLUMNS = (
 )
 
 
-class MaterialSearchDialog(QDialog):
+class EquipmentSearchDialog(QDialog):
     def __init__(self, matches: list, row_to_dict, parent=None):
         super().__init__(parent)
         self._matches = matches

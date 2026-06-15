@@ -21,7 +21,7 @@ Ou duplo-clique em `run.bat`.
 | Página | Botão no header | Excel |
 |--------|-----------------|-------|
 | **Components** | COMPONENTS | Folha `Components` + movimentos em `History` |
-| **Materials** | MATERIALS | Folha `Materials` (materiais calibrados) |
+| **Equipments** | EQUIPMENTS | Folha `Equipments` (equipamentos calibrados) |
 
 Barra inferior partilhada: Last 20, histórico, ADD MANUAL, EDIT, OPEN EXCEL, CLEAR, Exit.
 
@@ -32,7 +32,7 @@ Barra inferior partilhada: Last 20, histórico, ADD MANUAL, EDIT, OPEN EXCEL, CL
 | Folha | Conteúdo |
 |-------|----------|
 | `Components` | Peças e stock |
-| `Materials` | Supplier Reference, Serial Number, Description, datas de calibração |
+| `Equipments` | Supplier Reference, Serial Number, Description, datas de calibração |
 | `History` | Movimentos IN/OUT |
 
 Fechar o Excel antes de gravar. Ver [data/README.md](../data/README.md).
@@ -54,12 +54,12 @@ Fechar o Excel antes de gravar. Ver [data/README.md](../data/README.md).
 | Ficheiro | Página |
 |----------|--------|
 | `gui_stocktracker.ui` | Components (DESIGNER.bat opção **1**) |
-| `gui_materials.ui` | Materials (DESIGNER.bat opção **2**) |
+| `gui_equipments.ui` | Equipments (DESIGNER.bat opção **2**) |
 | `popups/components/gui_popup_*.ui` | Diálogos Components (opções **3–6**) |
-| `popups/materials/gui_popup_*.ui` | Diálogos Materials (opções **7–9**) |
+| `popups/equipments/gui_popup_*.ui` | Diálogos Equipments (opções **7–9**) |
 | `popups/shared/gui_popup_*.ui` | Confirm + template (opções **10–11**) |
 
-Guia Materials: `src/gui/designer/MATERIALS-LEIA-ME.txt`
+Guia Equipments: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 
 ### Organizar tudo (repo + Desktop)
 
@@ -86,7 +86,7 @@ Regenera `.ui`, exporta `.py`, sincroniza Designer e copia o projeto para `Deskt
 | Entrada | `src/main.py` |
 | Lógica | `src/core/stock.py` |
 | GUI Components | `src/gui/stock_tracker_window.py` + `designer/gui_stocktracker.ui` |
-| GUI Materials | `src/gui/materials_page.py` + `designer/gui_materials.ui` |
+| GUI Equipments | `src/gui/equipments_page.py` + `designer/gui_equipments.ui` |
 | Estilos template | `src/gui/styles.py`, `tools/gui_ui_builder.py` |
 | Credenciais | `config/secrets.py` (não commitar) |
 

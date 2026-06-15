@@ -1,0 +1,20 @@
+Stock Tracker - Equipments no Qt Designer
+=========================================
+
+Ficheiro principal:  gui_equipments.ui
+
+Support Documentation (coluna esquerda):
+  - Datasheet         + val_datasheet (ficheiro associado ao equipamento)
+  - Search doc        + SEARCH + OPEN
+  - doc_results_list  (lista compacta)
+  - Link              + LINK (associa ficheiro selecionado ao equipamento)
+  - OPEN FOLDER / ADD DOC
+
+Excel: coluna **Datasheet** na folha Equipments (nome do ficheiro em data\support_documentation\).
+
+Popup Add/Edit: gui_popup_equipment.ui — campo Datasheet + Browse (opcao 7).
+
+Regenerar:
+  python tools\generate_equipments_ui.py
+  python tools\generate_popup_uis.py
+  tools\export-ui.bat

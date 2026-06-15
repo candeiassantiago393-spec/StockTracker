@@ -6,8 +6,8 @@ Aplicação desktop para gestão de inventário de componentes eletrónicos.
 
 # Especificações
 
-- Inventário local em Excel (`data/stock.xlsx`) — folhas **Components**, **Materials** e **History**;
-- Interface gráfica PySide6 com templates Siemens — páginas **Components** e **Materials**;
+- Inventário local em Excel (`data/stock.xlsx`) — folhas **Components**, **Equipments** e **History**;
+- Interface gráfica PySide6 com templates Siemens — páginas **Components** e **Equipments**;
 - Pesquisa de componentes no Excel (referência do distribuidor, fabricante, MPN, descrição);
 - Leitura de código de barras / etiqueta (padrões tipo Mouser `P…Q`);
 - Movimentos de stock **IN** / **OUT** com registo na folha **History**;
@@ -78,14 +78,14 @@ Permissões (lógicas):
 | Description | F (5) | string | rw | Descrição da peça |
 | Stock  | G (6) | int    | rw        | Quantidade atual |
 
-## Folha: Materials
+## Folha: Equipments
 
 | Coluna | Índice | Tipo | Permissão | Descrição |
 |:-------|:------:|:-----|:----------|:----------|
 | ID | A (0) | int | w | Identificador auto-incrementado |
 | Supplier Reference | B (1) | string | rw | Referência do fornecedor / código |
 | Serial Number | C (2) | string | rw | Número de série |
-| Description | D (3) | string | rw | Descrição do material |
+| Description | D (3) | string | rw | Descrição do equipamento |
 | Calibration Date | E (4) | string | rw | Data de calibração (`YYYY-MM-DD`) |
 | Calibration Expiration Date | F (5) | string | rw | Data de expiração da calibração |
 
@@ -113,17 +113,17 @@ Permissões (lógicas):
 | Editar componente  | Edit / clique em detalhes vazios | `update_component` |
 | Abrir Excel        | OPEN EXCEL | `ensure_workbook_sheets` + `startfile` em `stock.xlsx` |
 
-## GUI — página Materials
+## GUI — página Equipments
 
 | Operação | Gatilho | Método(s) core |
 |:---------|:--------|:---------------|
-| Pesquisar materiais | SEARCH | `search_materials_all`, `MaterialSearchDialog` |
-| Referência fornecedor | Enter no campo scan | `find_material_by_supplier_ref` |
-| Adicionar material | ADD MANUAL | `add_material` |
-| Editar material | EDIT | `update_material` |
-| Tabelas histórico | Last 20 / Mat. hist. | `get_material_rows`, `MaterialsTableDialog` |
+| Pesquisar equipamentos | SEARCH | `search_equipments_all`, `EquipmentSearchDialog` |
+| Referência fornecedor | Enter no campo scan | `find_equipment_by_supplier_ref` |
+| Adicionar equipamento | ADD MANUAL | `add_equipment` |
+| Editar equipamento | EDIT | `update_equipment` |
+| Tabelas histórico | Last 20 / Eq. hist. | `get_equipment_rows`, `EquipmentsTableDialog` |
 
-Layout: `src/gui/designer/gui_materials.ui` — ver [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md).
+Layout: `src/gui/designer/gui_equipments.ui` — ver [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md).
 
 ## Regras de utilizador (GUI)
 
@@ -138,7 +138,7 @@ Layout: `src/gui/designer/gui_materials.ui` — ver [GUIA_RAPIDO_PT.md](GUIA_RAP
 src/main.py
     └── src/gui/stock_tracker_window.py  (PySide6, QStackedWidget)
             ├── Components  ← designer/gui_stocktracker.ui
-            ├── Materials   ← materials_page.py + designer/gui_materials.ui
+            ├── Equipments   ← equipments_page.py + designer/gui_equipments.ui
             └── src/core/stock.py        (StockTracker)
                     ├── openpyxl → data/stock.xlsx
                     └── src/core/suppliers/* → APIs REST
@@ -160,8 +160,8 @@ Entregável formal: `word/StockTracker_Documentacao_Projeto.docx` (regenerar com
 
 ## Alterações atuais
 
-- Página **Materials** e folha Excel correspondente;
-- Layout simétrico Siemens (Components + Materials), pacote Qt Designer;
+- Página **Equipments** e folha Excel correspondente;
+- Layout simétrico Siemens (Components + Equipments), pacote Qt Designer;
 - `tools\ORGANIZAR-DESKTOP.bat` — sincronizar Designer e cópia no Ambiente de Trabalho;
 - SCAN multi-distribuidor, diagnósticos DigiKey, OPEN EXCEL com criação de folhas.
 

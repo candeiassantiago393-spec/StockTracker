@@ -27,7 +27,7 @@
 | [user/REPOSITORY_LAYOUT.md](user/REPOSITORY_LAYOUT.md) | Repository structure and key files |
 | [user/ARCHITECTURE.md](user/ARCHITECTURE.md) | Architecture and data flows |
 | [user/WORKSPACE.md](user/WORKSPACE.md) | Desktop folders and Qt Designer packages |
-| [user/QT_DESIGNER.md](user/QT_DESIGNER.md) | Qt Designer — Components + Materials |
+| [user/QT_DESIGNER.md](user/QT_DESIGNER.md) | Qt Designer — Components + Equipments |
 | [user/SUPPLIERS.md](user/SUPPLIERS.md) | Supplier APIs and credentials |
 | [user/DIGIKEY_SETUP.md](user/DIGIKEY_SETUP.md) | DigiKey sandbox setup |
 | [user/GITHUB.md](user/GITHUB.md) | GitHub publishing |
@@ -41,7 +41,7 @@
 |----------|---------|
 | [../src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md) | GUI file map |
 | [../src/gui/designer/README.md](../src/gui/designer/README.md) | Designer `.ui` workflow |
-| [../src/gui/designer/MATERIALS-LEIA-ME.txt](../src/gui/designer/MATERIALS-LEIA-ME.txt) | Materials in Qt Designer (PT) |
+| [../src/gui/designer/EQUIPMENTS-LEIA-ME.txt](../src/gui/designer/EQUIPMENTS-LEIA-ME.txt) | Equipments in Qt Designer (PT) |
 
 ---
 

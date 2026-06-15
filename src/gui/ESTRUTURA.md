@@ -4,12 +4,12 @@
 
 | Ficheiro | Papel |
 |----------|-------|
-| `stock_tracker_window.py` | Janela principal (Components + navegacao Materials) |
-| `materials_page.py` | Pagina Materials (logica; layout em `designer/gui_materials.ui`) |
+| `stock_tracker_window.py` | Janela principal (Components + navegacao Equipments) |
+| `equipments_page.py` | Pagina Equipments (logica; layout em `designer/gui_equipments.ui`; lista `doc_results_list` para documentacao) |
 | `designer/gui_stocktracker.ui` | Layout Components (Qt Designer) |
-| `designer/gui_materials.ui` | Layout Materials (Qt Designer) |
+| `designer/gui_equipments.ui` | Layout Equipments (Qt Designer) |
 | `designer/gui_stocktracker.py` | Export `pyside6-uic` — nao editar a mao |
-| `designer/gui_materials.py` | Export `pyside6-uic` — nao editar a mao |
+| `designer/gui_equipments.py` | Export `pyside6-uic` — nao editar a mao |
 | `styles.py` | Metricas e estilos Siemens (template) |
 | `gui_config.py` | Caminhos de logos |
 
@@ -24,9 +24,9 @@
 | `manual_component_dialog.py` | `popups/components/gui_popup_manual.ui` |
 | `edit_component_dialog.py` | `popups/components/gui_popup_edit.ui` |
 | `search_results_dialog.py` | `popups/components/gui_popup_search.ui` |
-| `material_search_dialog.py` | `popups/materials/gui_popup_search.ui` |
-| `materials_table_dialog.py` | `popups/materials/gui_popup_history.ui` |
-| `material_dialog.py` | `popups/materials/gui_popup_material.ui` |
+| `equipment_search_dialog.py` | `popups/equipments/gui_popup_search.ui` |
+| `equipments_table_dialog.py` | `popups/equipments/gui_popup_history.ui` |
+| `equipment_dialog.py` | `popups/equipments/gui_popup_equipment.ui` |
 
 Arranque: `python -m src.main` ou `run.bat` na raiz.
 
@@ -51,6 +51,6 @@ Icones, fontes e widgets de referencia. A janela usa `designer/*.ui`; metricas e
 | `tools/gui_ui_builder.py` | Builders partilhados (template) |
 | `tools/export-ui.bat` | Exporta `.ui` → `.py` |
 | `tools/sync_designer_package.ps1` | Atualiza `StockTracker-Designer/` (repo e/ou Desktop) |
-| `tools/ABRIR-DESIGNER.bat` | Abre Components ou Materials no Designer |
+| `tools/ABRIR-DESIGNER.bat` | Abre Components ou Equipments no Designer |
 
-Documentacao: [docs/GUIA_RAPIDO_PT.md](../../docs/GUIA_RAPIDO_PT.md) · [designer/MATERIALS-LEIA-ME.txt](designer/MATERIALS-LEIA-ME.txt)
+Documentacao: [docs/GUIA_RAPIDO_PT.md](../../docs/GUIA_RAPIDO_PT.md) · [designer/EQUIPMENTS-LEIA-ME.txt](designer/EQUIPMENTS-LEIA-ME.txt)
