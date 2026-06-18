@@ -561,9 +561,28 @@ class StockTracker:
             self._catalog_session_cache[key] = merged
             return merged
 
+    def lookup_catalog_part_any(self, *part_numbers: str) -> Optional[dict]:
+        """Try several references until a distributor catalog match is found."""
+        seen: set[str] = set()
+        for part_number in part_numbers:
+            key = self.normalize_ref(part_number)
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            part = self.lookup_catalog_part(part_number)
+            if part is not None:
+                return part
+        return None
+
     def lookup_catalog_image_url(self, part_number: str) -> str:
         """Return a product image URL from configured distributor APIs."""
-        part = self.lookup_catalog_part(part_number)
+        part = self.lookup_catalog_part_any(part_number)
+        if part is None:
+            return ""
+        return str(part.get("image_url", "")).strip()
+
+    def lookup_catalog_image_url_any(self, *part_numbers: str) -> str:
+        part = self.lookup_catalog_part_any(*part_numbers)
         if part is None:
             return ""
         return str(part.get("image_url", "")).strip()
@@ -571,6 +590,15 @@ class StockTracker:
     def lookup_catalog_links(self, part_number: str) -> tuple[str, str]:
         """Return (product_page_url, datasheet_url) for a component reference."""
         part = self.lookup_catalog_part(part_number)
+        if part is None:
+            return "", ""
+        return (
+            str(part.get("product_url", "")).strip(),
+            str(part.get("datasheet_url", "")).strip(),
+        )
+
+    def lookup_catalog_links_any(self, *part_numbers: str) -> tuple[str, str]:
+        part = self.lookup_catalog_part_any(*part_numbers)
         if part is None:
             return "", ""
         return (

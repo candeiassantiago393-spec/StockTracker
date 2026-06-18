@@ -79,27 +79,32 @@ class _CatalogImageLoader(QThread):
 
     def __init__(
         self,
-        lookup_ref: str,
+        lookup_refs: list[str],
         tracker: StockTracker,
         *,
         fallback_url: str = "",
     ) -> None:
         super().__init__()
-        self._lookup_ref = lookup_ref
+        self._lookup_refs = lookup_refs
         self._tracker = tracker
         self._fallback_url = str(fallback_url or "").strip()
 
     def run(self) -> None:
-        ref = self._lookup_ref
+        refs = self._lookup_refs
         fallback = self._fallback_url
 
-        if ref:
-            def url_fetcher() -> str:
-                if fallback:
-                    return fallback
-                return self._tracker.lookup_catalog_image_url(ref)
+        if refs:
+            part = self._tracker.lookup_catalog_part_any(*refs)
+            image_url = fallback or (
+                str(part.get("image_url", "")).strip() if part else ""
+            )
+            if not image_url:
+                image_url = self._tracker.lookup_catalog_image_url_any(*refs)
 
-            pixmap = fetch_catalog_pixmap(ref, url_fetcher)
+            def url_fetcher() -> str:
+                return image_url
+
+            pixmap = fetch_catalog_pixmap(refs[0], url_fetcher) if image_url else None
         elif fallback:
             from src.core.component_images import fetch_pixmap_from_url
 
@@ -116,14 +121,14 @@ class _CatalogLinksLoader(QThread):
 
     loaded = Signal(str, str)
 
-    def __init__(self, lookup_ref: str, tracker: StockTracker) -> None:
+    def __init__(self, lookup_refs: list[str], tracker: StockTracker) -> None:
         super().__init__()
-        self._lookup_ref = lookup_ref
+        self._lookup_refs = lookup_refs
         self._tracker = tracker
 
     def run(self) -> None:
-        product_url, datasheet_url = self._tracker.lookup_catalog_links(
-            self._lookup_ref
+        product_url, datasheet_url = self._tracker.lookup_catalog_links_any(
+            *self._lookup_refs
         )
         if not self.isInterruptionRequested():
             self.loaded.emit(product_url, datasheet_url)
@@ -372,11 +377,21 @@ class StockTrackerWindow(QMainWindow):
         else:
             SiemensMessage.warning(self, "Open link", f"Could not open {label} link.")
 
-    def _refresh_catalog_links(self, data: dict) -> None:
-        supplier_ref = str(data.get("mouser", "")).strip()
-        manufacturer_ref = str(data.get("manufacturer_ref", "")).strip()
-        lookup_ref = supplier_ref or manufacturer_ref
-        if not lookup_ref:
+    def _catalog_lookup_refs(self, data: dict | None = None) -> list[str]:
+        """References to try for catalog image/links (search text first)."""
+        refs: list[str] = []
+        for candidate in (
+            self.ui.search_entry.text().strip(),
+            str((data or {}).get("mouser", "")).strip(),
+            str((data or {}).get("manufacturer_ref", "")).strip(),
+            self.ui.barcode_entry.text().strip(),
+        ):
+            if candidate and candidate not in refs:
+                refs.append(candidate)
+        return refs
+
+    def _refresh_catalog_links(self, lookup_refs: list[str]) -> None:
+        if not lookup_refs:
             self._clear_catalog_links()
             return
         if not self.tracker.search_suppliers_order():
@@ -391,7 +406,7 @@ class StockTrackerWindow(QMainWindow):
             self._catalog_links_loader.requestInterruption()
             self._catalog_links_loader.wait(200)
 
-        loader = _CatalogLinksLoader(lookup_ref, self.tracker)
+        loader = _CatalogLinksLoader(lookup_refs, self.tracker)
 
         def on_loaded(product_url: str, datasheet_url: str) -> None:
             if token != self._catalog_links_token:
@@ -416,7 +431,7 @@ class StockTrackerWindow(QMainWindow):
 
     def _load_component_catalog_image(
         self,
-        lookup_ref: str,
+        lookup_refs: list[str],
         *,
         fallback_url: str = "",
     ) -> None:
@@ -424,12 +439,12 @@ class StockTrackerWindow(QMainWindow):
         if preview is None:
             return
 
-        ref = str(lookup_ref or "").strip()
+        refs = [str(ref).strip() for ref in lookup_refs if str(ref).strip()]
         fallback = str(fallback_url or "").strip()
-        if not ref and not fallback:
+        if not refs and not fallback:
             self._clear_component_image()
             return
-        if ref and not fallback and not self.tracker.search_suppliers_order():
+        if refs and not fallback and not self.tracker.search_suppliers_order():
             self._clear_component_image()
             return
 
@@ -444,7 +459,7 @@ class StockTrackerWindow(QMainWindow):
         self.set_status("Loading catalog image...")
 
         loader = _CatalogImageLoader(
-            ref,
+            refs,
             self.tracker,
             fallback_url=fallback,
         )
@@ -472,23 +487,53 @@ class StockTrackerWindow(QMainWindow):
         self,
         url: str,
         *,
-        lookup_ref: str = "",
+        lookup_refs: list[str] | None = None,
     ) -> None:
-        ref = str(lookup_ref or "").strip()
-        if ref:
-            self._load_component_catalog_image(ref, fallback_url=url)
+        refs = list(lookup_refs or [])
+        if refs:
+            self._load_component_catalog_image(refs, fallback_url=url)
             return
         image_url = str(url or "").strip()
         if not image_url:
             self._clear_component_image()
             return
-        self._load_component_catalog_image("", fallback_url=image_url)
+        self._load_component_catalog_image([], fallback_url=image_url)
 
-    def _refresh_component_catalog_image(self, data: dict) -> None:
-        supplier_ref = str(data.get("mouser", "")).strip()
-        manufacturer_ref = str(data.get("manufacturer_ref", "")).strip()
-        lookup_ref = supplier_ref or manufacturer_ref
-        self._load_component_catalog_image(lookup_ref)
+    def _refresh_component_catalog_image(self, lookup_refs: list[str]) -> None:
+        self._load_component_catalog_image(lookup_refs)
+
+    def _display_catalog_part(self, part: dict, lookup_refs: list[str]) -> None:
+        """Show API catalog data when the part is not in Excel (or refs differ)."""
+        from src.core.component_catalog_links import store_links
+
+        primary = lookup_refs[0] if lookup_refs else ""
+        supplier_ref = self.tracker.part_supplier_reference(part, primary)
+        manufacturer_ref = self.tracker.part_manufacturer_reference(part)
+
+        refs = list(lookup_refs)
+        for extra in (supplier_ref, manufacturer_ref):
+            if extra and extra not in refs:
+                refs.append(extra)
+
+        if primary:
+            store_links(self.tracker.normalize_ref(primary), part)
+
+        u = self.ui
+        u.val_mouser.setText(supplier_ref)
+        u.val_manufacturer.setText(self.tracker.part_manufacturer(part))
+        u.val_manufacturer_ref.setText(manufacturer_ref)
+        u.val_description.setText(self.tracker.part_description(part))
+        u.val_stock.setText("0")
+        u.barcode_entry.setText(supplier_ref or manufacturer_ref or primary)
+        self._refresh_empty_detail_cursor()
+        self._set_catalog_links(
+            str(part.get("product_url", "")),
+            str(part.get("datasheet_url", "")),
+        )
+        self._load_component_catalog_image(
+            refs,
+            fallback_url=str(part.get("image_url", "")),
+        )
 
     def _setup_empty_details_click_targets(self) -> None:
         """Clicking empty detail rows opens manual component popup."""
@@ -644,8 +689,9 @@ class StockTrackerWindow(QMainWindow):
         u.val_description.setText(str(data["description"]))
         u.val_stock.setText(str(data["stock"]))
         self._refresh_empty_detail_cursor()
-        self._refresh_catalog_links(data)
-        self._refresh_component_catalog_image(data)
+        refs = self._catalog_lookup_refs(data)
+        self._refresh_catalog_links(refs)
+        self._refresh_component_catalog_image(refs)
 
     def clear_inputs_after_action(self) -> None:
         self.ui.search_entry.clear()
@@ -763,6 +809,7 @@ class StockTrackerWindow(QMainWindow):
         from src.core.component_catalog_links import store_links
 
         lookup_ref = supplier_reference or manufacturer_ref or part_number
+        refs = [r for r in (lookup_ref, part_number) if r]
         store_links(self.tracker.normalize_ref(lookup_ref), part)
         self._set_catalog_links(
             str(part.get("product_url", "")),
@@ -770,7 +817,7 @@ class StockTrackerWindow(QMainWindow):
         )
         self._show_component_image_url(
             str(part.get("image_url", "")),
-            lookup_ref=supplier_reference or manufacturer_ref or part_number,
+            lookup_refs=refs,
         )
 
         if self.tracker.component_exists(
@@ -880,6 +927,12 @@ class StockTrackerWindow(QMainWindow):
         matches = self.tracker.search_in_excel_all(sheet, query)
 
         if not matches:
+            if len(query) >= 5:
+                part, _found_supplier = self._lookup_distributor_catalogs(query)
+                if part is not None:
+                    self._display_catalog_part(part, [query])
+                    self.set_status("Catalog preview — not in Excel.")
+                    return
             SiemensMessage.information(self, "Not found", "No component found.")
             return
 
