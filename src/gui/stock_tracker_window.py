@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QStringListModel
+from PySide6.QtCore import Qt, QStringListModel, QThread, Signal
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QCompleter,
@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.core.component_images import fetch_pixmap_from_url
+from src.core.component_images import fetch_catalog_pixmap
 from src.core.stock import StockTracker
 from src.core.suppliers import supplier_label
 from src.core.suppliers.base import SupplierId
@@ -72,6 +72,45 @@ def _load_ui_class():
     return DesignerUi
 
 
+class _CatalogImageLoader(QThread):
+    """Background load so large inventories do not freeze the UI on image fetch."""
+
+    loaded = Signal(object)
+
+    def __init__(
+        self,
+        lookup_ref: str,
+        tracker: StockTracker,
+        *,
+        fallback_url: str = "",
+    ) -> None:
+        super().__init__()
+        self._lookup_ref = lookup_ref
+        self._tracker = tracker
+        self._fallback_url = str(fallback_url or "").strip()
+
+    def run(self) -> None:
+        ref = self._lookup_ref
+        fallback = self._fallback_url
+
+        if ref:
+            def url_fetcher() -> str:
+                if fallback:
+                    return fallback
+                return self._tracker.lookup_catalog_image_url(ref)
+
+            pixmap = fetch_catalog_pixmap(ref, url_fetcher)
+        elif fallback:
+            from src.core.component_images import fetch_pixmap_from_url
+
+            pixmap = fetch_pixmap_from_url(fallback)
+        else:
+            pixmap = None
+
+        if not self.isInterruptionRequested():
+            self.loaded.emit(pixmap)
+
+
 class StockTrackerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -85,6 +124,8 @@ class StockTrackerWindow(QMainWindow):
         self._setup_copy_buttons()
         self._setup_empty_details_click_targets()
         self._setup_component_image_preview()
+        self._catalog_image_loader: _CatalogImageLoader | None = None
+        self._catalog_image_token = 0
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
 
@@ -268,37 +309,81 @@ class StockTrackerWindow(QMainWindow):
         preview.clear()
         preview.setText(placeholder)
 
-    def _show_component_image_url(self, url: str) -> None:
+    def _load_component_catalog_image(
+        self,
+        lookup_ref: str,
+        *,
+        fallback_url: str = "",
+    ) -> None:
         preview = getattr(self.ui, "component_image_preview", None)
         if preview is None:
+            return
+
+        ref = str(lookup_ref or "").strip()
+        fallback = str(fallback_url or "").strip()
+        if not ref and not fallback:
+            self._clear_component_image()
+            return
+        if ref and not fallback and not self.tracker.search_suppliers_order():
+            self._clear_component_image()
+            return
+
+        self._catalog_image_token += 1
+        token = self._catalog_image_token
+
+        if self._catalog_image_loader and self._catalog_image_loader.isRunning():
+            self._catalog_image_loader.requestInterruption()
+            self._catalog_image_loader.wait(200)
+
+        self._clear_component_image("Loading...")
+        self.set_status("Loading catalog image...")
+
+        loader = _CatalogImageLoader(
+            ref,
+            self.tracker,
+            fallback_url=fallback,
+        )
+
+        def on_loaded(pixmap) -> None:
+            if token != self._catalog_image_token:
+                return
+            if pixmap is None or (hasattr(pixmap, "isNull") and pixmap.isNull()):
+                self._clear_component_image("Image unavailable")
+                self.set_status("Catalog image unavailable.")
+                return
+            if isinstance(preview, CatalogImagePreview):
+                preview.set_image(pixmap)
+            else:
+                preview.setPixmap(pixmap)
+                preview.setText("")
+            self.set_status("Catalog image loaded.")
+
+        loader.loaded.connect(on_loaded)
+        loader.finished.connect(loader.deleteLater)
+        self._catalog_image_loader = loader
+        loader.start()
+
+    def _show_component_image_url(
+        self,
+        url: str,
+        *,
+        lookup_ref: str = "",
+    ) -> None:
+        ref = str(lookup_ref or "").strip()
+        if ref:
+            self._load_component_catalog_image(ref, fallback_url=url)
             return
         image_url = str(url or "").strip()
         if not image_url:
             self._clear_component_image()
             return
-        pixmap = fetch_pixmap_from_url(image_url)
-        if pixmap is None or pixmap.isNull():
-            self._clear_component_image("Image unavailable")
-            return
-        if isinstance(preview, CatalogImagePreview):
-            preview.set_image(pixmap)
-            return
-        preview.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
-        preview.setPixmap(pixmap)
-        preview.setText("")
+        self._load_component_catalog_image("", fallback_url=image_url)
 
     def _refresh_component_catalog_image(self, data: dict) -> None:
         supplier_ref = str(data.get("mouser", "")).strip()
         manufacturer_ref = str(data.get("manufacturer_ref", "")).strip()
         lookup_ref = supplier_ref or manufacturer_ref
-        if not lookup_ref:
-            self._clear_component_image()
-            return
-        if not self.tracker.search_suppliers_order():
-            self._clear_component_image()
-            return
-        image_url = self.tracker.lookup_catalog_image_url(lookup_ref)
-        self._show_component_image_url(image_url)
+        self._load_component_catalog_image(lookup_ref)
 
     def _setup_empty_details_click_targets(self) -> None:
         """Clicking empty detail rows opens manual component popup."""
@@ -564,12 +649,14 @@ class StockTrackerWindow(QMainWindow):
         if part is None:
             return
 
-        self._show_component_image_url(str(part.get("image_url", "")))
-
         supplier_reference = self.tracker.part_supplier_reference(
             part, part_number
         )
         manufacturer_ref = self.tracker.part_manufacturer_reference(part)
+        self._show_component_image_url(
+            str(part.get("image_url", "")),
+            lookup_ref=supplier_reference or manufacturer_ref or part_number,
+        )
 
         if self.tracker.component_exists(
             sheet, supplier_reference, manufacturer_ref

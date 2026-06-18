@@ -26,6 +26,10 @@ data/stock.xlsx
 data/equipment_images/*
 !data/equipment_images/README.txt
 
+# Cache de imagens de catalogo (so componentes visualizados; limitado)
+data/component_image_cache/*
+!data/component_image_cache/README.txt
+
 # Relatorios temporarios
 tools/_reorg_out.txt
 src/gui/_reorganize_report.txt

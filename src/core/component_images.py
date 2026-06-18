@@ -1,9 +1,12 @@
-"""Load component catalog images from distributor URLs."""
+"""Load component catalog images from distributor URLs (with bounded local cache)."""
 from __future__ import annotations
 
 import re
+from typing import Callable
 
 from PySide6.QtGui import QPixmap
+
+from .component_image_cache import resolve_catalog_image
 
 _BROWSER_HEADERS = {
     "User-Agent": (
@@ -100,12 +103,10 @@ def _download_image_bytes(url: str, *, timeout: int = 15) -> bytes | None:
     return None
 
 
-def fetch_pixmap_from_url(url: str, *, timeout: int = 15) -> QPixmap | None:
-    """Download the best available catalog image and return a QPixmap."""
-    best: QPixmap | None = None
+def _download_best_image_bytes(image_url: str, *, timeout: int = 15) -> bytes | None:
+    best: bytes | None = None
     best_area = 0
-
-    for candidate in best_catalog_image_url(url):
+    for candidate in best_catalog_image_url(image_url):
         data = _download_image_bytes(candidate, timeout=timeout)
         if not data:
             continue
@@ -114,7 +115,65 @@ def fetch_pixmap_from_url(url: str, *, timeout: int = 15) -> QPixmap | None:
             continue
         area = pixmap.width() * pixmap.height()
         if area > best_area:
-            best = pixmap
+            best = data
             best_area = area
-
     return best
+
+
+def fetch_pixmap_from_url(
+    url: str,
+    *,
+    lookup_ref: str = "",
+    timeout: int = 15,
+) -> QPixmap | None:
+    """Download catalog image; uses on-demand disk cache when lookup_ref is set."""
+    ref = str(lookup_ref or "").strip()
+    image_url = str(url or "").strip()
+
+    if ref:
+        data, _source = resolve_catalog_image(
+            ref,
+            lambda: image_url,
+            lambda resolved_url: _download_best_image_bytes(
+                resolved_url, timeout=timeout
+            ),
+        )
+        if data:
+            pixmap = QPixmap()
+            if pixmap.loadFromData(data):
+                return pixmap
+        return None
+
+    data = _download_best_image_bytes(image_url, timeout=timeout)
+    if not data:
+        return None
+    pixmap = QPixmap()
+    if pixmap.loadFromData(data):
+        return pixmap
+    return None
+
+
+def fetch_catalog_pixmap(
+    lookup_ref: str,
+    fetch_image_url: Callable[[], str],
+    *,
+    timeout: int = 15,
+) -> QPixmap | None:
+    """Cache-first catalog image for a component reference (API only on miss)."""
+    ref = str(lookup_ref or "").strip()
+    if not ref:
+        return None
+
+    data, _source = resolve_catalog_image(
+        ref,
+        lambda: str(fetch_image_url() or "").strip(),
+        lambda resolved_url: _download_best_image_bytes(
+            resolved_url, timeout=timeout
+        ),
+    )
+    if not data:
+        return None
+    pixmap = QPixmap()
+    if pixmap.loadFromData(data):
+        return pixmap
+    return None

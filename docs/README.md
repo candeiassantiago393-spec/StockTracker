@@ -63,6 +63,14 @@ Full list: [../tools/README.md](../tools/README.md).
 
 ---
 
+## Roadmap / melhorias sugeridas
+
+| Document | Content |
+|----------|---------|
+| [MELHORIAS_SUGERIDAS.md](MELHORIAS_SUGERIDAS.md) | Ideias de evolução (cache imagens, stock mínimo, backup, etc.) |
+
+---
+
 ## Formal Word document
 
 Optional: [`../word/`](../word/) — regenerate with `python tools/build_project_docx.py` (requires `python-docx`).

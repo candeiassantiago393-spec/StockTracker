@@ -31,6 +31,15 @@ Folder: **`equipment_images/`** (inside `data/`)
 From the **Equipments** page: drag & drop an image onto the preview area, or use **Add**.  
 Linked filename is stored in Excel column **Image**. Use **Delete** to remove.
 
+## Component catalog image cache
+
+Folder: **`component_image_cache/`** (inside `data/`)
+
+When you open a component on the **Components** page, its distributor image may be saved here for faster reload.  
+**Only viewed components are cached** — the app never scans the whole Excel file to download images.
+
+Automatic limits: **800 images**, **150 MB** total, **90 days** per entry (oldest removed first).
+
 ### Example data (demo)
 
 Sample datasheets live in `support_documentation/DS_*.pdf`.  

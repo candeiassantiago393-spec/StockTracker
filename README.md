@@ -16,7 +16,7 @@ Stock management using a local Excel database, PySide6 GUI, and optional distrib
 - Multi-match Excel search with selection dialog
 - Autocomplete from Excel (search and barcode fields)
 - Mouser API: catalog lookup and import
-- **Component catalog image** (Mouser `/lrg/` resolution) with hover magnifier and wheel zoom
+- **Component catalog image** (Mouser `/lrg/` resolution) with hover magnifier, wheel zoom, and **bounded local cache** (`data/component_image_cache/`)
 - **Equipment images** — drag & drop or Add/Delete, stored in `data/equipment_images/`
 - **Multi-distributor SCAN**: queries configured APIs in order until a match is found
 - Modular suppliers under `src/core/suppliers/`
