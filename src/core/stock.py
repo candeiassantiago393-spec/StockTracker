@@ -13,6 +13,7 @@ See `docs/PROJETO_STOCKTRACKER.md` for data model and SCAN flow.
 ###############################################################################
 import re
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -47,6 +48,8 @@ SHEET_HISTORY = "History"
 SHEET_EQUIPMENTS = "Equipments"
 SHEET_MATERIALS_LEGACY = "Materials"  # legacy Excel sheet name (migration only)
 
+_CATALOG_LOOKUP_LOCK = threading.Lock()
+
 ###############################################################################
 # 4. StockTracker class
 ###############################################################################
@@ -73,6 +76,7 @@ class StockTracker:
         if api_key:
             self._secrets["MOUSER_API_KEY"] = api_key
         self.api_key = str(self._secrets.get("MOUSER_API_KEY", "")).strip()
+        self._catalog_session_cache: dict[str, dict] = {}
         self._ensure_data_folder()
 
     def _ensure_data_folder(self) -> None:
@@ -528,20 +532,51 @@ class StockTracker:
                 return part, supplier
         return None, None
 
-    def lookup_catalog_image_url(self, part_number: str) -> str:
-        """Return a product image URL from configured distributor APIs."""
+    def lookup_catalog_part(self, part_number: str) -> Optional[dict]:
+        """Return distributor catalog fields (URLs, image) with session + disk cache."""
         key = self.normalize_ref(part_number)
         if not key:
-            return ""
-        part = self.search_mouser(part_number)
-        if part is not None:
-            url = str(part.get("image_url", "")).strip()
-            if url:
-                return url
-        part, _supplier = self.search_any_supplier(part_number)
+            return None
+
+        from .component_catalog_links import get_cached_links, store_links
+
+        with _CATALOG_LOOKUP_LOCK:
+            session = self._catalog_session_cache.get(key)
+            if session is not None:
+                return session
+
+            cached = get_cached_links(key)
+            if cached is not None:
+                self._catalog_session_cache[key] = cached
+                return cached
+
+            part = self.search_mouser(part_number)
+            if part is None:
+                part, _supplier = self.search_any_supplier(part_number)
+            if part is None:
+                return None
+
+            merged = dict(part)
+            merged.update(store_links(key, part))
+            self._catalog_session_cache[key] = merged
+            return merged
+
+    def lookup_catalog_image_url(self, part_number: str) -> str:
+        """Return a product image URL from configured distributor APIs."""
+        part = self.lookup_catalog_part(part_number)
         if part is None:
             return ""
         return str(part.get("image_url", "")).strip()
+
+    def lookup_catalog_links(self, part_number: str) -> tuple[str, str]:
+        """Return (product_page_url, datasheet_url) for a component reference."""
+        part = self.lookup_catalog_part(part_number)
+        if part is None:
+            return "", ""
+        return (
+            str(part.get("product_url", "")).strip(),
+            str(part.get("datasheet_url", "")).strip(),
+        )
 
     def configured_supplier_labels(self) -> str:
         return ", ".join(supplier_label(s) for s in self.search_suppliers_order())

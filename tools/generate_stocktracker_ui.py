@@ -14,6 +14,7 @@ from src.gui import styles  # noqa: E402
 from tools.gui_ui_builder import (  # noqa: E402
     PM,
     RS,
+    catalog_links_row_xml,
     component_image_preview_xml,
     esc,
     header_side_margins_xml,
@@ -92,6 +93,8 @@ def build_ui() -> str:
     ):
         right.append(output_row_xml(name, label, rr))
         rr += 1
+    right.append(catalog_links_row_xml(rr))
+    rr += 1
     right.append(component_image_preview_xml(rr))
     rr += 1
     right.append(vertical_spacer_xml("verticalSpacer_right", rr, height=12))

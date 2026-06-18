@@ -114,12 +114,15 @@ Then restart: `python -m src.main`
 
 **Right (Details):** `val_mouser`, `val_manufacturer`, `val_manufacturer_ref`, `val_description`, `val_stock`
 
+**Right (Catalog):** `row_catalog_links`, `btn_open_product` (WEB), `btn_open_datasheet` (DS) — hidden when no URLs
+
 **Right (Catalog image):** `component_image_preview` — at runtime replaced by `CatalogImagePreview` in `catalog_image_preview.py` (high-res Mouser image, hover magnifier, wheel zoom, drag pan)
 
 ### Components runtime (Python, not `.ui`)
 
 | Feature | Behaviour |
 |---------|-----------|
+| Catalog links | WEB/DS open distributor URLs; row hidden if empty |
 | Catalog image | Fetched from distributor API (`component_images.py`, Mouser `/lrg/` URL); interactive preview in `catalog_image_preview.py` |
 | Empty detail fields | Click opens **ADD MANUAL** dialog |
 

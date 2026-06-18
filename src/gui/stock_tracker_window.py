@@ -2,8 +2,8 @@
 import os
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QStringListModel, QThread, Signal
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtCore import Qt, QStringListModel, QThread, Signal, QUrl
+from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QCompleter,
     QDialog,
@@ -61,7 +61,7 @@ def _load_ui_class():
 
     designer_py = Path(__file__).resolve().parent / "designer" / "gui_stocktracker.py"
     source = designer_py.read_text(encoding="utf-8")
-    required = ("barcode_entry", "val_stock", "btn_scan", "user_entry")
+    required = ("barcode_entry", "val_stock", "btn_scan", "user_entry", "btn_open_product")
     if not all(name in source for name in required):
         raise RuntimeError(
             "gui_stocktracker.py incompleto. Corre: "
@@ -111,6 +111,24 @@ class _CatalogImageLoader(QThread):
             self.loaded.emit(pixmap)
 
 
+class _CatalogLinksLoader(QThread):
+    """Resolve distributor WEB/DS links without blocking the UI."""
+
+    loaded = Signal(str, str)
+
+    def __init__(self, lookup_ref: str, tracker: StockTracker) -> None:
+        super().__init__()
+        self._lookup_ref = lookup_ref
+        self._tracker = tracker
+
+    def run(self) -> None:
+        product_url, datasheet_url = self._tracker.lookup_catalog_links(
+            self._lookup_ref
+        )
+        if not self.isInterruptionRequested():
+            self.loaded.emit(product_url, datasheet_url)
+
+
 class StockTrackerWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -124,8 +142,13 @@ class StockTrackerWindow(QMainWindow):
         self._setup_copy_buttons()
         self._setup_empty_details_click_targets()
         self._setup_component_image_preview()
+        self._setup_catalog_links()
         self._catalog_image_loader: _CatalogImageLoader | None = None
         self._catalog_image_token = 0
+        self._catalog_links_loader: _CatalogLinksLoader | None = None
+        self._catalog_links_token = 0
+        self._catalog_product_url = ""
+        self._catalog_datasheet_url = ""
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
 
@@ -297,6 +320,88 @@ class StockTrackerWindow(QMainWindow):
         preview = replace_label_with_catalog_preview(label)
         self.ui.component_image_preview = preview
         preview.clear_image()
+
+    def _setup_catalog_links(self) -> None:
+        row = getattr(self.ui, "row_catalog_links", None)
+        if row is not None:
+            row.hide()
+        btn_web = getattr(self.ui, "btn_open_product", None)
+        btn_ds = getattr(self.ui, "btn_open_datasheet", None)
+        if btn_web is not None:
+            btn_web.clicked.connect(
+                lambda: self._open_catalog_url(self._catalog_product_url, "product")
+            )
+        if btn_ds is not None:
+            btn_ds.clicked.connect(
+                lambda: self._open_catalog_url(self._catalog_datasheet_url, "datasheet")
+            )
+        self._clear_catalog_links()
+
+    def _clear_catalog_links(self) -> None:
+        self._catalog_product_url = ""
+        self._catalog_datasheet_url = ""
+        self._update_catalog_links_ui()
+
+    def _set_catalog_links(self, product_url: str = "", datasheet_url: str = "") -> None:
+        self._catalog_product_url = str(product_url or "").strip()
+        self._catalog_datasheet_url = str(datasheet_url or "").strip()
+        self._update_catalog_links_ui()
+
+    def _update_catalog_links_ui(self) -> None:
+        row = getattr(self.ui, "row_catalog_links", None)
+        btn_web = getattr(self.ui, "btn_open_product", None)
+        btn_ds = getattr(self.ui, "btn_open_datasheet", None)
+        has_product = bool(self._catalog_product_url)
+        has_datasheet = bool(self._catalog_datasheet_url)
+        if row is not None:
+            row.setVisible(has_product or has_datasheet)
+        if btn_web is not None:
+            btn_web.setVisible(has_product)
+            btn_web.setEnabled(has_product)
+        if btn_ds is not None:
+            btn_ds.setVisible(has_datasheet)
+            btn_ds.setEnabled(has_datasheet)
+
+    def _open_catalog_url(self, url: str, label: str) -> None:
+        target = str(url or "").strip()
+        if not target:
+            self.set_status(f"No {label} link available.")
+            return
+        if QDesktopServices.openUrl(QUrl(target)):
+            self.set_status(f"Opened {label} link in browser.")
+        else:
+            SiemensMessage.warning(self, "Open link", f"Could not open {label} link.")
+
+    def _refresh_catalog_links(self, data: dict) -> None:
+        supplier_ref = str(data.get("mouser", "")).strip()
+        manufacturer_ref = str(data.get("manufacturer_ref", "")).strip()
+        lookup_ref = supplier_ref or manufacturer_ref
+        if not lookup_ref:
+            self._clear_catalog_links()
+            return
+        if not self.tracker.search_suppliers_order():
+            self._clear_catalog_links()
+            return
+
+        self._catalog_links_token += 1
+        token = self._catalog_links_token
+        self._clear_catalog_links()
+
+        if self._catalog_links_loader and self._catalog_links_loader.isRunning():
+            self._catalog_links_loader.requestInterruption()
+            self._catalog_links_loader.wait(200)
+
+        loader = _CatalogLinksLoader(lookup_ref, self.tracker)
+
+        def on_loaded(product_url: str, datasheet_url: str) -> None:
+            if token != self._catalog_links_token:
+                return
+            self._set_catalog_links(product_url, datasheet_url)
+
+        loader.loaded.connect(on_loaded)
+        loader.finished.connect(loader.deleteLater)
+        self._catalog_links_loader = loader
+        loader.start()
 
     def _clear_component_image(self, placeholder: str = "No image") -> None:
         preview = getattr(self.ui, "component_image_preview", None)
@@ -539,6 +644,7 @@ class StockTrackerWindow(QMainWindow):
         u.val_description.setText(str(data["description"]))
         u.val_stock.setText(str(data["stock"]))
         self._refresh_empty_detail_cursor()
+        self._refresh_catalog_links(data)
         self._refresh_component_catalog_image(data)
 
     def clear_inputs_after_action(self) -> None:
@@ -615,6 +721,7 @@ class StockTrackerWindow(QMainWindow):
         u.val_description.clear()
         u.val_stock.clear()
         self._refresh_empty_detail_cursor()
+        self._clear_catalog_links()
         self._clear_component_image()
         self.set_status("")
 
@@ -653,6 +760,14 @@ class StockTrackerWindow(QMainWindow):
             part, part_number
         )
         manufacturer_ref = self.tracker.part_manufacturer_reference(part)
+        from src.core.component_catalog_links import store_links
+
+        lookup_ref = supplier_reference or manufacturer_ref or part_number
+        store_links(self.tracker.normalize_ref(lookup_ref), part)
+        self._set_catalog_links(
+            str(part.get("product_url", "")),
+            str(part.get("datasheet_url", "")),
+        )
         self._show_component_image_url(
             str(part.get("image_url", "")),
             lookup_ref=supplier_reference or manufacturer_ref or part_number,

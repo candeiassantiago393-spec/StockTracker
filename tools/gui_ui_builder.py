@@ -234,6 +234,44 @@ def stock_btn_row_xml(row: int) -> str:
     )
 
 
+def catalog_links_row_xml(row: int) -> str:
+    """Compact WEB / DS buttons; row hidden in runtime when no links."""
+    return (
+        row_open("catalog_links", row, compact=True)
+        + f"""             <item>
+{template_label_xml("label_catalog_links", "Catalog")}
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_open_product">
+               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
+               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
+               <property name="toolTip"><string>Open product page on distributor site</string></property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_COPY_STYLE)}               </property>
+               <property name="text"><string>WEB</string></property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_open_datasheet">
+               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
+               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
+               <property name="toolTip"><string>Open datasheet in browser</string></property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_COPY_STYLE)}               </property>
+               <property name="text"><string>DS</string></property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_catalog_links">
+               <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+               <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+              </spacer>
+             </item>
+"""
+        + ROW_CLOSE
+    )
+
+
 def input_scan_copy_row_xml(
     name: str,
     label: str,

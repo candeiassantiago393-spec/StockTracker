@@ -920,6 +920,92 @@ QPushButton:pressed {
           </item>
 
           <item row="6" column="0" colspan="2">
+           <widget class="QWidget" name="row_catalog_links" native="true">
+            <layout class="QHBoxLayout" name="layout_catalog_links">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>4</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>4</number></property>
+             <item>
+              <widget class="QLabel" name="label_catalog_links">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Catalog</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_open_product">
+               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
+               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
+               <property name="toolTip"><string>Open product page on distributor site</string></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 60px;
+    max-width: 60px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+    font-size: 12px;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>WEB</string></property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_open_datasheet">
+               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
+               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
+               <property name="toolTip"><string>Open datasheet in browser</string></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 60px;
+    max-width: 60px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+    font-size: 12px;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>DS</string></property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_catalog_links">
+               <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+               <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="7" column="0" colspan="2">
            <widget class="QLabel" name="component_image_preview">
             <property name="minimumSize"><size><width>240</width><height>240</height></size></property>
             <property name="sizePolicy">
@@ -943,7 +1029,7 @@ QLabel {
             <property name="text"><string>No image</string></property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="8" column="1">
            <spacer name="verticalSpacer_right">
             <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
             <property name="sizeHint" stdset="0"><size><width>20</width><height>12</height></size></property>

@@ -21,6 +21,8 @@ Canonical `.ui` files for the running app. Metrics come from `styles.py` and Sie
 | Right — Details | `val_mouser` … `val_stock` (+ Copy buttons) |
 | Right — Catalog image | `component_image_preview` (runtime: `CatalogImagePreview` — zoom/lupa) |
 
+Runtime behaviour (catalog image, empty-field click → Add Manual) is in `stock_tracker_window.py` and `catalog_image_preview.py`.
+
 ## Equipments page (summary)
 
 | Area | Key widgets |

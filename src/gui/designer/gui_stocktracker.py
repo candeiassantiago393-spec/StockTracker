@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file 'gui_stocktracker.ui'
@@ -795,6 +795,77 @@ class Ui_StockTracker(object):
 
         self.gridLayout_right.addWidget(self.row_val_stock, 5, 0, 1, 2)
 
+        self.row_catalog_links = QWidget(self.container_tab1_right)
+        self.row_catalog_links.setObjectName(u"row_catalog_links")
+        self.layout_catalog_links = QHBoxLayout(self.row_catalog_links)
+        self.layout_catalog_links.setSpacing(6)
+        self.layout_catalog_links.setObjectName(u"layout_catalog_links")
+        self.layout_catalog_links.setContentsMargins(-1, 4, 9, 4)
+        self.label_catalog_links = QLabel(self.row_catalog_links)
+        self.label_catalog_links.setObjectName(u"label_catalog_links")
+        self.label_catalog_links.setMinimumSize(QSize(74, 0))
+        sizePolicy2.setHeightForWidth(self.label_catalog_links.sizePolicy().hasHeightForWidth())
+        self.label_catalog_links.setSizePolicy(sizePolicy2)
+
+        self.layout_catalog_links.addWidget(self.label_catalog_links)
+
+        self.btn_open_product = QPushButton(self.row_catalog_links)
+        self.btn_open_product.setObjectName(u"btn_open_product")
+        self.btn_open_product.setMinimumSize(QSize(60, 0))
+        self.btn_open_product.setMaximumSize(QSize(60, 16777215))
+        self.btn_open_product.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_catalog_links.addWidget(self.btn_open_product)
+
+        self.btn_open_datasheet = QPushButton(self.row_catalog_links)
+        self.btn_open_datasheet.setObjectName(u"btn_open_datasheet")
+        self.btn_open_datasheet.setMinimumSize(QSize(60, 0))
+        self.btn_open_datasheet.setMaximumSize(QSize(60, 16777215))
+        self.btn_open_datasheet.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_catalog_links.addWidget(self.btn_open_datasheet)
+
+        self.horizontalSpacer_catalog_links = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.layout_catalog_links.addItem(self.horizontalSpacer_catalog_links)
+
+
+        self.gridLayout_right.addWidget(self.row_catalog_links, 6, 0, 1, 2)
+
         self.component_image_preview = QLabel(self.container_tab1_right)
         self.component_image_preview.setObjectName(u"component_image_preview")
         self.component_image_preview.setMinimumSize(QSize(240, 240))
@@ -814,11 +885,11 @@ class Ui_StockTracker(object):
 "}\n"
 "")
 
-        self.gridLayout_right.addWidget(self.component_image_preview, 6, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.component_image_preview, 7, 0, 1, 2)
 
         self.verticalSpacer_right = QSpacerItem(20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_right.addItem(self.verticalSpacer_right, 7, 1, 1, 1)
+        self.gridLayout_right.addItem(self.verticalSpacer_right, 8, 1, 1, 1)
 
 
         self.gridLayout_main.addWidget(self.container_tab1_right, 1, 1, 1, 1)
@@ -1050,6 +1121,15 @@ class Ui_StockTracker(object):
         self.btn_copy_val_stock.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_copy_val_stock.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
+        self.label_catalog_links.setText(QCoreApplication.translate("StockTracker", u"Catalog", None))
+#if QT_CONFIG(tooltip)
+        self.btn_open_product.setToolTip(QCoreApplication.translate("StockTracker", u"Open product page on distributor site", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_open_product.setText(QCoreApplication.translate("StockTracker", u"WEB", None))
+#if QT_CONFIG(tooltip)
+        self.btn_open_datasheet.setToolTip(QCoreApplication.translate("StockTracker", u"Open datasheet in browser", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_open_datasheet.setText(QCoreApplication.translate("StockTracker", u"DS", None))
         self.component_image_preview.setText(QCoreApplication.translate("StockTracker", u"No image", None))
         self.btn_history_all.setText(QCoreApplication.translate("StockTracker", u"Last 20", None))
         self.btn_history_component.setText(QCoreApplication.translate("StockTracker", u"Comp. hist.", None))
@@ -1059,5 +1139,4 @@ class Ui_StockTracker(object):
         self.btn_exit.setText(QCoreApplication.translate("StockTracker", u"Exit", None))
         self.status_label.setText("")
     # retranslateUi
-
 

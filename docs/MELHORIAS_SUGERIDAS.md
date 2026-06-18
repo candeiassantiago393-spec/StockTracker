@@ -328,7 +328,29 @@ Menos dependência só da Mouser; SCAN mais robusto.
 
 ---
 
-## 12. Link direto ao fornecedor
+## 12. Link direto ao fornecedor — **implementado**
+
+### Comportamento actual
+
+- Linha compacta **Catalog** com botões **WEB** (página do produto) e **DS** (datasheet)
+- A linha **fica oculta** quando não há links — interface limpa
+- Só **WEB** ou só **DS** visível se apenas um URL existir
+- URLs da API Mouser (`ProductDetailUrl`, `DataSheetUrl`) com cache em `data/catalog_links/`
+- Abre no browser predefinido (`QDesktopServices`)
+
+### Ficheiros
+
+- `tools/gui_ui_builder.py` — `catalog_links_row_xml`
+- `src/gui/stock_tracker_window.py` — visibilidade e abertura de links
+- `src/core/component_catalog_links.py` — cache de URLs
+- `src/core/stock.py` — `lookup_catalog_part()` / `lookup_catalog_links()`
+
+---
+
+## 12b. ~~Link direto ao fornecedor~~ (planeamento original)
+
+<details>
+<summary>Notas de planeamento (pré-implementação)</summary>
 
 ### Ideia
 
@@ -341,6 +363,8 @@ Um clique para ficha técnica ou página do distribuidor.
 ### Esforço
 
 **Baixo** — `QDesktopServices.openUrl()`.
+
+</details>
 
 ---
 
@@ -512,7 +536,7 @@ Visão de gestão num relance.
 | 2 | Backup automático Excel | **Feito** |
 | 3 | Stock mínimo + alertas | Pendente |
 | 4 | Loading assíncrono (imagens) | **Feito** (QThread) |
-| 5 | Link fornecedor / datasheet | Pendente |
+| 5 | Link fornecedor / datasheet | **Feito** |
 | 6 | Atalhos de teclado | Pendente |
 | 7 | Log de erros | Pendente |
 | 8 | Testes pytest | Pendente |

@@ -34,6 +34,10 @@ data/component_image_cache/*
 data/backups/*
 !data/backups/README.txt
 
+# Cache de URLs de catalogo (componentes visualizados)
+data/catalog_links/*
+!data/catalog_links/README.txt
+
 # Relatorios temporarios
 tools/_reorg_out.txt
 src/gui/_reorganize_report.txt

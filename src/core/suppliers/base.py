@@ -34,6 +34,8 @@ class PartInfo(TypedDict, total=False):
     manufacturer_part_number: str
     description: str
     image_url: str
+    product_url: str
+    datasheet_url: str
     # Campos legado (compatibilidade com resposta Mouser / Excel)
     MouserPartNumber: str
     Manufacturer: str
@@ -75,6 +77,26 @@ def normalize_part(raw: dict, supplier: SupplierId) -> PartInfo:
         or raw.get("PhotoUrl")
         or ""
     ).strip()
+    product_url = str(
+        raw.get("product_url")
+        or raw.get("ProductDetailUrl")
+        or raw.get("ProductUrl")
+        or raw.get("DetailUrl")
+        or ""
+    ).strip()
+    datasheet_url = str(
+        raw.get("datasheet_url")
+        or raw.get("DataSheetUrl")
+        or raw.get("DatasheetUrl")
+        or raw.get("PrimaryDatasheet")
+        or ""
+    ).strip()
+    if isinstance(raw.get("PrimaryDatasheet"), dict):
+        datasheet_url = datasheet_url or str(
+            raw["PrimaryDatasheet"].get("Url")
+            or raw["PrimaryDatasheet"].get("url")
+            or ""
+        ).strip()
     return PartInfo(
         supplier=supplier,
         supplier_part_number=str(spn),
@@ -82,6 +104,8 @@ def normalize_part(raw: dict, supplier: SupplierId) -> PartInfo:
         manufacturer_part_number=str(mpn),
         description=str(desc),
         image_url=image_url,
+        product_url=product_url,
+        datasheet_url=datasheet_url,
         MouserPartNumber=str(spn),
         Manufacturer=str(mfr),
         ManufacturerPartNumber=str(mpn),
