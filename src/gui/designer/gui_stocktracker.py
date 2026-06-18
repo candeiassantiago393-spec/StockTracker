@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file 'gui_stocktracker.ui'
@@ -91,7 +91,7 @@ class Ui_StockTracker(object):
         self.gridLayout_main.setObjectName(u"gridLayout_main")
         self.gridLayout_main.setHorizontalSpacing(0)
         self.gridLayout_main.setProperty(u"columnStretch", 1)
-        self.gridLayout_main.setContentsMargins(16, -1, 16, -1)
+        self.gridLayout_main.setContentsMargins(16, 0, 16, -1)
         self.frame_title = QFrame(self.container_main_body)
         self.frame_title.setObjectName(u"frame_title")
         self.frame_title.setFrameShape(QFrame.Shape.StyledPanel)
@@ -285,6 +285,30 @@ class Ui_StockTracker(object):
 
         self.layout_barcode_entry.addWidget(self.barcode_entry)
 
+        self.btn_scan = QPushButton(self.row_barcode_entry)
+        self.btn_scan.setObjectName(u"btn_scan")
+        self.btn_scan.setMinimumSize(QSize(124, 0))
+        self.btn_scan.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_barcode_entry.addWidget(self.btn_scan)
+
         self.btn_copy_barcode_entry = QPushButton(self.row_barcode_entry)
         self.btn_copy_barcode_entry.setObjectName(u"btn_copy_barcode_entry")
         self.btn_copy_barcode_entry.setMinimumSize(QSize(60, 0))
@@ -351,30 +375,6 @@ class Ui_StockTracker(object):
 "")
 
         self.layout_quantity_entry.addWidget(self.quantity_entry)
-
-        self.btn_scan = QPushButton(self.row_quantity_entry)
-        self.btn_scan.setObjectName(u"btn_scan")
-        self.btn_scan.setMinimumSize(QSize(124, 0))
-        self.btn_scan.setStyleSheet(u"\n"
-"QPushButton {\n"
-"    min-width: 100px;\n"
-"    max-width: 100px;\n"
-"    padding: 6px 12px 6px 12px;\n"
-"    border-radius: 2px;\n"
-"    opacity: 1;\n"
-"    text-align: center;\n"
-"    background-color: #00CCCC;\n"
-"    color: #000028;\n"
-"}\n"
-"QPushButton:hover {\n"
-"    background-color: #00FFB9;\n"
-"}\n"
-"QPushButton:pressed {\n"
-"    background-color: #00E5AA;\n"
-"}\n"
-"")
-
-        self.layout_quantity_entry.addWidget(self.btn_scan)
 
 
         self.gridLayout_left.addWidget(self.row_quantity_entry, 4, 0, 1, 2)
@@ -795,9 +795,30 @@ class Ui_StockTracker(object):
 
         self.gridLayout_right.addWidget(self.row_val_stock, 5, 0, 1, 2)
 
-        self.verticalSpacer_right = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.component_image_preview = QLabel(self.container_tab1_right)
+        self.component_image_preview.setObjectName(u"component_image_preview")
+        self.component_image_preview.setMinimumSize(QSize(220, 200))
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(1)
+        sizePolicy4.setHeightForWidth(self.component_image_preview.sizePolicy().hasHeightForWidth())
+        self.component_image_preview.setSizePolicy(sizePolicy4)
+        self.component_image_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.component_image_preview.setStyleSheet(u"\n"
+"QLabel {\n"
+"    border: 1px dashed #B3B3BE;\n"
+"    border-radius: 2px;\n"
+"    background-color: #00183B;\n"
+"    color: #B3B3BE;\n"
+"    font-size: 12px;\n"
+"}\n"
+"")
 
-        self.gridLayout_right.addItem(self.verticalSpacer_right, 6, 1, 1, 1)
+        self.gridLayout_right.addWidget(self.component_image_preview, 6, 0, 1, 2)
+
+        self.verticalSpacer_right = QSpacerItem(20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_right.addItem(self.verticalSpacer_right, 7, 1, 1, 1)
 
 
         self.gridLayout_main.addWidget(self.container_tab1_right, 1, 1, 1, 1)
@@ -989,12 +1010,12 @@ class Ui_StockTracker(object):
         self.label_search_entry.setText(QCoreApplication.translate("StockTracker", u"Search Component", None))
         self.btn_search.setText(QCoreApplication.translate("StockTracker", u"SEARCH", None))
         self.label_barcode_entry.setText(QCoreApplication.translate("StockTracker", u"Scan Barcode / Supplier Ref.", None))
+        self.btn_scan.setText(QCoreApplication.translate("StockTracker", u"SCAN", None))
 #if QT_CONFIG(tooltip)
         self.btn_copy_barcode_entry.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_copy_barcode_entry.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.label_quantity_entry.setText(QCoreApplication.translate("StockTracker", u"Quantity", None))
-        self.btn_scan.setText(QCoreApplication.translate("StockTracker", u"SCAN", None))
         self.label_stock_btn.setText(QCoreApplication.translate("StockTracker", u"Button", None))
         self.btn_add_stock.setText(QCoreApplication.translate("StockTracker", u"ADD STOCK", None))
         self.btn_remove_stock.setText(QCoreApplication.translate("StockTracker", u"REMOVE STOCK", None))
@@ -1029,6 +1050,7 @@ class Ui_StockTracker(object):
         self.btn_copy_val_stock.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_copy_val_stock.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
+        self.component_image_preview.setText(QCoreApplication.translate("StockTracker", u"No image", None))
         self.btn_history_all.setText(QCoreApplication.translate("StockTracker", u"Last 20", None))
         self.btn_history_component.setText(QCoreApplication.translate("StockTracker", u"Comp. hist.", None))
         self.btn_add_manual.setText(QCoreApplication.translate("StockTracker", u"ADD MANUAL COMPONENT", None))
@@ -1037,5 +1059,4 @@ class Ui_StockTracker(object):
         self.btn_exit.setText(QCoreApplication.translate("StockTracker", u"Exit", None))
         self.status_label.setText("")
     # retranslateUi
-
 

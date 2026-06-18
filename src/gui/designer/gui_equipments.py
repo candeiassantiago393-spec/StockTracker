@@ -17,7 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout,
     QLabel, QLineEdit, QListWidget, QListWidgetItem,
-    QPushButton, QSizePolicy, QSpacerItem, QWidget)
+    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
+    QWidget)
 
 class Ui_EquipmentsPage(object):
     def setupUi(self, EquipmentsPage):
@@ -39,7 +40,7 @@ class Ui_EquipmentsPage(object):
         self.gridLayout_equipments.setObjectName(u"gridLayout_equipments")
         self.gridLayout_equipments.setHorizontalSpacing(0)
         self.gridLayout_equipments.setProperty(u"columnStretch", 1)
-        self.gridLayout_equipments.setContentsMargins(16, -1, 16, -1)
+        self.gridLayout_equipments.setContentsMargins(16, -18, 16, -1)
         self.container_equipments_left = QFrame(EquipmentsPage)
         self.container_equipments_left.setObjectName(u"container_equipments_left")
         self.container_equipments_left.setFrameShape(QFrame.Shape.StyledPanel)
@@ -222,95 +223,53 @@ class Ui_EquipmentsPage(object):
 
         self.gridLayout_container_equipments_left.addWidget(self.row_supplier_ref_entry, 2, 0, 1, 2)
 
-        self.label_support_docs = QLabel(self.container_equipments_left)
-        self.label_support_docs.setObjectName(u"label_support_docs")
-        self.label_support_docs.setStyleSheet(u"\n"
+        self.equipment_image_panel = QWidget(self.container_equipments_left)
+        self.equipment_image_panel.setObjectName(u"equipment_image_panel")
+        self.layout_equipment_image_panel = QVBoxLayout(self.equipment_image_panel)
+        self.layout_equipment_image_panel.setSpacing(6)
+        self.layout_equipment_image_panel.setObjectName(u"layout_equipment_image_panel")
+        self.layout_equipment_image_panel.setContentsMargins(-1, 9, 9, 9)
+        self.equipment_image_preview = QLabel(self.equipment_image_panel)
+        self.equipment_image_preview.setObjectName(u"equipment_image_preview")
+        self.equipment_image_preview.setMinimumSize(QSize(300, 260))
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(1)
+        sizePolicy2.setHeightForWidth(self.equipment_image_preview.sizePolicy().hasHeightForWidth())
+        self.equipment_image_preview.setSizePolicy(sizePolicy2)
+        self.equipment_image_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.equipment_image_preview.setStyleSheet(u"\n"
 "QLabel {\n"
-"    font-size: 16px;\n"
-"    font-weight: bold;\n"
-"    padding-top: 4px;\n"
-"}\n"
-"")
-
-        self.gridLayout_container_equipments_left.addWidget(self.label_support_docs, 3, 0, 1, 2)
-
-        self.row_doc_search_entry = QWidget(self.container_equipments_left)
-        self.row_doc_search_entry.setObjectName(u"row_doc_search_entry")
-        self.layout_doc_search_entry = QHBoxLayout(self.row_doc_search_entry)
-        self.layout_doc_search_entry.setSpacing(6)
-        self.layout_doc_search_entry.setObjectName(u"layout_doc_search_entry")
-        self.layout_doc_search_entry.setContentsMargins(-1, 4, 9, 4)
-        self.label_doc_search_entry = QLabel(self.row_doc_search_entry)
-        self.label_doc_search_entry.setObjectName(u"label_doc_search_entry")
-        self.label_doc_search_entry.setMinimumSize(QSize(74, 0))
-        sizePolicy.setHeightForWidth(self.label_doc_search_entry.sizePolicy().hasHeightForWidth())
-        self.label_doc_search_entry.setSizePolicy(sizePolicy)
-
-        self.layout_doc_search_entry.addWidget(self.label_doc_search_entry)
-
-        self.doc_search_entry = QLineEdit(self.row_doc_search_entry)
-        self.doc_search_entry.setObjectName(u"doc_search_entry")
-        sizePolicy1.setHeightForWidth(self.doc_search_entry.sizePolicy().hasHeightForWidth())
-        self.doc_search_entry.setSizePolicy(sizePolicy1)
-        self.doc_search_entry.setStyleSheet(u"\n"
-"QLineEdit {\n"
-"    min-width: 100px;\n"
-"    max-width: 100px;\n"
-"    max-height: 18px;\n"
-"    padding: 5px;\n"
-"    padding-bottom: 7px;\n"
-"    margin-top: 0px;\n"
+"    border: 1px dashed #B3B3BE;\n"
 "    border-radius: 2px;\n"
-"    border: 1px solid #B3B3BE;\n"
 "    background-color: #00183B;\n"
-"    color: #FFFFFF;\n"
-"}\n"
-"QLineEdit:hover {\n"
-"    background-color: #001F39;\n"
-"    border: 1px solid #00FFB9;\n"
+"    color: #B3B3BE;\n"
+"    font-size: 12px;\n"
 "}\n"
 "")
 
-        self.layout_doc_search_entry.addWidget(self.doc_search_entry)
+        self.layout_equipment_image_panel.addWidget(self.equipment_image_preview)
 
-        self.btn_doc_search = QPushButton(self.row_doc_search_entry)
-        self.btn_doc_search.setObjectName(u"btn_doc_search")
-        self.btn_doc_search.setMinimumSize(QSize(124, 0))
-        self.btn_doc_search.setStyleSheet(u"\n"
+        self.row_equipment_image_buttons = QWidget(self.equipment_image_panel)
+        self.row_equipment_image_buttons.setObjectName(u"row_equipment_image_buttons")
+        self.layout_equipment_image_buttons = QHBoxLayout(self.row_equipment_image_buttons)
+        self.layout_equipment_image_buttons.setSpacing(6)
+        self.layout_equipment_image_buttons.setObjectName(u"layout_equipment_image_buttons")
+        self.layout_equipment_image_buttons.setContentsMargins(-1, 0, -1, 0)
+        self.btn_set_equipment_image = QPushButton(self.row_equipment_image_buttons)
+        self.btn_set_equipment_image.setObjectName(u"btn_set_equipment_image")
+        self.btn_set_equipment_image.setMinimumSize(QSize(64, 0))
+        self.btn_set_equipment_image.setMaximumSize(QSize(64, 16777215))
+        self.btn_set_equipment_image.setStyleSheet(u"\n"
 "QPushButton {\n"
-"    min-width: 100px;\n"
-"    max-width: 100px;\n"
-"    padding: 6px 12px 6px 12px;\n"
-"    border-radius: 2px;\n"
-"    opacity: 1;\n"
-"    text-align: center;\n"
-"    background-color: #00CCCC;\n"
-"    color: #000028;\n"
-"}\n"
-"QPushButton:hover {\n"
-"    background-color: #00FFB9;\n"
-"}\n"
-"QPushButton:pressed {\n"
-"    background-color: #00E5AA;\n"
-"}\n"
-"")
-
-        self.layout_doc_search_entry.addWidget(self.btn_doc_search)
-
-        self.btn_doc_open = QPushButton(self.row_doc_search_entry)
-        self.btn_doc_open.setObjectName(u"btn_doc_open")
-        self.btn_doc_open.setMinimumSize(QSize(60, 0))
-        self.btn_doc_open.setMaximumSize(QSize(60, 16777215))
-        self.btn_doc_open.setStyleSheet(u"\n"
-"QPushButton {\n"
-"    min-width: 60px;\n"
-"    max-width: 60px;\n"
+"    min-width: 56px;\n"
+"    max-width: 64px;\n"
 "    padding: 4px 6px;\n"
 "    border-radius: 2px;\n"
 "    text-align: center;\n"
 "    background-color: #00CCCC;\n"
 "    color: #000028;\n"
-"    font-size: 12px;\n"
+"    font-size: 11px;\n"
 "}\n"
 "QPushButton:hover {\n"
 "    background-color: #00FFB9;\n"
@@ -320,65 +279,22 @@ class Ui_EquipmentsPage(object):
 "}\n"
 "")
 
-        self.layout_doc_search_entry.addWidget(self.btn_doc_open)
+        self.layout_equipment_image_buttons.addWidget(self.btn_set_equipment_image)
 
-
-        self.gridLayout_container_equipments_left.addWidget(self.row_doc_search_entry, 4, 0, 1, 2)
-
-        self.doc_results_list = QListWidget(self.container_equipments_left)
-        self.doc_results_list.setObjectName(u"doc_results_list")
-        self.doc_results_list.setMinimumSize(QSize(0, 52))
-        self.doc_results_list.setMaximumSize(QSize(16777215, 64))
-        self.doc_results_list.setStyleSheet(u"\n"
-"QListWidget {\n"
-"    background-color: #00183B;\n"
-"    border: 1px solid #B3B3BE;\n"
-"    color: #FFFFFF;\n"
-"    padding: 2px;\n"
-"    font-size: 12px;\n"
-"}\n"
-"QListWidget::item {\n"
-"    padding: 2px 4px;\n"
-"    min-height: 18px;\n"
-"}\n"
-"QListWidget::item:selected {\n"
-"    background-color: #333353;\n"
-"    border: 1px solid #00FFB9;\n"
-"}\n"
-"QListWidget::item:hover {\n"
-"    background-color: #001F39;\n"
-"}\n"
-"")
-
-        self.gridLayout_container_equipments_left.addWidget(self.doc_results_list, 5, 0, 1, 2)
-
-        self.row_btn_link_datasheet = QWidget(self.container_equipments_left)
-        self.row_btn_link_datasheet.setObjectName(u"row_btn_link_datasheet")
-        self.layout_btn_link_datasheet = QHBoxLayout(self.row_btn_link_datasheet)
-        self.layout_btn_link_datasheet.setSpacing(6)
-        self.layout_btn_link_datasheet.setObjectName(u"layout_btn_link_datasheet")
-        self.layout_btn_link_datasheet.setContentsMargins(-1, 4, 9, 4)
-        self.label_btn_link_datasheet = QLabel(self.row_btn_link_datasheet)
-        self.label_btn_link_datasheet.setObjectName(u"label_btn_link_datasheet")
-        self.label_btn_link_datasheet.setMinimumSize(QSize(74, 0))
-        sizePolicy.setHeightForWidth(self.label_btn_link_datasheet.sizePolicy().hasHeightForWidth())
-        self.label_btn_link_datasheet.setSizePolicy(sizePolicy)
-
-        self.layout_btn_link_datasheet.addWidget(self.label_btn_link_datasheet)
-
-        self.btn_link_datasheet = QPushButton(self.row_btn_link_datasheet)
-        self.btn_link_datasheet.setObjectName(u"btn_link_datasheet")
-        self.btn_link_datasheet.setMinimumSize(QSize(124, 0))
-        self.btn_link_datasheet.setStyleSheet(u"\n"
+        self.btn_clear_equipment_image = QPushButton(self.row_equipment_image_buttons)
+        self.btn_clear_equipment_image.setObjectName(u"btn_clear_equipment_image")
+        self.btn_clear_equipment_image.setMinimumSize(QSize(64, 0))
+        self.btn_clear_equipment_image.setMaximumSize(QSize(64, 16777215))
+        self.btn_clear_equipment_image.setStyleSheet(u"\n"
 "QPushButton {\n"
-"    min-width: 100px;\n"
-"    max-width: 100px;\n"
-"    padding: 6px 12px 6px 12px;\n"
+"    min-width: 56px;\n"
+"    max-width: 64px;\n"
+"    padding: 4px 6px;\n"
 "    border-radius: 2px;\n"
-"    opacity: 1;\n"
 "    text-align: center;\n"
 "    background-color: #00CCCC;\n"
 "    color: #000028;\n"
+"    font-size: 11px;\n"
 "}\n"
 "QPushButton:hover {\n"
 "    background-color: #00FFB9;\n"
@@ -388,96 +304,21 @@ class Ui_EquipmentsPage(object):
 "}\n"
 "")
 
-        self.layout_btn_link_datasheet.addWidget(self.btn_link_datasheet)
+        self.layout_equipment_image_buttons.addWidget(self.btn_clear_equipment_image)
+
+        self.horizontalSpacer_equipment_image = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.layout_equipment_image_buttons.addItem(self.horizontalSpacer_equipment_image)
 
 
-        self.gridLayout_container_equipments_left.addWidget(self.row_btn_link_datasheet, 6, 0, 1, 2)
-
-        self.row_btn_open_support_docs = QWidget(self.container_equipments_left)
-        self.row_btn_open_support_docs.setObjectName(u"row_btn_open_support_docs")
-        self.layout_btn_open_support_docs = QHBoxLayout(self.row_btn_open_support_docs)
-        self.layout_btn_open_support_docs.setSpacing(6)
-        self.layout_btn_open_support_docs.setObjectName(u"layout_btn_open_support_docs")
-        self.layout_btn_open_support_docs.setContentsMargins(-1, 4, 9, 4)
-        self.label_btn_open_support_docs = QLabel(self.row_btn_open_support_docs)
-        self.label_btn_open_support_docs.setObjectName(u"label_btn_open_support_docs")
-        self.label_btn_open_support_docs.setMinimumSize(QSize(74, 0))
-        sizePolicy.setHeightForWidth(self.label_btn_open_support_docs.sizePolicy().hasHeightForWidth())
-        self.label_btn_open_support_docs.setSizePolicy(sizePolicy)
-
-        self.layout_btn_open_support_docs.addWidget(self.label_btn_open_support_docs)
-
-        self.btn_open_support_docs = QPushButton(self.row_btn_open_support_docs)
-        self.btn_open_support_docs.setObjectName(u"btn_open_support_docs")
-        self.btn_open_support_docs.setMinimumSize(QSize(124, 0))
-        self.btn_open_support_docs.setStyleSheet(u"\n"
-"QPushButton {\n"
-"    min-width: 100px;\n"
-"    max-width: 100px;\n"
-"    padding: 6px 12px 6px 12px;\n"
-"    border-radius: 2px;\n"
-"    opacity: 1;\n"
-"    text-align: center;\n"
-"    background-color: #00CCCC;\n"
-"    color: #000028;\n"
-"}\n"
-"QPushButton:hover {\n"
-"    background-color: #00FFB9;\n"
-"}\n"
-"QPushButton:pressed {\n"
-"    background-color: #00E5AA;\n"
-"}\n"
-"")
-
-        self.layout_btn_open_support_docs.addWidget(self.btn_open_support_docs)
+        self.layout_equipment_image_panel.addWidget(self.row_equipment_image_buttons)
 
 
-        self.gridLayout_container_equipments_left.addWidget(self.row_btn_open_support_docs, 7, 0, 1, 2)
+        self.gridLayout_container_equipments_left.addWidget(self.equipment_image_panel, 3, 0, 1, 2)
 
-        self.row_btn_add_support_doc = QWidget(self.container_equipments_left)
-        self.row_btn_add_support_doc.setObjectName(u"row_btn_add_support_doc")
-        self.layout_btn_add_support_doc = QHBoxLayout(self.row_btn_add_support_doc)
-        self.layout_btn_add_support_doc.setSpacing(6)
-        self.layout_btn_add_support_doc.setObjectName(u"layout_btn_add_support_doc")
-        self.layout_btn_add_support_doc.setContentsMargins(-1, 4, 9, 4)
-        self.label_btn_add_support_doc = QLabel(self.row_btn_add_support_doc)
-        self.label_btn_add_support_doc.setObjectName(u"label_btn_add_support_doc")
-        self.label_btn_add_support_doc.setMinimumSize(QSize(74, 0))
-        sizePolicy.setHeightForWidth(self.label_btn_add_support_doc.sizePolicy().hasHeightForWidth())
-        self.label_btn_add_support_doc.setSizePolicy(sizePolicy)
+        self.verticalSpacer_equipments_left = QSpacerItem(20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.layout_btn_add_support_doc.addWidget(self.label_btn_add_support_doc)
-
-        self.btn_add_support_doc = QPushButton(self.row_btn_add_support_doc)
-        self.btn_add_support_doc.setObjectName(u"btn_add_support_doc")
-        self.btn_add_support_doc.setMinimumSize(QSize(124, 0))
-        self.btn_add_support_doc.setStyleSheet(u"\n"
-"QPushButton {\n"
-"    min-width: 100px;\n"
-"    max-width: 100px;\n"
-"    padding: 6px 12px 6px 12px;\n"
-"    border-radius: 2px;\n"
-"    opacity: 1;\n"
-"    text-align: center;\n"
-"    background-color: #00CCCC;\n"
-"    color: #000028;\n"
-"}\n"
-"QPushButton:hover {\n"
-"    background-color: #00FFB9;\n"
-"}\n"
-"QPushButton:pressed {\n"
-"    background-color: #00E5AA;\n"
-"}\n"
-"")
-
-        self.layout_btn_add_support_doc.addWidget(self.btn_add_support_doc)
-
-
-        self.gridLayout_container_equipments_left.addWidget(self.row_btn_add_support_doc, 8, 0, 1, 2)
-
-        self.verticalSpacer_equipments_left = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_container_equipments_left.addItem(self.verticalSpacer_equipments_left, 9, 1, 1, 1)
+        self.gridLayout_container_equipments_left.addItem(self.verticalSpacer_equipments_left, 4, 1, 1, 1)
 
 
         self.gridLayout_equipments.addWidget(self.container_equipments_left, 0, 0, 1, 1)
@@ -489,7 +330,7 @@ class Ui_EquipmentsPage(object):
         self.gridLayout_container_equipments_right = QGridLayout(self.container_equipments_right)
         self.gridLayout_container_equipments_right.setObjectName(u"gridLayout_container_equipments_right")
         self.gridLayout_container_equipments_right.setVerticalSpacing(0)
-        self.gridLayout_container_equipments_right.setContentsMargins(-1, 15, -1, -1)
+        self.gridLayout_container_equipments_right.setContentsMargins(-1, -36, -1, -1)
         self.label_details = QLabel(self.container_equipments_right)
         self.label_details.setObjectName(u"label_details")
         self.label_details.setStyleSheet(u"\n"
@@ -844,9 +685,9 @@ class Ui_EquipmentsPage(object):
         self.val_datasheet.setObjectName(u"val_datasheet")
         self.val_datasheet.setStyleSheet(u"\n"
 "QLabel {\n"
-"    min-width: 280px;\n"
-"    max-width: 480px;\n"
-"    min-height: 18px;\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    max-height: 18px;\n"
 "    padding: 5px;\n"
 "    padding-bottom: 7px;\n"
 "    margin-top: 0px;\n"
@@ -891,9 +732,270 @@ class Ui_EquipmentsPage(object):
 
         self.gridLayout_container_equipments_right.addWidget(self.row_val_datasheet, 6, 0, 1, 2)
 
+        self.label_support_docs = QLabel(self.container_equipments_right)
+        self.label_support_docs.setObjectName(u"label_support_docs")
+        self.label_support_docs.setStyleSheet(u"\n"
+"QLabel {\n"
+"    font-size: 16px;\n"
+"    font-weight: bold;\n"
+"    padding-top: 4px;\n"
+"}\n"
+"")
+
+        self.gridLayout_container_equipments_right.addWidget(self.label_support_docs, 7, 0, 1, 2)
+
+        self.row_doc_search_entry = QWidget(self.container_equipments_right)
+        self.row_doc_search_entry.setObjectName(u"row_doc_search_entry")
+        self.layout_doc_search_entry = QHBoxLayout(self.row_doc_search_entry)
+        self.layout_doc_search_entry.setSpacing(6)
+        self.layout_doc_search_entry.setObjectName(u"layout_doc_search_entry")
+        self.layout_doc_search_entry.setContentsMargins(-1, 4, 9, 4)
+        self.label_doc_search_entry = QLabel(self.row_doc_search_entry)
+        self.label_doc_search_entry.setObjectName(u"label_doc_search_entry")
+        self.label_doc_search_entry.setMinimumSize(QSize(74, 0))
+        sizePolicy.setHeightForWidth(self.label_doc_search_entry.sizePolicy().hasHeightForWidth())
+        self.label_doc_search_entry.setSizePolicy(sizePolicy)
+
+        self.layout_doc_search_entry.addWidget(self.label_doc_search_entry)
+
+        self.doc_search_entry = QLineEdit(self.row_doc_search_entry)
+        self.doc_search_entry.setObjectName(u"doc_search_entry")
+        sizePolicy1.setHeightForWidth(self.doc_search_entry.sizePolicy().hasHeightForWidth())
+        self.doc_search_entry.setSizePolicy(sizePolicy1)
+        self.doc_search_entry.setStyleSheet(u"\n"
+"QLineEdit {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    max-height: 18px;\n"
+"    padding: 5px;\n"
+"    padding-bottom: 7px;\n"
+"    margin-top: 0px;\n"
+"    border-radius: 2px;\n"
+"    border: 1px solid #B3B3BE;\n"
+"    background-color: #00183B;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QLineEdit:hover {\n"
+"    background-color: #001F39;\n"
+"    border: 1px solid #00FFB9;\n"
+"}\n"
+"")
+
+        self.layout_doc_search_entry.addWidget(self.doc_search_entry)
+
+        self.btn_doc_search = QPushButton(self.row_doc_search_entry)
+        self.btn_doc_search.setObjectName(u"btn_doc_search")
+        self.btn_doc_search.setMinimumSize(QSize(124, 0))
+        self.btn_doc_search.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_doc_search_entry.addWidget(self.btn_doc_search)
+
+        self.btn_doc_open = QPushButton(self.row_doc_search_entry)
+        self.btn_doc_open.setObjectName(u"btn_doc_open")
+        self.btn_doc_open.setMinimumSize(QSize(124, 0))
+        self.btn_doc_open.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_doc_search_entry.addWidget(self.btn_doc_open)
+
+
+        self.gridLayout_container_equipments_right.addWidget(self.row_doc_search_entry, 8, 0, 1, 2)
+
+        self.doc_results_list = QListWidget(self.container_equipments_right)
+        self.doc_results_list.setObjectName(u"doc_results_list")
+        self.doc_results_list.setMinimumSize(QSize(0, 52))
+        self.doc_results_list.setMaximumSize(QSize(16777215, 64))
+        self.doc_results_list.setStyleSheet(u"\n"
+"QListWidget {\n"
+"    background-color: #00183B;\n"
+"    border: 1px solid #B3B3BE;\n"
+"    color: #FFFFFF;\n"
+"    padding: 2px;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QListWidget::item {\n"
+"    padding: 2px 4px;\n"
+"    min-height: 18px;\n"
+"}\n"
+"QListWidget::item:selected {\n"
+"    background-color: #333353;\n"
+"    border: 1px solid #00FFB9;\n"
+"}\n"
+"QListWidget::item:hover {\n"
+"    background-color: #001F39;\n"
+"}\n"
+"QListWidget QScrollBar:vertical {\n"
+"    background-color: #00183B;\n"
+"    width: 12px;\n"
+"}\n"
+"QListWidget QScrollBar::handle:vertical {\n"
+"    background-color: #00CCCC;\n"
+"    min-height: 24px;\n"
+"    border-radius: 4px;\n"
+"}\n"
+"")
+
+        self.gridLayout_container_equipments_right.addWidget(self.doc_results_list, 9, 0, 1, 2)
+
+        self.row_btn_link_datasheet = QWidget(self.container_equipments_right)
+        self.row_btn_link_datasheet.setObjectName(u"row_btn_link_datasheet")
+        self.layout_btn_link_datasheet = QHBoxLayout(self.row_btn_link_datasheet)
+        self.layout_btn_link_datasheet.setSpacing(6)
+        self.layout_btn_link_datasheet.setObjectName(u"layout_btn_link_datasheet")
+        self.layout_btn_link_datasheet.setContentsMargins(-1, 4, 9, 4)
+        self.label_btn_link_datasheet = QLabel(self.row_btn_link_datasheet)
+        self.label_btn_link_datasheet.setObjectName(u"label_btn_link_datasheet")
+        self.label_btn_link_datasheet.setMinimumSize(QSize(74, 0))
+        sizePolicy.setHeightForWidth(self.label_btn_link_datasheet.sizePolicy().hasHeightForWidth())
+        self.label_btn_link_datasheet.setSizePolicy(sizePolicy)
+
+        self.layout_btn_link_datasheet.addWidget(self.label_btn_link_datasheet)
+
+        self.btn_link_datasheet = QPushButton(self.row_btn_link_datasheet)
+        self.btn_link_datasheet.setObjectName(u"btn_link_datasheet")
+        self.btn_link_datasheet.setMinimumSize(QSize(124, 0))
+        self.btn_link_datasheet.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_btn_link_datasheet.addWidget(self.btn_link_datasheet)
+
+
+        self.gridLayout_container_equipments_right.addWidget(self.row_btn_link_datasheet, 10, 0, 1, 2)
+
+        self.row_btn_open_support_docs = QWidget(self.container_equipments_right)
+        self.row_btn_open_support_docs.setObjectName(u"row_btn_open_support_docs")
+        self.layout_btn_open_support_docs = QHBoxLayout(self.row_btn_open_support_docs)
+        self.layout_btn_open_support_docs.setSpacing(6)
+        self.layout_btn_open_support_docs.setObjectName(u"layout_btn_open_support_docs")
+        self.layout_btn_open_support_docs.setContentsMargins(-1, 4, 9, 4)
+        self.label_btn_open_support_docs = QLabel(self.row_btn_open_support_docs)
+        self.label_btn_open_support_docs.setObjectName(u"label_btn_open_support_docs")
+        self.label_btn_open_support_docs.setMinimumSize(QSize(74, 0))
+        sizePolicy.setHeightForWidth(self.label_btn_open_support_docs.sizePolicy().hasHeightForWidth())
+        self.label_btn_open_support_docs.setSizePolicy(sizePolicy)
+
+        self.layout_btn_open_support_docs.addWidget(self.label_btn_open_support_docs)
+
+        self.btn_open_support_docs = QPushButton(self.row_btn_open_support_docs)
+        self.btn_open_support_docs.setObjectName(u"btn_open_support_docs")
+        self.btn_open_support_docs.setMinimumSize(QSize(124, 0))
+        self.btn_open_support_docs.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_btn_open_support_docs.addWidget(self.btn_open_support_docs)
+
+
+        self.gridLayout_container_equipments_right.addWidget(self.row_btn_open_support_docs, 11, 0, 1, 2)
+
+        self.row_btn_add_support_doc = QWidget(self.container_equipments_right)
+        self.row_btn_add_support_doc.setObjectName(u"row_btn_add_support_doc")
+        self.layout_btn_add_support_doc = QHBoxLayout(self.row_btn_add_support_doc)
+        self.layout_btn_add_support_doc.setSpacing(6)
+        self.layout_btn_add_support_doc.setObjectName(u"layout_btn_add_support_doc")
+        self.layout_btn_add_support_doc.setContentsMargins(-1, 4, 9, 4)
+        self.label_btn_add_support_doc = QLabel(self.row_btn_add_support_doc)
+        self.label_btn_add_support_doc.setObjectName(u"label_btn_add_support_doc")
+        self.label_btn_add_support_doc.setMinimumSize(QSize(74, 0))
+        sizePolicy.setHeightForWidth(self.label_btn_add_support_doc.sizePolicy().hasHeightForWidth())
+        self.label_btn_add_support_doc.setSizePolicy(sizePolicy)
+
+        self.layout_btn_add_support_doc.addWidget(self.label_btn_add_support_doc)
+
+        self.btn_add_support_doc = QPushButton(self.row_btn_add_support_doc)
+        self.btn_add_support_doc.setObjectName(u"btn_add_support_doc")
+        self.btn_add_support_doc.setMinimumSize(QSize(124, 0))
+        self.btn_add_support_doc.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    padding: 6px 12px 6px 12px;\n"
+"    border-radius: 2px;\n"
+"    opacity: 1;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_btn_add_support_doc.addWidget(self.btn_add_support_doc)
+
+
+        self.gridLayout_container_equipments_right.addWidget(self.row_btn_add_support_doc, 12, 0, 1, 2)
+
         self.verticalSpacer_equipments_right = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_container_equipments_right.addItem(self.verticalSpacer_equipments_right, 7, 1, 1, 1)
+        self.gridLayout_container_equipments_right.addItem(self.verticalSpacer_equipments_right, 13, 1, 1, 1)
 
 
         self.gridLayout_equipments.addWidget(self.container_equipments_right, 0, 1, 1, 1)
@@ -914,16 +1016,18 @@ class Ui_EquipmentsPage(object):
         self.btn_copy_supplier_ref.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Copy to clipboard", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_copy_supplier_ref.setText(QCoreApplication.translate("EquipmentsPage", u"Copy", None))
-        self.label_support_docs.setText(QCoreApplication.translate("EquipmentsPage", u"Support Documentation", None))
-        self.label_doc_search_entry.setText(QCoreApplication.translate("EquipmentsPage", u"Search doc", None))
-        self.btn_doc_search.setText(QCoreApplication.translate("EquipmentsPage", u"SEARCH", None))
-        self.btn_doc_open.setText(QCoreApplication.translate("EquipmentsPage", u"OPEN", None))
-        self.label_btn_link_datasheet.setText(QCoreApplication.translate("EquipmentsPage", u"Link", None))
-        self.btn_link_datasheet.setText(QCoreApplication.translate("EquipmentsPage", u"LINK", None))
-        self.label_btn_open_support_docs.setText(QCoreApplication.translate("EquipmentsPage", u"Folder", None))
-        self.btn_open_support_docs.setText(QCoreApplication.translate("EquipmentsPage", u"OPEN FOLDER", None))
-        self.label_btn_add_support_doc.setText(QCoreApplication.translate("EquipmentsPage", u"Add", None))
-        self.btn_add_support_doc.setText(QCoreApplication.translate("EquipmentsPage", u"ADD DOC", None))
+#if QT_CONFIG(tooltip)
+        self.equipment_image_preview.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Drag and drop an image file here", None))
+#endif // QT_CONFIG(tooltip)
+        self.equipment_image_preview.setText(QCoreApplication.translate("EquipmentsPage", u"Drop image here", None))
+#if QT_CONFIG(tooltip)
+        self.btn_set_equipment_image.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Add or replace equipment image", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_set_equipment_image.setText(QCoreApplication.translate("EquipmentsPage", u"Add", None))
+#if QT_CONFIG(tooltip)
+        self.btn_clear_equipment_image.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Delete equipment image", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_clear_equipment_image.setText(QCoreApplication.translate("EquipmentsPage", u"Delete", None))
         self.label_details.setText(QCoreApplication.translate("EquipmentsPage", u"Equipment Details", None))
         self.title_val_supplier_reference.setText(QCoreApplication.translate("EquipmentsPage", u"Supplier Reference", None))
         self.val_supplier_reference.setText("")
@@ -961,6 +1065,16 @@ class Ui_EquipmentsPage(object):
         self.btn_copy_val_datasheet.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Copy to clipboard", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_copy_val_datasheet.setText(QCoreApplication.translate("EquipmentsPage", u"Copy", None))
+        self.label_support_docs.setText(QCoreApplication.translate("EquipmentsPage", u"Support Documentation", None))
+        self.label_doc_search_entry.setText(QCoreApplication.translate("EquipmentsPage", u"Search doc", None))
+        self.btn_doc_search.setText(QCoreApplication.translate("EquipmentsPage", u"SEARCH", None))
+        self.btn_doc_open.setText(QCoreApplication.translate("EquipmentsPage", u"OPEN", None))
+        self.label_btn_link_datasheet.setText(QCoreApplication.translate("EquipmentsPage", u"Link", None))
+        self.btn_link_datasheet.setText(QCoreApplication.translate("EquipmentsPage", u"LINK", None))
+        self.label_btn_open_support_docs.setText(QCoreApplication.translate("EquipmentsPage", u"Folder", None))
+        self.btn_open_support_docs.setText(QCoreApplication.translate("EquipmentsPage", u"OPEN FOLDER", None))
+        self.label_btn_add_support_doc.setText(QCoreApplication.translate("EquipmentsPage", u"Add", None))
+        self.btn_add_support_doc.setText(QCoreApplication.translate("EquipmentsPage", u"ADD DOC", None))
         pass
     # retranslateUi
 

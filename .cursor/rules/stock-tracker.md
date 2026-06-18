@@ -24,7 +24,7 @@ Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
 - Pacote edição: `StockTracker-Designer/` (repo) e `Desktop\StockTracker-Designer`
 - Sincronizar: `tools\ORGANIZAR-DESKTOP.bat`
 - Métricas template: `src/gui/styles.py`, `tools/gui_ui_builder.py`
-- Guia Equipments (PT): `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
+- Guia Equipments (PT): `src/gui/designer/EQUIPMENTS-LEIA-ME.txt` — layout, imagem, docs (lista oculta ate SEARCH)
 
 ## Regras
 

@@ -5,7 +5,7 @@
 | Ficheiro | Papel |
 |----------|-------|
 | `stock_tracker_window.py` | Janela principal (Components + navegacao Equipments) |
-| `equipments_page.py` | Pagina Equipments (logica; layout em `designer/gui_equipments.ui`; lista `doc_results_list` para documentacao) |
+| `equipments_page.py` | Pagina Equipments (logica; layout em `designer/gui_equipments.ui`; imagem, lista `doc_results_list` oculta ate SEARCH) |
 | `designer/gui_stocktracker.ui` | Layout Components (Qt Designer) |
 | `designer/gui_equipments.ui` | Layout Equipments (Qt Designer) |
 | `designer/gui_stocktracker.py` | Export `pyside6-uic` — nao editar a mao |

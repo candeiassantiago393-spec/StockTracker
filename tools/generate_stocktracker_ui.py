@@ -14,10 +14,12 @@ from src.gui import styles  # noqa: E402
 from tools.gui_ui_builder import (  # noqa: E402
     PM,
     RS,
+    component_image_preview_xml,
     esc,
     header_side_margins_xml,
     input_btn_row_xml,
     input_row_xml,
+    input_scan_copy_row_xml,
     page_grid_margins_xml,
     output_row_xml,
     prop_string,
@@ -56,10 +58,16 @@ def build_ui() -> str:
     left.append(input_btn_row_xml("search_entry", "Search Component", "btn_search", "SEARCH", r))
     r += 1
     left.append(
-        input_row_xml("barcode_entry", "Scan Barcode / Supplier Ref.", r, with_copy=True)
+        input_scan_copy_row_xml(
+            "barcode_entry",
+            "Scan Barcode / Supplier Ref.",
+            "btn_scan",
+            r,
+            copy_btn_name="btn_copy_barcode_entry",
+        )
     )
     r += 1
-    left.append(input_btn_row_xml("quantity_entry", "Quantity", "btn_scan", "SCAN", r))
+    left.append(input_row_xml("quantity_entry", "Quantity", r))
     r += 1
     left.append(stock_btn_row_xml(r))
     r += 1
@@ -84,7 +92,9 @@ def build_ui() -> str:
     ):
         right.append(output_row_xml(name, label, rr))
         rr += 1
-    right.append(vertical_spacer_xml("verticalSpacer_right", rr))
+    right.append(component_image_preview_xml(rr))
+    rr += 1
+    right.append(vertical_spacer_xml("verticalSpacer_right", rr, height=12))
 
     footer = "".join(
         [

@@ -7,10 +7,24 @@ Canonical `.ui` files for the running app. Metrics come from `styles.py` and Sie
 | File | Runtime |
 |------|---------|
 | `gui_stocktracker.ui` | Components page (`stock_tracker_window.py`) |
-| `gui_equipments.ui` | Equipments page — support docs list (`doc_results_list`), see `EQUIPMENTS-LEIA-ME.txt` |
+| `gui_equipments.ui` | Equipments page (`equipments_page.py`) — see `EQUIPMENTS-LEIA-ME.txt` |
 | `popups/components/gui_popup_*.ui` | Component dialogs |
 | `popups/equipments/gui_popup_*.ui` | Equipment dialogs |
 | `popups/shared/gui_popup_*.ui` | Confirm + template |
+
+## Equipments page (summary)
+
+| Area | Key widgets |
+|------|-------------|
+| Left — Operations | `search_entry`, `supplier_ref_entry`, scan/copy buttons |
+| Left — Image | `equipment_image_preview`, `btn_set_equipment_image` (Add), `btn_clear_equipment_image` (Delete) |
+| Right — Details | `val_supplier_reference` … `val_datasheet` (all fields **100px** wide) |
+| Right — Docs | `doc_search_entry`, `doc_results_list` (hidden until SEARCH), LINK / OPEN FOLDER / ADD DOC |
+
+Runtime behaviour (images, list visibility, drag & drop) is in `equipments_page.py`, not in the `.ui` alone.
+
+Full guide (PT): [EQUIPMENTS-LEIA-ME.txt](EQUIPMENTS-LEIA-ME.txt)  
+User guide (EN): [docs/user/QT_DESIGNER.md](../../../docs/user/QT_DESIGNER.md)
 
 ## Regenerate from Python (template-aligned)
 
@@ -46,6 +60,8 @@ powershell -File tools\export_designer_uis.ps1
 tools\ABRIR-DESIGNER.bat
 ```
 
+Choose **1** (Components) or **2** (Equipments).
+
 **Designer package** (repo `StockTracker-Designer/` or Desktop copy):
 
 ```text
@@ -65,7 +81,8 @@ After editing `.ui` in the Designer package, copy changed files back to `src/gui
 
 - Page margins: **16px** left and right (`TEMPLATE_PAGE_MARGINS`)
 - Two columns: **50/50**, horizontal spacing **0**
-- Row labels: **74px**; fields: **100px**; Copy: **60px**; action buttons: **124px**
+- Row labels: **74px**; value fields: **100px**; Copy: **60px**; action buttons: **124px**
+- Compact buttons (Add/Delete image): **64px** (`BTN_COMPACT_STYLE`)
 - Row spacing: **6px**; row margins: `(0, 9, 9, 9)`
 
 Built by `tools/gui_ui_builder.py` — keep generators and `styles.py` in sync.

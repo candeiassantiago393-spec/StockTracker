@@ -20,6 +20,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_equipments">
        <property name="leftMargin"><number>16</number></property>
+       <property name="topMargin"><number>-18</number></property>
        <property name="rightMargin"><number>16</number></property>
        <property name="horizontalSpacing"><number>0</number></property>
        <property name="columnStretch" stdset="0">
@@ -236,110 +237,59 @@ QPushButton:pressed {
           </item>
 
           <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_support_docs">
-            <property name="styleSheet">
+           <widget class="QWidget" name="equipment_image_panel" native="true">
+            <layout class="QVBoxLayout" name="layout_equipment_image_panel">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="equipment_image_preview">
+               <property name="minimumSize"><size><width>300</width><height>260</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>1</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip"><string>Drag and drop an image file here</string></property>
+               <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+               <property name="styleSheet">
    <string notr="true">
 QLabel {
-    font-size: 16px;
-    font-weight: bold;
-    padding-top: 4px;
-}
-</string>
-            </property>
-            <property name="text"><string>Support Documentation</string></property>
-           </widget>
-          </item>
-          <item row="4" column="0" colspan="2">
-           <widget class="QWidget" name="row_doc_search_entry" native="true">
-            <layout class="QHBoxLayout" name="layout_doc_search_entry">
-             <property name="spacing"><number>6</number></property>
-             <property name="topMargin"><number>4</number></property>
-             <property name="rightMargin"><number>9</number></property>
-             <property name="bottomMargin"><number>4</number></property>
-             <item>
-              <widget class="QLabel" name="label_doc_search_entry">
-               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text"><string>Search doc</string></property>
-              </widget>
-
-             </item>
-             <item>
-              <widget class="QLineEdit" name="doc_search_entry">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="styleSheet">
-   <string notr="true">
-QLineEdit {
-    min-width: 100px;
-    max-width: 100px;
-    max-height: 18px;
-    padding: 5px;
-    padding-bottom: 7px;
-    margin-top: 0px;
+    border: 1px dashed #B3B3BE;
     border-radius: 2px;
-    border: 1px solid #B3B3BE;
     background-color: #00183B;
-    color: #FFFFFF;
-}
-QLineEdit:hover {
-    background-color: #001F39;
-    border: 1px solid #00FFB9;
+    color: #B3B3BE;
+    font-size: 12px;
 }
 </string>
                </property>
+               <property name="text"><string>Drop image here</string></property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btn_doc_search">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
+              <widget class="QWidget" name="row_equipment_image_buttons" native="true">
+               <layout class="QHBoxLayout" name="layout_equipment_image_buttons">
+                <property name="spacing"><number>6</number></property>
+                <property name="topMargin"><number>0</number></property>
+                <property name="bottomMargin"><number>0</number></property>
+                <item>
+                 <widget class="QPushButton" name="btn_set_equipment_image">
+                  <property name="minimumSize"><size><width>64</width><height>0</height></size></property>
+                  <property name="maximumSize"><size><width>64</width><height>16777215</height></size></property>
+                  <property name="toolTip"><string>Add or replace equipment image</string></property>
+                  <property name="styleSheet">
    <string notr="true">
 QPushButton {
-    min-width: 100px;
-    max-width: 100px;
-    padding: 6px 12px 6px 12px;
-    border-radius: 2px;
-    opacity: 1;
-    text-align: center;
-    background-color: #00CCCC;
-    color: #000028;
-}
-QPushButton:hover {
-    background-color: #00FFB9;
-}
-QPushButton:pressed {
-    background-color: #00E5AA;
-}
-</string>
-               </property>
-               <property name="text"><string>SEARCH</string></property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_doc_open">
-               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
-               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
-               <property name="styleSheet">
-   <string notr="true">
-QPushButton {
-    min-width: 60px;
-    max-width: 60px;
+    min-width: 56px;
+    max-width: 64px;
     padding: 4px 6px;
     border-radius: 2px;
     text-align: center;
     background-color: #00CCCC;
     color: #000028;
-    font-size: 12px;
+    font-size: 11px;
 }
 QPushButton:hover {
     background-color: #00FFB9;
@@ -348,76 +298,26 @@ QPushButton:pressed {
     background-color: #00E5AA;
 }
 </string>
-               </property>
-               <property name="text"><string>OPEN</string></property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-
-          <item row="5" column="0" colspan="2">
-           <widget class="QListWidget" name="doc_results_list">
-            <property name="minimumSize"><size><width>0</width><height>52</height></size></property>
-            <property name="maximumSize"><size><width>16777215</width><height>64</height></size></property>
-            <property name="styleSheet">
-   <string notr="true">
-QListWidget {
-    background-color: #00183B;
-    border: 1px solid #B3B3BE;
-    color: #FFFFFF;
-    padding: 2px;
-    font-size: 12px;
-}
-QListWidget::item {
-    padding: 2px 4px;
-    min-height: 18px;
-}
-QListWidget::item:selected {
-    background-color: #333353;
-    border: 1px solid #00FFB9;
-}
-QListWidget::item:hover {
-    background-color: #001F39;
-}
-</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0" colspan="2">
-           <widget class="QWidget" name="row_btn_link_datasheet" native="true">
-            <layout class="QHBoxLayout" name="layout_btn_link_datasheet">
-             <property name="spacing"><number>6</number></property>
-             <property name="topMargin"><number>4</number></property>
-             <property name="rightMargin"><number>9</number></property>
-             <property name="bottomMargin"><number>4</number></property>
-             <item>
-              <widget class="QLabel" name="label_btn_link_datasheet">
-               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text"><string>Link</string></property>
-              </widget>
-
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_link_datasheet">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
+                  </property>
+                  <property name="text"><string>Add</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_clear_equipment_image">
+                  <property name="minimumSize"><size><width>64</width><height>0</height></size></property>
+                  <property name="maximumSize"><size><width>64</width><height>16777215</height></size></property>
+                  <property name="toolTip"><string>Delete equipment image</string></property>
+                  <property name="styleSheet">
    <string notr="true">
 QPushButton {
-    min-width: 100px;
-    max-width: 100px;
-    padding: 6px 12px 6px 12px;
+    min-width: 56px;
+    max-width: 64px;
+    padding: 4px 6px;
     border-radius: 2px;
-    opacity: 1;
     text-align: center;
     background-color: #00CCCC;
     color: #000028;
+    font-size: 11px;
 }
 QPushButton:hover {
     background-color: #00FFB9;
@@ -426,118 +326,26 @@ QPushButton:pressed {
     background-color: #00E5AA;
 }
 </string>
-               </property>
-               <property name="text"><string>LINK</string></property>
+                  </property>
+                  <property name="text"><string>Delete</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_equipment_image">
+                  <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+                  <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+                 </spacer>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
            </widget>
           </item>
-
-          <item row="7" column="0" colspan="2">
-           <widget class="QWidget" name="row_btn_open_support_docs" native="true">
-            <layout class="QHBoxLayout" name="layout_btn_open_support_docs">
-             <property name="spacing"><number>6</number></property>
-             <property name="topMargin"><number>4</number></property>
-             <property name="rightMargin"><number>9</number></property>
-             <property name="bottomMargin"><number>4</number></property>
-             <item>
-              <widget class="QLabel" name="label_btn_open_support_docs">
-               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text"><string>Folder</string></property>
-              </widget>
-
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_open_support_docs">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
-   <string notr="true">
-QPushButton {
-    min-width: 100px;
-    max-width: 100px;
-    padding: 6px 12px 6px 12px;
-    border-radius: 2px;
-    opacity: 1;
-    text-align: center;
-    background-color: #00CCCC;
-    color: #000028;
-}
-QPushButton:hover {
-    background-color: #00FFB9;
-}
-QPushButton:pressed {
-    background-color: #00E5AA;
-}
-</string>
-               </property>
-               <property name="text"><string>OPEN FOLDER</string></property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-
-          <item row="8" column="0" colspan="2">
-           <widget class="QWidget" name="row_btn_add_support_doc" native="true">
-            <layout class="QHBoxLayout" name="layout_btn_add_support_doc">
-             <property name="spacing"><number>6</number></property>
-             <property name="topMargin"><number>4</number></property>
-             <property name="rightMargin"><number>9</number></property>
-             <property name="bottomMargin"><number>4</number></property>
-             <item>
-              <widget class="QLabel" name="label_btn_add_support_doc">
-               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text"><string>Add</string></property>
-              </widget>
-
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_add_support_doc">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
-   <string notr="true">
-QPushButton {
-    min-width: 100px;
-    max-width: 100px;
-    padding: 6px 12px 6px 12px;
-    border-radius: 2px;
-    opacity: 1;
-    text-align: center;
-    background-color: #00CCCC;
-    color: #000028;
-}
-QPushButton:hover {
-    background-color: #00FFB9;
-}
-QPushButton:pressed {
-    background-color: #00E5AA;
-}
-</string>
-               </property>
-               <property name="text"><string>ADD DOC</string></property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-
-          <item row="9" column="1">
+          <item row="4" column="1">
            <spacer name="verticalSpacer_equipments_left">
             <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+            <property name="sizeHint" stdset="0"><size><width>20</width><height>12</height></size></property>
            </spacer>
           </item>
          </layout>
@@ -549,7 +357,7 @@ QPushButton:pressed {
          <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>
          <property name="frameShadow"><enum>QFrame::Shadow::Raised</enum></property>
          <layout class="QGridLayout" name="gridLayout_container_equipments_right">
-          <property name="topMargin"><number>15</number></property>
+          <property name="topMargin"><number>-36</number></property>
           <property name="verticalSpacing"><number>0</number></property>
 
           <item row="0" column="0">
@@ -975,9 +783,9 @@ QPushButton:pressed {
                <property name="styleSheet">
    <string notr="true">
 QLabel {
-    min-width: 280px;
-    max-width: 480px;
-    min-height: 18px;
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
     padding: 5px;
     padding-bottom: 7px;
     margin-top: 0px;
@@ -1027,7 +835,314 @@ QPushButton:pressed {
            </widget>
           </item>
 
-          <item row="7" column="1">
+          <item row="7" column="0" colspan="2">
+           <widget class="QLabel" name="label_support_docs">
+            <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    font-size: 16px;
+    font-weight: bold;
+    padding-top: 4px;
+}
+</string>
+            </property>
+            <property name="text"><string>Support Documentation</string></property>
+           </widget>
+          </item>
+          <item row="8" column="0" colspan="2">
+           <widget class="QWidget" name="row_doc_search_entry" native="true">
+            <layout class="QHBoxLayout" name="layout_doc_search_entry">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>4</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>4</number></property>
+             <item>
+              <widget class="QLabel" name="label_doc_search_entry">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Search doc</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QLineEdit" name="doc_search_entry">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_doc_search">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>SEARCH</string></property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_doc_open">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>OPEN</string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="9" column="0" colspan="2">
+           <widget class="QListWidget" name="doc_results_list">
+            <property name="minimumSize"><size><width>0</width><height>52</height></size></property>
+            <property name="maximumSize"><size><width>16777215</width><height>64</height></size></property>
+            <property name="styleSheet">
+   <string notr="true">
+QListWidget {
+    background-color: #00183B;
+    border: 1px solid #B3B3BE;
+    color: #FFFFFF;
+    padding: 2px;
+    font-size: 12px;
+}
+QListWidget::item {
+    padding: 2px 4px;
+    min-height: 18px;
+}
+QListWidget::item:selected {
+    background-color: #333353;
+    border: 1px solid #00FFB9;
+}
+QListWidget::item:hover {
+    background-color: #001F39;
+}
+QListWidget QScrollBar:vertical {
+    background-color: #00183B;
+    width: 12px;
+}
+QListWidget QScrollBar::handle:vertical {
+    background-color: #00CCCC;
+    min-height: 24px;
+    border-radius: 4px;
+}
+</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0" colspan="2">
+           <widget class="QWidget" name="row_btn_link_datasheet" native="true">
+            <layout class="QHBoxLayout" name="layout_btn_link_datasheet">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>4</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>4</number></property>
+             <item>
+              <widget class="QLabel" name="label_btn_link_datasheet">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Link</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_link_datasheet">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>LINK</string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="11" column="0" colspan="2">
+           <widget class="QWidget" name="row_btn_open_support_docs" native="true">
+            <layout class="QHBoxLayout" name="layout_btn_open_support_docs">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>4</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>4</number></property>
+             <item>
+              <widget class="QLabel" name="label_btn_open_support_docs">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Folder</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_open_support_docs">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>OPEN FOLDER</string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="12" column="0" colspan="2">
+           <widget class="QWidget" name="row_btn_add_support_doc" native="true">
+            <layout class="QHBoxLayout" name="layout_btn_add_support_doc">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>4</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>4</number></property>
+             <item>
+              <widget class="QLabel" name="label_btn_add_support_doc">
+               <property name="minimumSize"><size><width>74</width><height>0</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text"><string>Add</string></property>
+              </widget>
+
+             </item>
+             <item>
+              <widget class="QPushButton" name="btn_add_support_doc">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>ADD DOC</string></property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <item row="13" column="1">
            <spacer name="verticalSpacer_equipments_right">
             <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
             <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>

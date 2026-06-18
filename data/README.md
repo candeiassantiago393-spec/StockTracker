@@ -8,7 +8,7 @@ Place your inventory file here: **`stock.xlsx`**
 |-------|---------|
 | `Components` | Parts and stock levels |
 | `History` | Stock movements (IN/OUT) |
-| `Equipments` | Calibrated equipments (supplier ref, serial, description, dates, **Datasheet** filename) |
+| `Equipments` | Calibrated equipments (supplier ref, serial, description, dates, **Datasheet**, **Image**) |
 
 The app creates headers automatically if the file is missing or empty.
 
@@ -18,10 +18,18 @@ Folder: **`support_documentation/`** (inside `data/`)
 
 Store datasheets, manuals and other support files here. From the **Equipments** page:
 
-- **SEARCH** — lists matching files in `doc_results_list`
-- **LINK** — associates the selected file with the current equipment (saved in Excel)
-- When you **search equipment**, its linked datasheet loads in the list and opens automatically
+- **SEARCH** — shows matching files in `doc_results_list` (list is hidden until you search)
+- **OPEN** — opens the selected file from the list, or the linked datasheet if the list is hidden
+- **LINK** — associates the selected file with the current equipment (saved in Excel column **Datasheet**)
+- When you **search equipment**, its linked datasheet opens automatically (if the file exists)
 - **ADD DOC** — copies a file; if an equipment is selected, it is linked automatically
+
+## Equipment images
+
+Folder: **`equipment_images/`** (inside `data/`)
+
+From the **Equipments** page: drag & drop an image onto the preview area, or use **Add**.  
+Linked filename is stored in Excel column **Image**. Use **Delete** to remove.
 
 ### Example data (demo)
 

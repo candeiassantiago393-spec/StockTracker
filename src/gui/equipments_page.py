@@ -2,32 +2,76 @@
 
 from pathlib import Path
 
+from PySide6.QtCore import QEvent, QObject, Qt
+from PySide6.QtGui import QFontMetrics, QGuiApplication, QPixmap
+from PySide6.QtWidgets import QDialog, QFileDialog, QLabel, QLineEdit, QListWidgetItem, QWidget
 
-
-from PySide6.QtCore import Qt
-
-from PySide6.QtGui import QGuiApplication
-
-from PySide6.QtWidgets import QDialog, QFileDialog, QLineEdit, QListWidgetItem, QWidget
-
-
-
+from src.core.equipment_images import EquipmentImages, is_image_file
 from src.core.stock import StockTracker
-
 from src.core.support_documentation import SupportDocument, SupportDocumentation
 
-
+from . import styles
 
 from .designer.gui_equipments import Ui_EquipmentsPage
-
 from .equipment_dialog import EquipmentDialog
-
 from .equipment_search_dialog import EquipmentSearchDialog
-
 from .message_dialog import SiemensMessage
 
 
+_IMAGE_FILE_FILTER = (
+    "Images (*.png *.jpg *.jpeg *.webp *.bmp *.gif);;All files (*.*)"
+)
 
+
+_IMAGE_PLACEHOLDER = "Drop image here"
+
+
+class _EquipmentImageDropFilter(QObject):
+    """Accept image file drops on the equipment preview label."""
+
+    def __init__(self, page: "EquipmentsPage") -> None:
+        super().__init__(page)
+        self._page = page
+
+    def _set_drag_highlight(self, active: bool) -> None:
+        preview = self._page.ui.equipment_image_preview
+        if active:
+            preview.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_DRAG_STYLE)
+            preview.setText("Release to add image")
+            return
+        preview.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
+        self._page._restore_image_placeholder_text()
+
+    def eventFilter(self, obj, event) -> bool:  # noqa: N802
+        preview = self._page.ui.equipment_image_preview
+        if obj is not preview:
+            return False
+        if event.type() == QEvent.Type.DragEnter:
+            mime = event.mimeData()
+            if mime.hasUrls() and any(
+                url.isLocalFile() and is_image_file(url.toLocalFile())
+                for url in mime.urls()
+            ):
+                self._set_drag_highlight(True)
+                event.acceptProposedAction()
+                return True
+            return False
+        if event.type() == QEvent.Type.DragLeave:
+            self._set_drag_highlight(False)
+            return False
+        if event.type() == QEvent.Type.Drop:
+            self._set_drag_highlight(False)
+            mime = event.mimeData()
+            if mime.hasUrls():
+                for url in mime.urls():
+                    if url.isLocalFile():
+                        path = Path(url.toLocalFile())
+                        if is_image_file(path):
+                            self._page._associate_image_file(path)
+                            event.acceptProposedAction()
+                            return True
+            return False
+        return False
 
 
 class EquipmentsPage(QWidget):
@@ -48,6 +92,8 @@ class EquipmentsPage(QWidget):
 
         self._support_docs = SupportDocumentation()
 
+        self._equipment_images = EquipmentImages()
+
         self._doc_results: list[SupportDocument] = []
 
         self.ui = Ui_EquipmentsPage()
@@ -56,13 +102,17 @@ class EquipmentsPage(QWidget):
 
         self._setup_support_doc_tooltips()
 
-        self._setup_doc_list_scroll()
+        self._setup_doc_list()
+
+        self._setup_equipment_image()
+
+        self._setup_empty_details_click_targets()
 
         self._connect_signals()
 
 
 
-    def _setup_doc_list_scroll(self) -> None:
+    def _setup_doc_list(self) -> None:
 
         self.ui.doc_results_list.setVerticalScrollBarPolicy(
 
@@ -76,11 +126,49 @@ class EquipmentsPage(QWidget):
 
         )
 
+        self._hide_doc_results_list()
+
+
+
+    def _hide_doc_results_list(self) -> None:
+
+        self._doc_results = []
+
+        self.ui.doc_results_list.clear()
+
+        self.ui.doc_results_list.setVisible(False)
+
+
+
+    def _show_doc_results_list(self, documents: list[SupportDocument]) -> None:
+
+        self._doc_results = documents
+
+        self.ui.doc_results_list.clear()
+
+        for index, doc in enumerate(documents):
+
+            item = QListWidgetItem(doc.name)
+
+            item.setData(Qt.ItemDataRole.UserRole, str(doc.path))
+
+            self.ui.doc_results_list.addItem(item)
+
+            if index == 0:
+
+                self.ui.doc_results_list.setCurrentRow(0)
+
+        self.ui.doc_results_list.setVisible(True)
+
 
 
     def _setup_support_doc_tooltips(self) -> None:
 
-        self.ui.btn_doc_open.setToolTip("Open the selected document from the list")
+        self.ui.btn_doc_open.setToolTip(
+
+            "Open the selected document from the list, or the linked datasheet"
+
+        )
 
         self.ui.btn_open_support_docs.setToolTip("Open support documentation folder")
 
@@ -100,6 +188,378 @@ class EquipmentsPage(QWidget):
 
 
 
+    def _setup_equipment_image(self) -> None:
+
+        preview = self.ui.equipment_image_preview
+
+        preview.setAcceptDrops(True)
+
+        preview.setToolTip("Drag and drop an image file here")
+
+        self._image_drop_filter = _EquipmentImageDropFilter(self)
+
+        preview.installEventFilter(self._image_drop_filter)
+
+        self.ui.btn_set_equipment_image.setToolTip("Add or replace equipment image")
+
+        self.ui.btn_clear_equipment_image.setToolTip("Delete equipment image")
+
+        self._clear_equipment_image_display()
+
+        self._update_image_buttons()
+
+
+
+    def _update_image_buttons(self) -> None:
+
+        has_selection = self._selected_row is not None
+
+        has_image = False
+
+        if has_selection:
+
+            data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+            has_image = bool(str(data.get("image", "")).strip())
+
+        self.ui.btn_set_equipment_image.setVisible(has_selection)
+
+        self.ui.btn_clear_equipment_image.setVisible(has_selection and has_image)
+
+
+
+    def _setup_empty_details_click_targets(self) -> None:
+
+        """Clicking empty Equipment Details fields opens Add Equipment dialog."""
+
+        pairs = (
+
+            ("row_val_supplier_reference", "val_supplier_reference"),
+
+            ("row_val_serial_number", "val_serial_number"),
+
+            ("row_val_description", "val_description"),
+
+            ("row_val_calibration", "val_calibration"),
+
+            ("row_val_expiration", "val_expiration"),
+
+            ("row_val_datasheet", "val_datasheet"),
+
+        )
+
+        self._detail_click_targets: list[tuple[QWidget, QWidget]] = []
+
+        for row_name, value_name in pairs:
+
+            row = getattr(self.ui, row_name, None)
+
+            value = getattr(self.ui, value_name, None)
+
+            if row is None or value is None:
+
+                continue
+
+            self._detail_click_targets.append((row, value))
+
+            title = getattr(self.ui, f"title_{value_name}", None)
+
+            click_targets = [w for w in (row, value, title) if w is not None]
+
+            for widget in click_targets:
+
+                widget.mousePressEvent = (  # type: ignore[method-assign]
+
+                    lambda event, w=value: self._on_empty_detail_click(w, event)
+
+                )
+
+        self._refresh_empty_detail_cursor()
+
+
+
+    @staticmethod
+
+    def _widget_text(widget: QWidget) -> str:
+
+        if isinstance(widget, (QLabel, QLineEdit)):
+
+            return widget.text().strip()
+
+        return ""
+
+
+
+    def _detail_value_empty(self, value_widget: QWidget) -> bool:
+
+        text = self._widget_text(value_widget)
+
+        if value_widget is self.ui.val_datasheet and text == "(not linked)":
+
+            return True
+
+        return text == ""
+
+
+
+    def _refresh_empty_detail_cursor(self) -> None:
+
+        for row, value in getattr(self, "_detail_click_targets", []):
+
+            clickable = self._detail_value_empty(value)
+
+            cursor = (
+
+                Qt.CursorShape.PointingHandCursor
+
+                if clickable
+
+                else Qt.CursorShape.ArrowCursor
+
+            )
+
+            row.setCursor(cursor)
+
+            value.setCursor(cursor)
+
+            title = getattr(self.ui, f"title_{value.objectName()}", None)
+
+            if title is not None:
+
+                title.setCursor(cursor)
+
+
+
+    def _on_empty_detail_click(self, value_widget: QWidget, _event) -> None:
+
+        if not self._detail_value_empty(value_widget):
+
+            return
+
+        self.add_equipment()
+
+
+
+    def _restore_image_placeholder_text(self) -> None:
+
+        label = self.ui.equipment_image_preview
+
+        if label.pixmap() is not None and not label.pixmap().isNull():
+
+            return
+
+        label.setText(_IMAGE_PLACEHOLDER)
+
+
+
+    def _clear_equipment_image_display(self, placeholder: str = _IMAGE_PLACEHOLDER) -> None:
+
+        label = self.ui.equipment_image_preview
+
+        label.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
+
+        label.clear()
+
+        label.setPixmap(QPixmap())
+
+        label.setText(placeholder)
+
+
+
+    def _show_equipment_image(self, filename: str) -> None:
+
+        name = str(filename).strip()
+
+        if not name:
+
+            self._clear_equipment_image_display()
+
+            self._update_image_buttons()
+
+            return
+
+        path = self._equipment_images.resolve_path(name)
+
+        if path is None:
+
+            self._clear_equipment_image_display(placeholder="Image not found")
+
+            self._update_image_buttons()
+
+            return
+
+        pixmap = QPixmap(str(path))
+
+        if pixmap.isNull():
+
+            self._clear_equipment_image_display(placeholder="Invalid image")
+
+            self._update_image_buttons()
+
+            return
+
+        label = self.ui.equipment_image_preview
+
+        label.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
+
+        scaled = pixmap.scaled(
+
+            label.width(),
+
+            label.height(),
+
+            Qt.AspectRatioMode.KeepAspectRatio,
+
+            Qt.TransformationMode.SmoothTransformation,
+
+        )
+
+        label.setPixmap(scaled)
+
+        label.setText("")
+
+        self._update_image_buttons()
+
+
+
+    def _associate_image_file(self, source: Path) -> None:
+
+        if self._selected_row is None:
+
+            SiemensMessage.warning(
+
+                self,
+
+                "Warning",
+
+                "Search or select an equipment first.",
+
+            )
+
+            return
+
+        data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+        old_image = str(data.get("image", "")).strip()
+
+        ok, result = self._equipment_images.add_image(source, data["id"])
+
+        if not ok:
+
+            SiemensMessage.warning(self, "Image", result)
+
+            self.set_status(result)
+
+            return
+
+        if old_image and old_image != result:
+
+            self._equipment_images.remove_image(old_image)
+
+        ok, message = self.tracker.link_equipment_image(self._selected_row, result)
+
+        if not ok:
+
+            SiemensMessage.warning(self, "Image", message)
+
+            self.set_status(message)
+
+            return
+
+        self._reload_selected_row()
+
+        self._show_equipment_image(result)
+
+        self.set_status(f"Image linked: {result}")
+
+        SiemensMessage.information(self, "Image", message)
+
+
+
+    def _set_equipment_image(self) -> None:
+
+        if self._selected_row is None:
+
+            SiemensMessage.warning(
+
+                self,
+
+                "Warning",
+
+                "Search or select an equipment first.",
+
+            )
+
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(
+
+            self,
+
+            "Select equipment image",
+
+            "",
+
+            _IMAGE_FILE_FILTER,
+
+        )
+
+        if not file_path:
+
+            self.set_status("Image selection cancelled.")
+
+            return
+
+        self._associate_image_file(Path(file_path))
+
+
+
+    def _clear_equipment_image(self) -> None:
+
+        if self._selected_row is None:
+
+            return
+
+        data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+        old_image = str(data.get("image", "")).strip()
+
+        if not old_image:
+
+            return
+
+        ok, remove_msg = self._equipment_images.remove_image(old_image)
+
+        if not ok:
+
+            SiemensMessage.warning(self, "Image", remove_msg)
+
+            self.set_status(remove_msg)
+
+            return
+
+        ok, message = self.tracker.unlink_equipment_image(self._selected_row)
+
+        if not ok:
+
+            SiemensMessage.warning(self, "Image", message)
+
+            self.set_status(message)
+
+            return
+
+        self._reload_selected_row()
+
+        self._clear_equipment_image_display()
+
+        self._update_image_buttons()
+
+        self.set_status("Equipment image deleted.")
+
+        SiemensMessage.information(self, "Image", message)
+
+
+
     def _format_datasheet_display(self, filename: str) -> str:
 
         name = str(filename).strip()
@@ -112,17 +572,33 @@ class EquipmentsPage(QWidget):
 
 
 
+    def _elide_label_text(self, label, text: str) -> str:
+
+        width = label.width() if label.width() > 0 else 100
+
+        return QFontMetrics(label.font()).elidedText(
+
+            text, Qt.TextElideMode.ElideRight, width
+
+        )
+
+
+
     def _set_datasheet_display(self, filename: str) -> None:
 
         display = self._format_datasheet_display(filename)
 
-        self.ui.val_datasheet.setText(display)
+        label = self.ui.val_datasheet
 
-        self.ui.val_datasheet.setToolTip(
+        label.setText(self._elide_label_text(label, display))
+
+        label.setToolTip(
 
             f"Datasheet: {display}" if display != "(not linked)" else "No datasheet linked"
 
         )
+
+        self._refresh_empty_detail_cursor()
 
 
 
@@ -171,6 +647,10 @@ class EquipmentsPage(QWidget):
         self.ui.btn_add_support_doc.clicked.connect(self.add_support_document)
 
         self.ui.btn_link_datasheet.clicked.connect(self.link_datasheet_to_equipment)
+
+        self.ui.btn_set_equipment_image.clicked.connect(self._set_equipment_image)
+
+        self.ui.btn_clear_equipment_image.clicked.connect(self._clear_equipment_image)
 
         self._setup_copy_buttons()
 
@@ -326,6 +806,8 @@ class EquipmentsPage(QWidget):
 
         self._load_equipment_datasheet(datasheet, open_datasheet=open_datasheet)
 
+        self._show_equipment_image(str(data.get("image", "")))
+
         if datasheet:
 
             self.set_status(f"Equipment loaded. Datasheet: {datasheet}")
@@ -333,6 +815,8 @@ class EquipmentsPage(QWidget):
         else:
 
             self.set_status("Equipment loaded. Datasheet: (not linked)")
+
+        self._refresh_empty_detail_cursor()
 
 
 
@@ -356,7 +840,13 @@ class EquipmentsPage(QWidget):
 
         self._set_datasheet_display("")
 
-        self.ui.doc_results_list.clear()
+        self._hide_doc_results_list()
+
+        self._clear_equipment_image_display()
+
+        self._update_image_buttons()
+
+        self._refresh_empty_detail_cursor()
 
         self.set_status("")
 
@@ -690,31 +1180,7 @@ class EquipmentsPage(QWidget):
 
 
 
-    def _populate_doc_results_list(self, documents: list[SupportDocument]) -> None:
-
-        self._doc_results = documents
-
-        self.ui.doc_results_list.clear()
-
-        for index, doc in enumerate(documents):
-
-            item = QListWidgetItem(doc.name)
-
-            item.setData(Qt.ItemDataRole.UserRole, str(doc.path))
-
-            self.ui.doc_results_list.addItem(item)
-
-            if index == 0:
-
-                self.ui.doc_results_list.setCurrentRow(0)
-
-
-
     def _load_equipment_datasheet(self, filename: str, *, open_datasheet: bool) -> None:
-
-        self.ui.doc_results_list.clear()
-
-        self._doc_results = []
 
         name = str(filename).strip()
 
@@ -729,8 +1195,6 @@ class EquipmentsPage(QWidget):
             self.set_status(f"Datasheet not found: {name}")
 
             return
-
-        self._populate_doc_results_list([document])
 
         if open_datasheet:
 
@@ -757,6 +1221,20 @@ class EquipmentsPage(QWidget):
                 "Warning",
 
                 "Search or select an equipment first.",
+
+            )
+
+            return
+
+        if not self.ui.doc_results_list.isVisible():
+
+            SiemensMessage.warning(
+
+                self,
+
+                "Warning",
+
+                "Search for documents first, then select one from the list.",
 
             )
 
@@ -794,8 +1272,6 @@ class EquipmentsPage(QWidget):
 
         self._set_datasheet_display(filename)
 
-        self._load_equipment_datasheet(filename, open_datasheet=False)
-
         self.set_status(f"Datasheet linked: {filename}")
 
         SiemensMessage.information(self, "Linked", message)
@@ -808,13 +1284,9 @@ class EquipmentsPage(QWidget):
 
         documents = self._support_docs.list_documents(query)
 
-
-
         if not documents:
 
-            self._doc_results = []
-
-            self.ui.doc_results_list.clear()
+            self._hide_doc_results_list()
 
             SiemensMessage.information(
 
@@ -830,9 +1302,7 @@ class EquipmentsPage(QWidget):
 
             return
 
-
-
-        self._populate_doc_results_list(documents)
+        self._show_doc_results_list(documents)
 
         count = len(documents)
 
@@ -848,33 +1318,51 @@ class EquipmentsPage(QWidget):
 
     def open_selected_support_document(self) -> None:
 
-        item = self.ui.doc_results_list.currentItem()
+        if self.ui.doc_results_list.isVisible():
 
-        if item is None:
+            item = self.ui.doc_results_list.currentItem()
 
-            SiemensMessage.warning(
+            if item is not None:
 
-                self,
+                path = Path(item.data(Qt.ItemDataRole.UserRole))
 
-                "Warning",
+                ok, message = self._support_docs.open_document(path)
 
-                "Search for documents first, then select one from the list.",
+                if not ok:
 
-            )
+                    SiemensMessage.critical(self, "Open failed", message)
 
-            return
+                self.set_status(message)
 
+                return
 
+        display = self.ui.val_datasheet.text().strip()
 
-        path = Path(item.data(Qt.ItemDataRole.UserRole))
+        if display and display != "(not linked)":
 
-        ok, message = self._support_docs.open_document(path)
+            document = self._support_docs.document_for_filename(display)
 
-        if not ok:
+            if document is not None:
 
-            SiemensMessage.critical(self, "Open failed", message)
+                ok, message = self._support_docs.open_document(document)
 
-        self.set_status(message)
+                if not ok:
+
+                    SiemensMessage.critical(self, "Open failed", message)
+
+                self.set_status(message)
+
+                return
+
+        SiemensMessage.warning(
+
+            self,
+
+            "Warning",
+
+            "Search for documents first, then select one from the list.",
+
+        )
 
 
 

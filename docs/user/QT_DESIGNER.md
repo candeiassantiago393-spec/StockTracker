@@ -120,9 +120,24 @@ Then restart: `python -m src.main`
 
 ## Equipments — key objectNames
 
-**Left:** `search_entry`, `btn_search`, `supplier_ref_entry`, `btn_copy_supplier_ref`
+**Left — Operations:** `search_entry`, `btn_search`, `supplier_ref_entry`, `btn_scan_supplier_ref`, `btn_copy_supplier_ref`
 
-**Right:** `val_supplier_reference`, `val_serial_number`, `val_description`, `val_calibration`, `val_expiration` (+ Copy buttons)
+**Left — Equipment image:** `equipment_image_panel`, `equipment_image_preview`, `btn_set_equipment_image` (Add), `btn_clear_equipment_image` (Delete)
+
+**Right — Details:** `val_supplier_reference`, `val_serial_number`, `val_description`, `val_calibration`, `val_expiration`, `val_datasheet` (+ Copy buttons; all value fields **100px** wide)
+
+**Right — Support documentation:** `doc_search_entry`, `btn_doc_search`, `btn_doc_open`, `doc_results_list`, `btn_link_datasheet`, `btn_open_support_docs`, `btn_add_support_doc`
+
+### Equipments runtime (Python, not `.ui`)
+
+| Feature | Behaviour |
+|---------|-----------|
+| Equipment image | Drag & drop or **Add** → stored in `data/equipment_images/`, Excel column **Image** |
+| `doc_results_list` | **Hidden** by default; shown after **SEARCH** with results; hidden on **CLEAR** or empty search |
+| **OPEN** | Selected file in list, or linked **Datasheet** when list is hidden |
+| **LINK** | Selected file in list (run **SEARCH** first) → Excel column **Datasheet** |
+
+Portuguese layout guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 
 ---
 

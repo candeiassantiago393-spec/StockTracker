@@ -22,6 +22,10 @@ config/secrets.py
 data/stock.xlsx
 ~$*.xlsx
 
+# Imagens de equipamentos associadas localmente
+data/equipment_images/*
+!data/equipment_images/README.txt
+
 # Relatorios temporarios
 tools/_reorg_out.txt
 src/gui/_reorganize_report.txt

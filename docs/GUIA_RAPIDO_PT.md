@@ -32,7 +32,7 @@ Barra inferior partilhada: Last 20, histórico, ADD MANUAL, EDIT, OPEN EXCEL, CL
 | Folha | Conteúdo |
 |-------|----------|
 | `Components` | Peças e stock |
-| `Equipments` | Supplier Reference, Serial Number, Description, datas de calibração |
+| `Equipments` | Supplier Reference, Serial Number, Description, datas de calibração, Datasheet, Image |
 | `History` | Movimentos IN/OUT |
 
 Fechar o Excel antes de gravar. Ver [data/README.md](../data/README.md).
@@ -59,7 +59,7 @@ Fechar o Excel antes de gravar. Ver [data/README.md](../data/README.md).
 | `popups/equipments/gui_popup_*.ui` | Diálogos Equipments (opções **7–9**) |
 | `popups/shared/gui_popup_*.ui` | Confirm + template (opções **10–11**) |
 
-Guia Equipments: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
+Guia Equipments (layout Qt Designer + objectNames): `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 
 ### Organizar tudo (repo + Desktop)
 

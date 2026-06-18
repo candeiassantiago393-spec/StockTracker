@@ -525,6 +525,21 @@ class StockTracker:
                 return part, supplier
         return None, None
 
+    def lookup_catalog_image_url(self, part_number: str) -> str:
+        """Return a product image URL from configured distributor APIs."""
+        key = self.normalize_ref(part_number)
+        if not key:
+            return ""
+        part = self.search_mouser(part_number)
+        if part is not None:
+            url = str(part.get("image_url", "")).strip()
+            if url:
+                return url
+        part, _supplier = self.search_any_supplier(part_number)
+        if part is None:
+            return ""
+        return str(part.get("image_url", "")).strip()
+
     def configured_supplier_labels(self) -> str:
         return ", ".join(supplier_label(s) for s in self.search_suppliers_order())
 
@@ -679,6 +694,7 @@ class StockTracker:
                 "Calibration Date",
                 "Calibration Expiration Date",
                 "Datasheet",
+                "Image",
             ]
             if sheet.max_row == 0:
                 sheet.append(headers)
@@ -706,6 +722,9 @@ class StockTracker:
         g1 = str(sheet.cell(row=1, column=7).value or "").strip()
         if sheet.max_column < 7 or not g1:
             sheet.cell(row=1, column=7, value="Datasheet")
+        h1 = str(sheet.cell(row=1, column=8).value or "").strip()
+        if sheet.max_column < 8 or not h1:
+            sheet.cell(row=1, column=8, value="Image")
 
     @staticmethod
     def normalize_date(text) -> str:
@@ -770,14 +789,21 @@ class StockTracker:
 
     def equipment_row_to_dict(self, row) -> dict:
         datasheet = ""
+        image = ""
         row_idx = row[0].row
         sheet = row[0].parent
         if sheet is not None:
             cell_val = sheet.cell(row=row_idx, column=7).value
             if cell_val is not None:
                 datasheet = str(cell_val).strip()
-        elif len(row) > 6 and row[6].value is not None:
-            datasheet = str(row[6].value).strip()
+            image_val = sheet.cell(row=row_idx, column=8).value
+            if image_val is not None:
+                image = str(image_val).strip()
+        else:
+            if len(row) > 6 and row[6].value is not None:
+                datasheet = str(row[6].value).strip()
+            if len(row) > 7 and row[7].value is not None:
+                image = str(row[7].value).strip()
         return {
             "id": row[0].value or "",
             "supplier_reference": row[1].value or "",
@@ -786,6 +812,7 @@ class StockTracker:
             "calibration_date": self.normalize_date(row[4].value),
             "calibration_expiration": self.normalize_date(row[5].value),
             "datasheet": datasheet,
+            "image": image,
         }
 
     def next_equipment_id(self, sheet) -> int:
@@ -845,6 +872,7 @@ class StockTracker:
             calib,
             expiry,
             str(datasheet).strip(),
+            "",
         ])
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
@@ -914,6 +942,27 @@ class StockTracker:
             return False, "Close stock.xlsx in Excel before saving."
         label = filename.strip() or "(none)"
         return True, f"Datasheet linked: {label}"
+
+    def link_equipment_image(self, row, filename: str) -> tuple[bool, str]:
+        """Associate an equipment-image filename with an equipment row."""
+        workbook = self.get_workbook()
+        sheet = self.get_equipments_sheet(workbook)
+        row_idx = row[0].row
+        sheet.cell(row=row_idx, column=8, value=str(filename).strip())
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        label = filename.strip() or "(none)"
+        return True, f"Image linked: {label}"
+
+    def unlink_equipment_image(self, row) -> tuple[bool, str]:
+        """Remove the image filename from an equipment row."""
+        workbook = self.get_workbook()
+        sheet = self.get_equipments_sheet(workbook)
+        row_idx = row[0].row
+        sheet.cell(row=row_idx, column=8, value="")
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Image removed."
 
     def get_equipment_rows(
         self,

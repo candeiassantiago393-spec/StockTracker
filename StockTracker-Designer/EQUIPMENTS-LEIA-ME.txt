@@ -1,44 +1,104 @@
 Stock Tracker - Equipments no Qt Designer
-
 =========================================
 
-
-
 Ficheiro principal:  gui_equipments.ui
+Logica (Python):     src/gui/equipments_page.py
+Gerador:             tools/generate_equipments_ui.py
 
 
+Layout geral (2 colunas 50/50)
+--------------------------------
 
-Layout (coluna esquerda):
+  ESQUERDA — Operations + imagem do equipamento
+  DIREITA  — Equipment Details + Support Documentation
+
+
+Coluna esquerda (container_equipments_left)
+-------------------------------------------
 
   Operations
+    label_operations
+    search_entry              + btn_search (SEARCH)
+    supplier_ref_entry        + btn_scan_supplier_ref (SCAN) + btn_copy_supplier_ref (Copy)
 
-    - Search Equipment  + SEARCH
+  Imagem do equipamento (equipment_image_panel)
+    equipment_image_preview   — area 300x260, bordo tracejado, drag & drop
+    btn_set_equipment_image   — texto "Add" (compacto, 64px)
+    btn_clear_equipment_image — texto "Delete" (so visivel com imagem ligada)
 
-    - Scan Barcode / Supplier Ref.
-
-  Support Documentation (subtitulo compacto, 16px)
-
-    - Search doc  + campo + SEARCH + OPEN
-
-    - doc_results_list  (lista compacta, ~3 linhas)
-
-    - Folder  + OPEN FOLDER
-
-    - Add     + ADD DOC
-
-
-
-Pasta: data\support_documentation\
+  Comportamento (equipments_page.py, nao no .ui):
+    - Botoes Add/Delete so aparecem com equipamento selecionado
+    - Arrastar imagem para equipment_image_preview ou clicar Add
+    - Ficheiros em data\equipment_images\
+    - Excel: coluna Image (folha Equipments)
 
 
+Coluna direita (container_equipments_right)
+-------------------------------------------
 
-Regenerar:
+  Equipment Details
+    label_details
+    val_supplier_reference    + Copy
+    val_serial_number         + Copy
+    val_description           + Copy
+    val_calibration           + Copy
+    val_expiration            + Copy
+    val_datasheet             + Copy   (mesma largura 100px que os outros campos)
+
+  Support Documentation
+    label_support_docs
+    doc_search_entry          + btn_doc_search (SEARCH) + btn_doc_open (OPEN)
+    doc_results_list          — lista compacta; OCULTA por defeito
+    btn_link_datasheet        — LINK
+    btn_open_support_docs     — OPEN FOLDER
+    btn_add_support_doc       — ADD DOC
+
+  Comportamento da lista (equipments_page.py):
+    - doc_results_list invisivel ao abrir a pagina
+    - SEARCH com resultados → lista aparece
+    - CLEAR no rodape ou pesquisa sem resultados → lista esconde
+    - OPEN: documento selecionado na lista, ou datasheet ligado se lista oculta
+    - LINK: documento selecionado na lista (fazer SEARCH primeiro)
+
+  Pasta de documentos: data\support_documentation\
+  Excel: coluna Datasheet (nome do ficheiro)
+
+
+Excel — folha Equipments
+------------------------
+
+  ID | Supplier Reference | Serial Number | Description |
+  Calibration Date | Calibration Expiration Date | Datasheet | Image
+
+
+Popups (popups/equipments/)
+---------------------------
+
+  gui_popup_equipment.ui   — Add / Edit equipment (DESIGNER.bat opcao 7)
+  gui_popup_search.ui      — Varias linhas na pesquisa de equipamento (opcao 8)
+  gui_popup_history.ui     — Tabela Last 20 / Eq. hist. (opcao 9)
+
+  Nao ha popup de documentos — a lista doc_results_list fica no ecrã (opcao B).
+
+
+Metricas (styles.py / gui_ui_builder.py)
+----------------------------------------
+
+  Margens pagina: 16px esquerda/direita
+  Labels: 74px | Campos valor: 100px | Copy: 60px | Acoes: 124px
+  Botoes compactos imagem (Add/Delete): 64px, BTN_COMPACT_STYLE
+
+
+Regenerar e exportar
+--------------------
 
   python tools\generate_equipments_ui.py
-
+  python tools\generate_popup_uis.py
   tools\export-ui.bat
+  python -m src.main
 
+  Ou tudo de uma vez:
+  python tools\generate_all_designer_uis.py
+  tools\ORGANIZAR-DESKTOP.bat
 
-
-Popups: popups\equipments\ (DESIGNER.bat opcoes 7-9)
-
+  Apos editar .ui no Qt Designer: export-ui.bat (nao editar gui_equipments.py a mao).

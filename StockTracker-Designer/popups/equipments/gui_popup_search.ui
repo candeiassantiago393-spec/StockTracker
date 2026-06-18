@@ -128,6 +128,21 @@ border: 1px solid #009999;</string>
           <height>280</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>280</height>
+         </size>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
+        </property>
         <property name="styleSheet">
    <string notr="true">
 QTableWidget {
@@ -141,6 +156,34 @@ QHeaderView::section {
     padding: 6px;
     border: 1px solid #B3B3BE;
     font-weight: bold;
+}
+QTableWidget QScrollBar:vertical {
+    background-color: #00183B;
+    width: 12px;
+    margin: 0;
+}
+QTableWidget QScrollBar::handle:vertical {
+    background-color: #00CCCC;
+    min-height: 24px;
+    border-radius: 4px;
+}
+QTableWidget QScrollBar::add-line:vertical,
+QTableWidget QScrollBar::sub-line:vertical {
+    height: 0;
+}
+QTableWidget QScrollBar:horizontal {
+    background-color: #00183B;
+    height: 12px;
+    margin: 0;
+}
+QTableWidget QScrollBar::handle:horizontal {
+    background-color: #00CCCC;
+    min-width: 24px;
+    border-radius: 4px;
+}
+QTableWidget QScrollBar::add-line:horizontal,
+QTableWidget QScrollBar::sub-line:horizontal {
+    width: 0;
 }
 </string>
         </property>

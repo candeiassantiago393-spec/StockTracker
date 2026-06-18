@@ -81,6 +81,7 @@
      <widget class="QWidget" name="container_main_body" native="true">
       <layout class="QGridLayout" name="gridLayout_main">
        <property name="leftMargin"><number>16</number></property>
+       <property name="topMargin"><number>0</number></property>
        <property name="rightMargin"><number>16</number></property>
        <property name="horizontalSpacing"><number>0</number></property>
        <property name="columnStretch" stdset="0">
@@ -317,6 +318,32 @@ QLineEdit:hover {
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="btn_scan">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+   <string notr="true">
+QPushButton {
+    min-width: 100px;
+    max-width: 100px;
+    padding: 6px 12px 6px 12px;
+    border-radius: 2px;
+    opacity: 1;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+</string>
+               </property>
+               <property name="text"><string>SCAN</string></property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="btn_copy_barcode_entry">
                <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
                <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
@@ -396,32 +423,6 @@ QLineEdit:hover {
 }
 </string>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_scan">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="styleSheet">
-   <string notr="true">
-QPushButton {
-    min-width: 100px;
-    max-width: 100px;
-    padding: 6px 12px 6px 12px;
-    border-radius: 2px;
-    opacity: 1;
-    text-align: center;
-    background-color: #00CCCC;
-    color: #000028;
-}
-QPushButton:hover {
-    background-color: #00FFB9;
-}
-QPushButton:pressed {
-    background-color: #00E5AA;
-}
-</string>
-               </property>
-               <property name="text"><string>SCAN</string></property>
               </widget>
              </item>
             </layout>
@@ -918,10 +919,34 @@ QPushButton:pressed {
            </widget>
           </item>
 
-          <item row="6" column="1">
+          <item row="6" column="0" colspan="2">
+           <widget class="QLabel" name="component_image_preview">
+            <property name="minimumSize"><size><width>220</width><height>200</height></size></property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            <property name="styleSheet">
+   <string notr="true">
+QLabel {
+    border: 1px dashed #B3B3BE;
+    border-radius: 2px;
+    background-color: #00183B;
+    color: #B3B3BE;
+    font-size: 12px;
+}
+</string>
+            </property>
+            <property name="text"><string>No image</string></property>
+           </widget>
+          </item>
+          <item row="7" column="1">
            <spacer name="verticalSpacer_right">
             <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+            <property name="sizeHint" stdset="0"><size><width>20</width><height>12</height></size></property>
            </spacer>
           </item>
          </layout>

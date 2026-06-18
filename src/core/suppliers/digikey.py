@@ -132,6 +132,7 @@ def search(part_number: str, secrets: dict) -> Optional[PartInfo]:
             "manufacturer_part_number": raw.get("ManufacturerProductNumber")
             or raw.get("ManufacturerPartNumber"),
             "description": raw.get("ProductDescription") or raw.get("Description"),
+            "image_url": raw.get("PhotoUrl") or "",
         }
         return normalize_part(mapped, "digikey")
     except Exception as exc:

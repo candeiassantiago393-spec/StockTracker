@@ -192,6 +192,45 @@ QPushButton:pressed {
 }
 """
 
+BTN_COMPACT_STYLE = """
+QPushButton {
+    min-width: 56px;
+    max-width: 64px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    text-align: center;
+    background-color: #00CCCC;
+    color: #000028;
+    font-size: 11px;
+}
+QPushButton:hover {
+    background-color: #00FFB9;
+}
+QPushButton:pressed {
+    background-color: #00E5AA;
+}
+"""
+
+EQUIPMENT_IMAGE_PREVIEW_STYLE = """
+QLabel {
+    border: 1px dashed #B3B3BE;
+    border-radius: 2px;
+    background-color: #00183B;
+    color: #B3B3BE;
+    font-size: 12px;
+}
+"""
+
+EQUIPMENT_IMAGE_PREVIEW_DRAG_STYLE = """
+QLabel {
+    border: 1px dashed #00FFB9;
+    border-radius: 2px;
+    background-color: #001F39;
+    color: #00FFB9;
+    font-size: 12px;
+}
+"""
+
 BTN_PRIMARY_STYLE = BTN_TEMPLATE_STYLE
 BTN_SUCCESS_STYLE = BTN_TEMPLATE_STYLE
 BTN_DANGER_STYLE = BTN_TEMPLATE_STYLE

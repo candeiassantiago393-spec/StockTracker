@@ -22,8 +22,9 @@ def prop_string(value: str) -> str:
     return f'   <string notr="true">{esc(value)}</string>\n'
 
 
-def page_grid_margins_xml() -> str:
+def page_grid_margins_xml(*, top_margin: int = 0) -> str:
     return f"""       <property name="leftMargin"><number>{PM[0]}</number></property>
+       <property name="topMargin"><number>{top_margin}</number></property>
        <property name="rightMargin"><number>{PM[2]}</number></property>
        <property name="horizontalSpacing"><number>0</number></property>
        <property name="columnStretch" stdset="0">
@@ -128,7 +129,18 @@ def input_dual_btn_row_xml(
     compact: bool = False,
     secondary_width: int = 60,
 ) -> str:
-    secondary_part = f"""             <item>
+    if secondary_width >= 124:
+        secondary_part = f"""             <item>
+              <widget class="QPushButton" name="{secondary_btn}">
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
+               <property name="styleSheet">
+{prop_string(styles.BTN_TEMPLATE_STYLE)}               </property>
+               <property name="text"><string>{esc(secondary_text)}</string></property>
+              </widget>
+             </item>
+"""
+    else:
+        secondary_part = f"""             <item>
               <widget class="QPushButton" name="{secondary_btn}">
                <property name="minimumSize"><size><width>{secondary_width}</width><height>0</height></size></property>
                <property name="maximumSize"><size><width>{secondary_width}</width><height>16777215</height></size></property>
@@ -411,21 +423,103 @@ def list_widget_row_xml(
           </item>"""
 
 
-def vertical_spacer_xml(name: str, row: int, *, col: int = 1) -> str:
+def component_image_preview_xml(row: int) -> str:
+    return f"""          <item row="{row}" column="0" colspan="2">
+           <widget class="QLabel" name="component_image_preview">
+            <property name="minimumSize"><size><width>220</width><height>200</height></size></property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            <property name="styleSheet">
+{prop_string(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)}            </property>
+            <property name="text"><string>No image</string></property>
+           </widget>
+          </item>"""
+
+
+def equipment_image_panel_xml(row: int) -> str:
+    return f"""          <item row="{row}" column="0" colspan="2">
+           <widget class="QWidget" name="equipment_image_panel" native="true">
+            <layout class="QVBoxLayout" name="layout_equipment_image_panel">
+             <property name="spacing"><number>6</number></property>
+             <property name="topMargin"><number>9</number></property>
+             <property name="rightMargin"><number>9</number></property>
+             <property name="bottomMargin"><number>9</number></property>
+             <item>
+              <widget class="QLabel" name="equipment_image_preview">
+               <property name="minimumSize"><size><width>300</width><height>260</height></size></property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>1</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip"><string>Drag and drop an image file here</string></property>
+               <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+               <property name="styleSheet">
+{prop_string(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)}               </property>
+               <property name="text"><string>Drop image here</string></property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="row_equipment_image_buttons" native="true">
+               <layout class="QHBoxLayout" name="layout_equipment_image_buttons">
+                <property name="spacing"><number>6</number></property>
+                <property name="topMargin"><number>0</number></property>
+                <property name="bottomMargin"><number>0</number></property>
+                <item>
+                 <widget class="QPushButton" name="btn_set_equipment_image">
+                  <property name="minimumSize"><size><width>64</width><height>0</height></size></property>
+                  <property name="maximumSize"><size><width>64</width><height>16777215</height></size></property>
+                  <property name="toolTip"><string>Add or replace equipment image</string></property>
+                  <property name="styleSheet">
+{prop_string(styles.BTN_COMPACT_STYLE)}                  </property>
+                  <property name="text"><string>Add</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_clear_equipment_image">
+                  <property name="minimumSize"><size><width>64</width><height>0</height></size></property>
+                  <property name="maximumSize"><size><width>64</width><height>16777215</height></size></property>
+                  <property name="toolTip"><string>Delete equipment image</string></property>
+                  <property name="styleSheet">
+{prop_string(styles.BTN_COMPACT_STYLE)}                  </property>
+                  <property name="text"><string>Delete</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_equipment_image">
+                  <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+                  <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>"""
+
+
+def vertical_spacer_xml(name: str, row: int, *, col: int = 1, height: int = 40) -> str:
     return f"""          <item row="{row}" column="{col}">
            <spacer name="{name}">
             <property name="orientation"><enum>Qt::Orientation::Vertical</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+            <property name="sizeHint" stdset="0"><size><width>20</width><height>{height}</height></size></property>
            </spacer>
           </item>"""
 
 
-def panel_frame_open(name: str) -> str:
+def panel_frame_open(name: str, *, top_margin: int = 15) -> str:
     return f"""        <widget class="QFrame" name="{name}">
          <property name="frameShape"><enum>QFrame::Shape::StyledPanel</enum></property>
          <property name="frameShadow"><enum>QFrame::Shadow::Raised</enum></property>
          <layout class="QGridLayout" name="gridLayout_{name}">
-          <property name="topMargin"><number>15</number></property>
+          <property name="topMargin"><number>{top_margin}</number></property>
           <property name="verticalSpacing"><number>0</number></property>
 """
 

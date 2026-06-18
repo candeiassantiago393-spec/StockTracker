@@ -13,13 +13,14 @@ if str(ROOT) not in sys.path:
 from src.gui import styles  # noqa: E402
 from tools.gui_ui_builder import (  # noqa: E402
     PANEL_FRAME_CLOSE,
+    equipment_image_panel_xml,
     input_btn_row_xml,
     input_dual_btn_row_xml,
     input_scan_copy_row_xml,
     label_button_row_xml,
     list_widget_row_xml,
     output_row_xml,
-    output_row_wide_xml,
+    output_row_xml,
     page_grid_margins_xml,
     panel_frame_open,
     prop_string,
@@ -50,56 +51,9 @@ def build_ui() -> str:
         )
     )
     r += 1
-    left.append(
-        subsection_title_xml("label_support_docs", "Support Documentation", r, colspan=2)
-    )
+    left.append(equipment_image_panel_xml(r))
     r += 1
-    left.append(
-        input_dual_btn_row_xml(
-            "doc_search_entry",
-            "Search doc",
-            "btn_doc_search",
-            "SEARCH",
-            "btn_doc_open",
-            "OPEN",
-            r,
-            compact=True,
-        )
-    )
-    r += 1
-    left.append(list_widget_row_xml("doc_results_list", r))
-    r += 1
-    left.append(
-        label_button_row_xml(
-            "btn_link_datasheet",
-            "Link",
-            "LINK",
-            r,
-            compact=True,
-        )
-    )
-    r += 1
-    left.append(
-        label_button_row_xml(
-            "btn_open_support_docs",
-            "Folder",
-            "OPEN FOLDER",
-            r,
-            compact=True,
-        )
-    )
-    r += 1
-    left.append(
-        label_button_row_xml(
-            "btn_add_support_doc",
-            "Add",
-            "ADD DOC",
-            r,
-            compact=True,
-        )
-    )
-    r += 1
-    left.append(vertical_spacer_xml("verticalSpacer_equipments_left", r))
+    left.append(vertical_spacer_xml("verticalSpacer_equipments_left", r, height=12))
 
     right = []
     rr = 0
@@ -114,7 +68,57 @@ def build_ui() -> str:
     ):
         right.append(output_row_xml(name, label, rr))
         rr += 1
-    right.append(output_row_wide_xml("val_datasheet", "Datasheet", rr))
+    right.append(output_row_xml("val_datasheet", "Datasheet", rr))
+    rr += 1
+    right.append(
+        subsection_title_xml("label_support_docs", "Support Documentation", rr, colspan=2)
+    )
+    rr += 1
+    right.append(
+        input_dual_btn_row_xml(
+            "doc_search_entry",
+            "Search doc",
+            "btn_doc_search",
+            "SEARCH",
+            "btn_doc_open",
+            "OPEN",
+            rr,
+            compact=True,
+            secondary_width=124,
+        )
+    )
+    rr += 1
+    right.append(list_widget_row_xml("doc_results_list", rr))
+    rr += 1
+    right.append(
+        label_button_row_xml(
+            "btn_link_datasheet",
+            "Link",
+            "LINK",
+            rr,
+            compact=True,
+        )
+    )
+    rr += 1
+    right.append(
+        label_button_row_xml(
+            "btn_open_support_docs",
+            "Folder",
+            "OPEN FOLDER",
+            rr,
+            compact=True,
+        )
+    )
+    rr += 1
+    right.append(
+        label_button_row_xml(
+            "btn_add_support_doc",
+            "Add",
+            "ADD DOC",
+            rr,
+            compact=True,
+        )
+    )
     rr += 1
     right.append(vertical_spacer_xml("verticalSpacer_equipments_right", rr))
 
@@ -128,14 +132,14 @@ def build_ui() -> str:
   <property name="styleSheet">
 {prop_string(styles.MAIN_WINDOW_STYLE)}  </property>
   <layout class="QGridLayout" name="gridLayout_equipments">
-{page_grid_margins_xml()}
+{page_grid_margins_xml(top_margin=-18)}
    <item row="0" column="0">
 {panel_frame_open("container_equipments_left")}
 {chr(10).join(left)}
 {PANEL_FRAME_CLOSE}
    </item>
    <item row="0" column="1">
-{panel_frame_open("container_equipments_right")}
+{panel_frame_open("container_equipments_right", top_margin=-36)}
 {chr(10).join(right)}
 {PANEL_FRAME_CLOSE}
    </item>

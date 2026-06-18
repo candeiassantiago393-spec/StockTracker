@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QStringListModel
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, QPixmap
 from PySide6.QtWidgets import (
     QCompleter,
     QDialog,
@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from src.core.component_images import fetch_pixmap_from_url
 from src.core.stock import StockTracker
 from src.core.suppliers import supplier_label
 from src.core.suppliers.base import SupplierId
@@ -81,6 +82,7 @@ class StockTrackerWindow(QMainWindow):
         self._setup_open_excel_button()
         self._setup_copy_buttons()
         self._setup_empty_details_click_targets()
+        self._setup_component_image_preview()
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
 
@@ -97,14 +99,34 @@ class StockTrackerWindow(QMainWindow):
         title_layout.setSpacing(0)
         title_layout.addWidget(self.ui.frame_title)
         self.ui.verticalLayout.insertWidget(body_index, title_wrap)
-        self._setup_shared_user_row(body_index + 1)
+        user_wrap = self._build_shared_user_row()
         styles.apply_two_column_page_grid(self.ui.gridLayout_main)
 
         self._page_stack = QStackedWidget(self.ui.centralwidget)
         self._page_stack.addWidget(self.ui.container_main_body)
         self._equipments_page = EquipmentsPage(self.tracker, self)
         self._page_stack.addWidget(self._equipments_page)
-        self.ui.verticalLayout.insertWidget(body_index + 2, self._page_stack)
+
+        # The User Name row overlays the top of the page area instead of taking
+        # its own full-width slot. This lets the right-hand column ("Equipment
+        # Details" / "Component Details") start level with User Name; the left
+        # column is offset down by the same amount so its content stays put.
+        body_wrap = QWidget(self.ui.centralwidget)
+        body_grid = QGridLayout(body_wrap)
+        body_grid.setContentsMargins(0, 0, 0, 0)
+        body_grid.setSpacing(0)
+        body_grid.addWidget(self._page_stack, 0, 0)
+        body_grid.addWidget(user_wrap, 0, 0, Qt.AlignmentFlag.AlignTop)
+        self.ui.verticalLayout.insertWidget(body_index + 1, body_wrap)
+
+        band = user_wrap.sizeHint().height()
+        self._offset_left_column(self.ui.gridLayout_left, band)
+        equipments_left = self._equipments_page.findChild(
+            QWidget, "container_equipments_left"
+        )
+        if equipments_left is not None:
+            self._offset_left_column(equipments_left.layout(), band)
+        user_wrap.raise_()
 
         header_layout = self.ui.horizontalLayout_header
         header_layout.addItem(
@@ -144,8 +166,8 @@ class StockTrackerWindow(QMainWindow):
                 "Edit component" if section == "components" else "Edit equipment"
             )
 
-    def _setup_shared_user_row(self, insert_index: int) -> None:
-        """User Name — fixed row above both pages (same slot as Components .ui)."""
+    def _build_shared_user_row(self) -> QWidget:
+        """User Name — overlay above both pages (same slot as Components .ui)."""
         self.ui.gridLayout_left.removeWidget(self.ui.row_user_entry)
 
         for widget, new_row in (
@@ -161,10 +183,21 @@ class StockTrackerWindow(QMainWindow):
         self.ui.gridLayout_left.addItem(self.ui.verticalSpacer_left, 5, 1, 1, 1)
 
         user_wrap = QWidget(self.ui.centralwidget)
+        # Transparent so the overlay only shows the User Name row, never a panel
+        # covering the right column behind it.
+        user_wrap.setStyleSheet("background: transparent;")
         grid = QGridLayout(user_wrap)
         styles.apply_two_column_page_grid(grid)
         grid.addWidget(self.ui.row_user_entry, 0, 0)
-        self.ui.verticalLayout.insertWidget(insert_index, user_wrap)
+        return user_wrap
+
+    @staticmethod
+    def _offset_left_column(layout, extra_top: int) -> None:
+        """Push a left-column grid down so its content clears the User Name row."""
+        if layout is None:
+            return
+        m = layout.contentsMargins()
+        layout.setContentsMargins(m.left(), m.top() + extra_top, m.right(), m.bottom())
 
     def _show_components_page(self) -> None:
         self._current_section = "components"
@@ -213,6 +246,59 @@ class StockTrackerWindow(QMainWindow):
         self.btn_open_excel.setStyleSheet(clear_btn.styleSheet())
         self.btn_open_excel.clicked.connect(self.open_excel_file)
         actions_layout.insertWidget(actions_layout.indexOf(clear_btn), self.btn_open_excel)
+
+    def _setup_component_image_preview(self) -> None:
+        preview = getattr(self.ui, "component_image_preview", None)
+        if preview is None:
+            return
+        preview.setToolTip("Product image from distributor catalog (Mouser, etc.)")
+        self._clear_component_image()
+
+    def _clear_component_image(self, placeholder: str = "No image") -> None:
+        preview = getattr(self.ui, "component_image_preview", None)
+        if preview is None:
+            return
+        preview.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
+        preview.clear()
+        preview.setPixmap(QPixmap())
+        preview.setText(placeholder)
+
+    def _show_component_image_url(self, url: str) -> None:
+        preview = getattr(self.ui, "component_image_preview", None)
+        if preview is None:
+            return
+        image_url = str(url or "").strip()
+        if not image_url:
+            self._clear_component_image()
+            return
+        pixmap = fetch_pixmap_from_url(image_url)
+        if pixmap is None or pixmap.isNull():
+            self._clear_component_image("Image unavailable")
+            return
+        width = preview.width() if preview.width() > 0 else 220
+        height = preview.height() if preview.height() > 0 else 200
+        scaled = pixmap.scaled(
+            width,
+            height,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        )
+        preview.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
+        preview.setPixmap(scaled)
+        preview.setText("")
+
+    def _refresh_component_catalog_image(self, data: dict) -> None:
+        supplier_ref = str(data.get("mouser", "")).strip()
+        manufacturer_ref = str(data.get("manufacturer_ref", "")).strip()
+        lookup_ref = supplier_ref or manufacturer_ref
+        if not lookup_ref:
+            self._clear_component_image()
+            return
+        if not self.tracker.search_suppliers_order():
+            self._clear_component_image()
+            return
+        image_url = self.tracker.lookup_catalog_image_url(lookup_ref)
+        self._show_component_image_url(image_url)
 
     def _setup_empty_details_click_targets(self) -> None:
         """Clicking empty detail rows opens manual component popup."""
@@ -368,6 +454,7 @@ class StockTrackerWindow(QMainWindow):
         u.val_description.setText(str(data["description"]))
         u.val_stock.setText(str(data["stock"]))
         self._refresh_empty_detail_cursor()
+        self._refresh_component_catalog_image(data)
 
     def clear_inputs_after_action(self) -> None:
         self.ui.search_entry.clear()
@@ -443,6 +530,7 @@ class StockTrackerWindow(QMainWindow):
         u.val_description.clear()
         u.val_stock.clear()
         self._refresh_empty_detail_cursor()
+        self._clear_component_image()
         self.set_status("")
 
     def scan_component(self) -> None:
@@ -475,6 +563,8 @@ class StockTrackerWindow(QMainWindow):
         part, found_supplier = self._lookup_distributor_catalogs(part_number)
         if part is None:
             return
+
+        self._show_component_image_url(str(part.get("image_url", "")))
 
         supplier_reference = self.tracker.part_supplier_reference(
             part, part_number
