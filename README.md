@@ -74,7 +74,7 @@ Never commit `config/secrets.py` or real API keys.
 ```
 StockTracker/
 ├── config/                 # credentials loader + secrets.example.py
-├── data/                   # stock.xlsx (local)
+├── data/                   # stock.xlsx (local) + backups/ + image caches
 ├── docs/                   # documentation (EN + PT quick guide)
 ├── StockTracker-Designer/  # Qt Designer package (.ui + LEIA-ME.txt)
 ├── src/

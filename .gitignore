@@ -30,6 +30,10 @@ data/equipment_images/*
 data/component_image_cache/*
 !data/component_image_cache/README.txt
 
+# Backups automaticos do Excel
+data/backups/*
+!data/backups/README.txt
+
 # Relatorios temporarios
 tools/_reorg_out.txt
 src/gui/_reorganize_report.txt

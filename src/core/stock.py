@@ -117,6 +117,9 @@ class StockTracker:
 
     def save_workbook(self, workbook) -> bool:
         try:
+            from .excel_backups import backup_excel_file
+
+            backup_excel_file(self.excel_file)
             workbook.save(self.excel_file)
             return True
         except PermissionError:

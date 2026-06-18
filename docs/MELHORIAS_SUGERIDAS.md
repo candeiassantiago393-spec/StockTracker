@@ -187,7 +187,26 @@ A janela deixa de parecer bloqueada.
 
 ---
 
-## 5. Backup automático do Excel
+## 5. Backup automático do Excel — **implementado**
+
+### Comportamento actual
+
+- Antes de cada gravação de `data/stock.xlsx`, cópia para `data/backups/stock_YYYYMMDD_HHMMSS.xlsx`
+- Mantém apenas os **20** ficheiros mais recentes (os mais antigos são apagados)
+- Módulo: `src/core/excel_backups.py`, integrado em `StockTracker.save_workbook()`
+- Se o backup falhar (disco cheio, etc.), a gravação **continua** — o inventário não fica bloqueado
+
+### Restaurar manualmente
+
+1. Fechar o Excel  
+2. Copiar um ficheiro de `data/backups/` para `data/stock.xlsx`
+
+---
+
+## 5b. ~~Backup automático~~ (planeamento original)
+
+<details>
+<summary>Notas de planeamento (pré-implementação)</summary>
 
 ### Ideia
 
@@ -200,6 +219,8 @@ Proteção contra corrupção, gravação a meio ou erro humano.
 ### Esforço
 
 **Baixo** — função em `stock.py` antes de `save`.
+
+</details>
 
 ---
 
@@ -488,7 +509,7 @@ Visão de gestão num relance.
 | Ordem | Item | Estado |
 |-------|------|--------|
 | 1 | Cache imagens componentes | **Feito** |
-| 2 | Backup automático Excel | Pendente |
+| 2 | Backup automático Excel | **Feito** |
 | 3 | Stock mínimo + alertas | Pendente |
 | 4 | Loading assíncrono (imagens) | **Feito** (QThread) |
 | 5 | Link fornecedor / datasheet | Pendente |

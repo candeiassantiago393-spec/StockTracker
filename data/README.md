@@ -54,7 +54,16 @@ Close `stock.xlsx` in Excel before running. Re-run skips equipments already in t
 ## Before running the app
 
 - **Close** `stock.xlsx` in Microsoft Excel before save operations
-- Keep regular backups of your inventory
+- Keep regular backups of your inventory (the app also saves automatic copies in `data/backups/` — last **20** files)
+
+## Automatic Excel backups
+
+Folder: **`backups/`** (inside `data/`)
+
+Before each save, the app copies `stock.xlsx` to  
+`backups/stock_YYYYMMDD_HHMMSS.xlsx` and keeps only the **20 most recent** files.
+
+To restore: close Excel, then copy a backup file over `data/stock.xlsx`.
 
 ## After cloning from GitHub
 
