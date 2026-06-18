@@ -110,11 +110,18 @@ Then restart: `python -m src.main`
 
 ## Components — key objectNames
 
-**Left (Operations):** `search_entry`, `btn_search`, `barcode_entry`, `quantity_entry`, `btn_scan`, `btn_add_stock`, `btn_remove_stock`
+**Left (Operations):** `search_entry`, `btn_search`, `barcode_entry`, `quantity_entry`, `btn_scan`, `label_stock_btn` (Stock Actions), `btn_add_stock`, `btn_remove_stock`
 
 **Right (Details):** `val_mouser`, `val_manufacturer`, `val_manufacturer_ref`, `val_description`, `val_stock`
 
-**Shared (moved above stack):** `user_entry`, `tab1_title`
+**Right (Catalog image):** `component_image_preview` — at runtime replaced by `CatalogImagePreview` in `catalog_image_preview.py` (high-res Mouser image, hover magnifier, wheel zoom, drag pan)
+
+### Components runtime (Python, not `.ui`)
+
+| Feature | Behaviour |
+|---------|-----------|
+| Catalog image | Fetched from distributor API (`component_images.py`, Mouser `/lrg/` URL); interactive preview in `catalog_image_preview.py` |
+| Empty detail fields | Click opens **ADD MANUAL** dialog |
 
 ---
 

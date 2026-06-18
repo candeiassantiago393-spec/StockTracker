@@ -79,6 +79,19 @@ Regenera `.ui`, exporta `.py`, sincroniza Designer e copia o projeto para `Deskt
 
 ---
 
+## Components — imagem de catalogo
+
+Ao pesquisar ou selecionar um componente, a app obtém a imagem do distribuidor (Mouser, etc.) em alta resolução (`/lrg/`). A area `component_image_preview` suporta:
+
+- Lupa ao mover o rato
+- Zoom com a roda do rato
+- Arrastar com zoom ativo
+- Duplo-clique para repor
+
+Logica: `src/core/component_images.py` + `src/gui/catalog_image_preview.py`
+
+---
+
 ## Estrutura do código
 
 | Camada | Pasta / ficheiro |

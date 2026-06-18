@@ -211,7 +211,7 @@ def stock_btn_row_xml(row: int) -> str:
     return (
         row_open("stock_buttons", row)
         + f"""             <item>
-{template_label_xml("label_stock_btn", "Button")}
+{template_label_xml("label_stock_btn", "Stock Actions")}
              </item>
              <item>
               <widget class="QPushButton" name="btn_add_stock">
@@ -426,7 +426,7 @@ def list_widget_row_xml(
 def component_image_preview_xml(row: int) -> str:
     return f"""          <item row="{row}" column="0" colspan="2">
            <widget class="QLabel" name="component_image_preview">
-            <property name="minimumSize"><size><width>220</width><height>200</height></size></property>
+            <property name="minimumSize"><size><width>240</width><height>240</height></size></property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
               <horstretch>0</horstretch>

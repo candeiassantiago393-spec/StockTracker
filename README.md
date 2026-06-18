@@ -16,6 +16,8 @@ Stock management using a local Excel database, PySide6 GUI, and optional distrib
 - Multi-match Excel search with selection dialog
 - Autocomplete from Excel (search and barcode fields)
 - Mouser API: catalog lookup and import
+- **Component catalog image** (Mouser `/lrg/` resolution) with hover magnifier and wheel zoom
+- **Equipment images** — drag & drop or Add/Delete, stored in `data/equipment_images/`
 - **Multi-distributor SCAN**: queries configured APIs in order until a match is found
 - Modular suppliers under `src/core/suppliers/`
 - Optional terminal test menu: `python -m src.test_terminal`
@@ -35,7 +37,7 @@ Stock management using a local Excel database, PySide6 GUI, and optional distrib
 ## Quick start
 
 ```powershell
-git clone https://github.com/YOUR_ORG/StockTracker.git
+git clone https://github.com/candeiassantiago393-spec/StockTracker.git
 cd StockTracker
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -80,8 +82,10 @@ StockTracker/
 │   ├── test_terminal.py
 │   ├── core/               # StockTracker + suppliers
 │   └── gui/
+│       ├── catalog_image_preview.py  # interactive component image (zoom)
 │       ├── designer/       # canonical .ui files
 │       └── siemens_template/
+├── word/                   # generated project .docx (optional)
 ├── tools/                  # maintenance scripts (ORGANIZAR-DESKTOP.bat, export, Designer)
 ├── scripts/                # API test utilities
 ├── requirements.txt

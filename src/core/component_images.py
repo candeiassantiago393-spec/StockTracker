@@ -1,6 +1,8 @@
 """Load component catalog images from distributor URLs."""
 from __future__ import annotations
 
+import re
+
 from PySide6.QtGui import QPixmap
 
 _BROWSER_HEADERS = {
@@ -12,6 +14,35 @@ _BROWSER_HEADERS = {
     "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
 }
+
+_MOUSER_SIZE_PATH = re.compile(r"(/images/[^/]+/)(images|sml)(/)", re.IGNORECASE)
+
+
+def best_catalog_image_url(url: str) -> list[str]:
+    """Return candidate URLs, highest resolution first."""
+    image_url = str(url or "").strip()
+    if not image_url:
+        return []
+
+    candidates: list[str] = []
+    seen: set[str] = set()
+
+    def add(candidate: str) -> None:
+        key = candidate.strip()
+        if key and key not in seen:
+            seen.add(key)
+            candidates.append(key)
+
+    if "mouser.com" in image_url.lower():
+        lrg = _MOUSER_SIZE_PATH.sub(r"\1lrg\3", image_url)
+        add(lrg)
+        add(image_url)
+        if "/lrg/" not in image_url.lower():
+            add(image_url.replace("/images/", "/lrg/"))
+    else:
+        add(image_url)
+
+    return candidates
 
 
 def _looks_like_image(data: bytes) -> bool:
@@ -70,11 +101,20 @@ def _download_image_bytes(url: str, *, timeout: int = 15) -> bytes | None:
 
 
 def fetch_pixmap_from_url(url: str, *, timeout: int = 15) -> QPixmap | None:
-    """Download an image URL and return a QPixmap, or None on failure."""
-    data = _download_image_bytes(url, timeout=timeout)
-    if not data:
-        return None
-    pixmap = QPixmap()
-    if pixmap.loadFromData(data):
-        return pixmap
-    return None
+    """Download the best available catalog image and return a QPixmap."""
+    best: QPixmap | None = None
+    best_area = 0
+
+    for candidate in best_catalog_image_url(url):
+        data = _download_image_bytes(candidate, timeout=timeout)
+        if not data:
+            continue
+        pixmap = QPixmap()
+        if not pixmap.loadFromData(data) or pixmap.isNull():
+            continue
+        area = pixmap.width() * pixmap.height()
+        if area > best_area:
+            best = pixmap
+            best_area = area
+
+    return best

@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QStringListModel
-from PySide6.QtGui import QGuiApplication, QPixmap
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QCompleter,
     QDialog,
@@ -24,6 +24,8 @@ from src.core.component_images import fetch_pixmap_from_url
 from src.core.stock import StockTracker
 from src.core.suppliers import supplier_label
 from src.core.suppliers.base import SupplierId
+
+from .catalog_image_preview import CatalogImagePreview, replace_label_with_catalog_preview
 
 from .confirm_dialog import SiemensConfirmDialog
 from .message_dialog import SiemensMessage
@@ -248,19 +250,22 @@ class StockTrackerWindow(QMainWindow):
         actions_layout.insertWidget(actions_layout.indexOf(clear_btn), self.btn_open_excel)
 
     def _setup_component_image_preview(self) -> None:
-        preview = getattr(self.ui, "component_image_preview", None)
-        if preview is None:
+        label = getattr(self.ui, "component_image_preview", None)
+        if label is None:
             return
-        preview.setToolTip("Product image from distributor catalog (Mouser, etc.)")
-        self._clear_component_image()
+        preview = replace_label_with_catalog_preview(label)
+        self.ui.component_image_preview = preview
+        preview.clear_image()
 
     def _clear_component_image(self, placeholder: str = "No image") -> None:
         preview = getattr(self.ui, "component_image_preview", None)
         if preview is None:
             return
+        if isinstance(preview, CatalogImagePreview):
+            preview.clear_image(placeholder)
+            return
         preview.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
         preview.clear()
-        preview.setPixmap(QPixmap())
         preview.setText(placeholder)
 
     def _show_component_image_url(self, url: str) -> None:
@@ -275,16 +280,11 @@ class StockTrackerWindow(QMainWindow):
         if pixmap is None or pixmap.isNull():
             self._clear_component_image("Image unavailable")
             return
-        width = preview.width() if preview.width() > 0 else 220
-        height = preview.height() if preview.height() > 0 else 200
-        scaled = pixmap.scaled(
-            width,
-            height,
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
-        )
+        if isinstance(preview, CatalogImagePreview):
+            preview.set_image(pixmap)
+            return
         preview.setStyleSheet(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)
-        preview.setPixmap(scaled)
+        preview.setPixmap(pixmap)
         preview.setText("")
 
     def _refresh_component_catalog_image(self, data: dict) -> None:

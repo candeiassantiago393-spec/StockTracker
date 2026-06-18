@@ -12,7 +12,7 @@ Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
 ## Arquitetura
 
 - Lógica: `src/core/stock.py` (classe `StockTracker` — Components, Equipments, History)
-- GUI Components: `src/gui/stock_tracker_window.py` + `designer/gui_stocktracker.ui`
+- GUI Components: `src/gui/stock_tracker_window.py` + `designer/gui_stocktracker.ui` + `catalog_image_preview.py`
 - GUI Equipments: `src/gui/equipments_page.py` + `designer/gui_equipments.ui`
 - Entrada: `python -m src.main` ou `run.bat`
 - Credenciais: `config/secrets.py` (não commitar)

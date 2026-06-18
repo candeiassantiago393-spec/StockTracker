@@ -12,6 +12,17 @@ Canonical `.ui` files for the running app. Metrics come from `styles.py` and Sie
 | `popups/equipments/gui_popup_*.ui` | Equipment dialogs |
 | `popups/shared/gui_popup_*.ui` | Confirm + template |
 
+## Components page (summary)
+
+| Area | Key widgets |
+|------|-------------|
+| Left — Operations | `search_entry`, `btn_search`, `barcode_entry`, `btn_scan`, `quantity_entry` |
+| Left — Stock Actions | `label_stock_btn` (Stock Actions), `btn_add_stock`, `btn_remove_stock` |
+| Right — Details | `val_mouser` … `val_stock` (+ Copy buttons) |
+| Right — Catalog image | `component_image_preview` (runtime: `CatalogImagePreview` — zoom/lupa) |
+
+Runtime behaviour (catalog image, empty-field click → Add Manual) is in `stock_tracker_window.py` and `catalog_image_preview.py`.
+
 ## Equipments page (summary)
 
 | Area | Key widgets |

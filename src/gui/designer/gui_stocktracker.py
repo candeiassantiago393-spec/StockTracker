@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file 'gui_stocktracker.ui'
@@ -797,7 +797,7 @@ class Ui_StockTracker(object):
 
         self.component_image_preview = QLabel(self.container_tab1_right)
         self.component_image_preview.setObjectName(u"component_image_preview")
-        self.component_image_preview.setMinimumSize(QSize(220, 200))
+        self.component_image_preview.setMinimumSize(QSize(240, 240))
         sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(1)
@@ -1016,7 +1016,7 @@ class Ui_StockTracker(object):
 #endif // QT_CONFIG(tooltip)
         self.btn_copy_barcode_entry.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.label_quantity_entry.setText(QCoreApplication.translate("StockTracker", u"Quantity", None))
-        self.label_stock_btn.setText(QCoreApplication.translate("StockTracker", u"Button", None))
+        self.label_stock_btn.setText(QCoreApplication.translate("StockTracker", u"Stock Actions", None))
         self.btn_add_stock.setText(QCoreApplication.translate("StockTracker", u"ADD STOCK", None))
         self.btn_remove_stock.setText(QCoreApplication.translate("StockTracker", u"REMOVE STOCK", None))
         self.label_details.setText(QCoreApplication.translate("StockTracker", u"Component Details", None))
@@ -1059,4 +1059,5 @@ class Ui_StockTracker(object):
         self.btn_exit.setText(QCoreApplication.translate("StockTracker", u"Exit", None))
         self.status_label.setText("")
     # retranslateUi
+
 
