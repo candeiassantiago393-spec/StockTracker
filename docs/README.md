@@ -35,6 +35,17 @@
 
 ---
 
+## Fluxogramas (`docs/fluxogramas/`)
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [fluxogramas/README.md](fluxogramas/README.md) | Índice (diagramas Mermaid) |
+| [fluxogramas/03-components.md](fluxogramas/03-components.md) | Fluxos Components |
+| [fluxogramas/04-equipments.md](fluxogramas/04-equipments.md) | Fluxos Equipments |
+| [fluxogramas/08-qt-designer.md](fluxogramas/08-qt-designer.md) | Workflow Qt Designer |
+
+---
+
 ## GUI module (Portuguese)
 
 | Document | Content |

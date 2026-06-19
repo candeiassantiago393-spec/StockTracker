@@ -76,7 +76,7 @@ StockTracker/
 ├── config/                 # credentials loader + secrets.example.py
 ├── data/                   # stock.xlsx (local) + backups/ + image caches
 ├── docs/                   # documentation (EN + PT quick guide)
-├── StockTracker-Designer/  # Qt Designer package (.ui + LEIA-ME.txt)
+├── StockTracker-Designer/  # Qt Designer package (.ui + LEIA-ME.txt + DESIGNER.bat)
 ├── src/
 │   ├── main.py             # GUI entry point
 │   ├── test_terminal.py
@@ -110,6 +110,7 @@ StockTracker/
 | [docs/user/ARCHITECTURE.md](docs/user/ARCHITECTURE.md) | Architecture and flows |
 | [docs/user/SUPPLIERS.md](docs/user/SUPPLIERS.md) | Supplier APIs |
 | [docs/user/QT_DESIGNER.md](docs/user/QT_DESIGNER.md) | Qt Designer workflow |
+| [docs/fluxogramas/README.md](docs/fluxogramas/README.md) | Flowcharts (Mermaid) |
 | [docs/GUIA_RAPIDO_PT.md](docs/GUIA_RAPIDO_PT.md) | Quick guide (Portuguese) |
 | [docs/user/WORKSPACE.md](docs/user/WORKSPACE.md) | Desktop copies and Designer packages |
 | [docs/user/DIGIKEY_SETUP.md](docs/user/DIGIKEY_SETUP.md) | DigiKey sandbox setup |

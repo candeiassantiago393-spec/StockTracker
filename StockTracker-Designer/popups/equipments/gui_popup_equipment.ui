@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>641</width>
-    <height>520</height>
+    <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -113,7 +113,7 @@ color: #f3f3f0;
 border: 1px solid #009999;</string>
            </property>
            <property name="text">
-            <string>Provide Supplier Reference, Serial Number or Description.</string>
+            <string>Provide Name, Supplier Reference, Serial Number or Description.</string>
            </property>
           </widget>
          </item>
@@ -187,12 +187,12 @@ QLineEdit:hover {
          </item>
 
          <item row="2" column="0">
-          <widget class="QLabel" name="label_Description">
-           <property name="text"><string>Description</string></property>
+          <widget class="QLabel" name="label_Name">
+           <property name="text"><string>Name</string></property>
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="description_field">
+          <widget class="QLineEdit" name="equipment_name">
            <property name="styleSheet">
    <string notr="true">
 QLineEdit {
@@ -218,12 +218,12 @@ QLineEdit:hover {
          </item>
 
          <item row="3" column="0">
-          <widget class="QLabel" name="label_Calibration Date">
-           <property name="text"><string>Calibration Date</string></property>
+          <widget class="QLabel" name="label_Description">
+           <property name="text"><string>Description</string></property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QLineEdit" name="calibration_date">
+          <widget class="QLineEdit" name="description_field">
            <property name="styleSheet">
    <string notr="true">
 QLineEdit {
@@ -249,12 +249,12 @@ QLineEdit:hover {
          </item>
 
          <item row="4" column="0">
-          <widget class="QLabel" name="label_Calibration Expiration">
-           <property name="text"><string>Calibration Expiration</string></property>
+          <widget class="QLabel" name="label_Calibration Date">
+           <property name="text"><string>Calibration Date</string></property>
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QLineEdit" name="calibration_expiration">
+          <widget class="QLineEdit" name="calibration_date">
            <property name="styleSheet">
    <string notr="true">
 QLineEdit {
@@ -280,11 +280,42 @@ QLineEdit:hover {
          </item>
 
          <item row="5" column="0">
+          <widget class="QLabel" name="label_Calibration Expiration">
+           <property name="text"><string>Calibration Expiration</string></property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="calibration_expiration">
+           <property name="styleSheet">
+   <string notr="true">
+QLineEdit {
+    min-width: 100px;
+    max-width: 100px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+</string>
+           </property>
+          </widget>
+
+         </item>
+
+         <item row="6" column="0">
           <widget class="QLabel" name="label_Datasheet">
            <property name="text"><string>Datasheet</string></property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QLineEdit" name="datasheet">
            <property name="styleSheet">
    <string notr="true">

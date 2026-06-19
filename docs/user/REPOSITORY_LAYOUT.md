@@ -12,6 +12,7 @@
 | `data/` | Local Excel database (`stock.xlsx`) |
 | `config/` | Local credentials (`secrets.py`, not in Git) |
 | `docs/` | Project documentation |
+| `docs/fluxogramas/` | Flowcharts (Mermaid) per app area |
 | `tools/` | Maintenance scripts (UI export, sync, doc generation) |
 | `scripts/` | Standalone test utilities |
 

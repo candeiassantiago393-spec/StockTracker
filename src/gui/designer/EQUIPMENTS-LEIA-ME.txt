@@ -22,7 +22,7 @@ Coluna esquerda (container_equipments_left)
     supplier_ref_entry        + btn_scan_supplier_ref (SCAN) + btn_copy_supplier_ref (Copy)
 
   Imagem do equipamento (equipment_image_panel)
-    equipment_image_preview   — area 300x260, bordo tracejado, drag & drop
+    equipment_image_preview   — area 300x320 (min), bordo tracejado, drag & drop
     btn_set_equipment_image   — texto "Add" (compacto, 64px)
     btn_clear_equipment_image — texto "Delete" (so visivel com imagem ligada)
 
@@ -40,6 +40,7 @@ Coluna direita (container_equipments_right)
     label_details
     val_supplier_reference    + Copy
     val_serial_number         + Copy
+    val_name                  + Copy
     val_description           + Copy
     val_calibration           + Copy
     val_expiration            + Copy
@@ -67,7 +68,7 @@ Coluna direita (container_equipments_right)
 Excel — folha Equipments
 ------------------------
 
-  ID | Supplier Reference | Serial Number | Description |
+  ID | Supplier Reference | Serial Number | Name | Description |
   Calibration Date | Calibration Expiration Date | Datasheet | Image
 
 

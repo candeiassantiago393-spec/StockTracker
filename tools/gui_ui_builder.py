@@ -602,7 +602,7 @@ def equipment_image_panel_xml(row: int) -> str:
              <property name="bottomMargin"><number>9</number></property>
              <item>
               <widget class="QLabel" name="equipment_image_preview">
-               <property name="minimumSize"><size><width>300</width><height>260</height></size></property>
+               <property name="minimumSize"><size><width>{styles.EQUIPMENT_IMAGE_PREVIEW_MIN_WIDTH}</width><height>{styles.EQUIPMENT_IMAGE_PREVIEW_HEIGHT}</height></size></property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                  <horstretch>0</horstretch>

@@ -203,6 +203,9 @@ QTableWidget QScrollBar::sub-line:horizontal {
           <property name="text"><string>Serial Number</string></property>
          </column>
          <column>
+          <property name="text"><string>Name</string></property>
+         </column>
+         <column>
           <property name="text"><string>Description</string></property>
          </column>
          <column>

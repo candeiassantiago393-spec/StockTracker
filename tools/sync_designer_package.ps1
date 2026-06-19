@@ -60,7 +60,7 @@ function Sync-ToDesignerFolder($Designer) {
     Copy-Item (Join-Path $Root "src\gui\designer\popups\README.md") (Join-Path $Designer "popups\README.md") -Force -ErrorAction SilentlyContinue
     $leiaMe = Join-Path $Root "StockTracker-Designer\LEIA-ME.txt"
     $leiaMeDest = Join-Path $Designer "LEIA-ME.txt"
-    if ((Test-Path $leiaMe) -and ($leiaMe -ne $leiaMeDest)) {
+    if ((Test-Path $leiaMe) -and ((Resolve-Path $leiaMe).Path -ne (Resolve-Path $leiaMeDest -ErrorAction SilentlyContinue).Path)) {
         Copy-Item $leiaMe $leiaMeDest -Force
     }
     $equipmentsReadme = Join-Path $Root "src\gui\designer\EQUIPMENTS-LEIA-ME.txt"

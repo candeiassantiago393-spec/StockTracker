@@ -10,13 +10,16 @@ The application uses **Siemens template** layouts in Qt Widgets Designer. Layout
 |------|---------|---------------|
 | `src/gui/designer/gui_stocktracker.ui` | Components page | Option **1** |
 | `src/gui/designer/gui_equipments.ui` | Equipments page | Option **2** |
-| `src/gui/designer/popups/gui_popup_*.ui` | Dialogs | Options **3–8** |
+| `popups/components/gui_popup_*.ui` | Component dialogs | Options **3–6** |
+| `popups/equipments/gui_popup_*.ui` | Equipment dialogs | Options **7–9** |
+| `popups/shared/gui_popup_*.ui` | Confirm + template | Options **10–11** |
 
-Generated modules (`gui_stocktracker.py`, `gui_equipments.py`, `gui_popup_*.py`) — **do not edit by hand**.
+Generated modules (`gui_stocktracker.py`, `gui_equipments.py`, `popups/**/gui_popup_*.py`) — **do not edit by hand**.
 
 Reference: `src/gui/siemens_template/gui_template.ui`  
 Shared metrics: `src/gui/styles.py`, `tools/gui_ui_builder.py`  
-Portuguese Equipments guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
+Portuguese Equipments guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`  
+Flowcharts: `docs/fluxogramas/`
 
 ---
 
@@ -25,19 +28,19 @@ Portuguese Equipments guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 | Location | Purpose |
 |----------|---------|
 | `src/gui/designer/` | **Canonical** — used by the running app |
-| `StockTracker-Designer/` | Editing bundle inside the repo |
+| `StockTracker-Designer/` | Editing bundle inside the repo (`LEIA-ME.txt`, `DESIGNER.bat`) |
 | `Desktop\StockTracker-Designer` | Desktop copy for Qt Designer |
+
+Refresh repo package:
+
+```powershell
+powershell -File tools\sync_designer_package.ps1 -Target Repo
+```
 
 Refresh everything (repo + Desktop):
 
 ```text
 tools\ORGANIZAR-DESKTOP.bat
-```
-
-or:
-
-```powershell
-powershell -File tools\organizar-ambiente.ps1
 ```
 
 ---
@@ -50,13 +53,13 @@ powershell -File tools\organizar-ambiente.ps1
 .\tools\ABRIR-DESIGNER.bat
 ```
 
-Choose **1** (Components) or **2** (Equipments).
-
-**From Desktop package:**
+**From Designer package:**
 
 ```text
-Desktop\StockTracker-Designer\DESIGNER.bat
+StockTracker-Designer\DESIGNER.bat
 ```
+
+(Menu lists options **1–11** — all popups in subfolders `popups/components/`, `popups/equipments/`, `popups/shared/`.)
 
 ---
 
@@ -82,25 +85,19 @@ python tools/generate_popup_uis.py
 tools\export-ui.bat
 ```
 
-or:
-
-```powershell
-powershell -File tools\export_designer_uis.ps1
-```
-
 Then restart: `python -m src.main`
 
 **Workflow after editing on Desktop:** copy changed `.ui` files back to `src/gui/designer/` before export.
 
 ---
 
-## Shared layout rules (Components + Equipments)
+## Shared layout rules
 
 | Rule | Value |
 |------|-------|
 | Page margins | 16 px left and right (`TEMPLATE_PAGE_MARGINS`) |
-| Columns | 50/50, horizontal spacing **0** |
-| Labels | 74 px min width |
+| Main columns | 50/50, horizontal spacing **0** |
+| Detail labels (Components) | 152 px fixed column |
 | Fields | 100 px |
 | Copy buttons | 60 px |
 | Action buttons (SEARCH, etc.) | 124 px |
@@ -108,44 +105,46 @@ Then restart: `python -m src.main`
 
 ---
 
-## Components — key objectNames
+## Components — layout (2025)
 
-**Left (Operations):** `search_entry`, `btn_search`, `barcode_entry`, `quantity_entry`, `btn_scan`, `label_stock_btn` (Stock Actions), `btn_add_stock`, `btn_remove_stock`
+**Operations (left):** Search → Scan → **Quantity** → **Stock Actions** (ADD / REMOVE)
 
-**Right (Details):** `val_mouser`, `val_manufacturer`, `val_manufacturer_ref`, `val_description`, `val_stock`
+**Component Details (right)** — 5-column grid:
 
-**Right (Catalog):** `row_catalog_links`, `btn_open_product` (WEB), `btn_open_datasheet` (DS) — hidden when no URLs
+| Col | Content |
+|-----|---------|
+| 0 | Labels (fixed 152 px) |
+| 1 | Offset gap (`COMPONENT_DETAIL_CONTENT_OFFSET` = 288 px) |
+| 2 | Value fields + Copy |
+| 3 | Flexible spacer (grows in fullscreen) |
+| 4 | Catalog image **240×240 px**, flush right |
 
-**Right (Catalog image):** `component_image_preview` — at runtime replaced by `CatalogImagePreview` in `catalog_image_preview.py` (high-res Mouser image, hover magnifier, wheel zoom, drag pan)
+**Catalog row:** WEB + Datasheet (hidden when no URLs).  
+**Runtime image:** `component_image_preview` → `CatalogImagePreview` (`catalog_image_preview.py`).
 
-### Components runtime (Python, not `.ui`)
-
-| Feature | Behaviour |
-|---------|-----------|
-| Catalog links | WEB/DS open distributor URLs; row hidden if empty |
-| Catalog image | Fetched from distributor API (`component_images.py`, Mouser `/lrg/` URL); interactive preview in `catalog_image_preview.py` |
-| Empty detail fields | Click opens **ADD MANUAL** dialog |
+| Runtime behaviour | Detail |
+|-------------------|--------|
+| Empty detail click | Opens **ADD MANUAL** |
+| Filled detail click | No action — use **EDIT** button |
+| Short scan (≤4 chars) | Ignored |
 
 ---
 
 ## Equipments — key objectNames
 
-**Left — Operations:** `search_entry`, `btn_search`, `supplier_ref_entry`, `btn_scan_supplier_ref`, `btn_copy_supplier_ref`
+**Left — Operations:** `search_entry`, `btn_search`, `supplier_ref_entry`, `btn_scan_supplier_ref`
 
-**Left — Equipment image:** `equipment_image_panel`, `equipment_image_preview`, `btn_set_equipment_image` (Add), `btn_clear_equipment_image` (Delete)
+**Left — Equipment image:** `equipment_image_panel`, `equipment_image_preview` (**300×320** min), `btn_set_equipment_image`, `btn_clear_equipment_image`
 
-**Right — Details:** `val_supplier_reference`, `val_serial_number`, `val_description`, `val_calibration`, `val_expiration`, `val_datasheet` (+ Copy buttons; all value fields **100px** wide)
+**Right — Details:** `val_supplier_reference`, `val_serial_number`, `val_name`, `val_description`, `val_calibration`, `val_expiration`, `val_datasheet` (+ Copy)
 
-**Right — Support documentation:** `doc_search_entry`, `btn_doc_search`, `btn_doc_open`, `doc_results_list`, `btn_link_datasheet`, `btn_open_support_docs`, `btn_add_support_doc`
+**Right — Support documentation:** `doc_search_entry`, `doc_results_list`, LINK / OPEN FOLDER / ADD DOC
 
-### Equipments runtime (Python, not `.ui`)
-
-| Feature | Behaviour |
-|---------|-----------|
-| Equipment image | Drag & drop or **Add** → stored in `data/equipment_images/`, Excel column **Image** |
-| `doc_results_list` | **Hidden** by default; shown after **SEARCH** with results; hidden on **CLEAR** or empty search |
-| **OPEN** | Selected file in list, or linked **Datasheet** when list is hidden |
-| **LINK** | Selected file in list (run **SEARCH** first) → Excel column **Datasheet** |
+| Runtime behaviour | Detail |
+|-------------------|--------|
+| Equipment image | `data/equipments/{id}/` + Excel **Image** column |
+| Datasheet / docs | Per-equipment folder (not legacy `support_documentation/`) |
+| Empty detail click | Opens **Add Equipment** |
 
 Portuguese layout guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 
@@ -161,4 +160,4 @@ Portuguese layout guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
 | Equipments behaviour | `equipments_page.py` |
 | Popups | `*_dialog.py` + `designer/popups/` |
 
-See also: [WORKSPACE.md](WORKSPACE.md), [ARCHITECTURE.md](ARCHITECTURE.md), [../GUIA_RAPIDO_PT.md](../GUIA_RAPIDO_PT.md).
+See also: [WORKSPACE.md](WORKSPACE.md), [ARCHITECTURE.md](ARCHITECTURE.md), [../fluxogramas/README.md](../fluxogramas/README.md).

@@ -74,7 +74,9 @@ ID, Supplier Reference, Manufacturer, Manufacturer Reference, Value, Description
 
 ### Equipments sheet
 
-ID, Supplier Reference, Serial Number, Description, Calibration Date, Calibration Expiration Date
+ID, Supplier Reference, Serial Number, **Name**, Description, Calibration Date, Calibration Expiration Date, **Datasheet**, **Image**
+
+Per-equipment files: `data/equipments/{id}/` (datasheet + image filenames in Excel columns).
 
 ### History sheet
 

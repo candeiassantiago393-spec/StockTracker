@@ -120,7 +120,7 @@ Existe ficheiro em component_image_cache/ ?
 | **Módulo** | `src/core/component_image_cache.py` ou extensão de `component_images.py` |
 | **Chave** | `normalize_ref(supplier_ref)` ou `manufacturer_ref` se supplier vazio |
 | **Invalidação** | Opcional: TTL (ex. 30 dias) ou botão “Refresh image” na GUI |
-| **Git** | Ignorar `data/component_image_cache/*` exceto `README.txt` (como `equipment_images/`) |
+| **Git** | Ignorar `data/component_image_cache/*` exceto `README.txt` (como `data/equipments/`) |
 | **Tamanho** | ~50–200 KB por imagem; 500 componentes ≈ 25–100 MB — aceitável |
 | **Thread** | Download em `QThread` para não bloquear a UI na primeira vez |
 | **Fallback** | Se cache corrompido, apagar ficheiro e voltar a descarregar |
@@ -550,7 +550,7 @@ Visão de gestão num relance.
 | Funcionalidade existente | Ficheiros principais |
 |--------------------------|----------------------|
 | Imagem catálogo componentes | `src/core/component_images.py`, `src/core/component_image_cache.py`, `src/gui/catalog_image_preview.py` |
-| Imagem equipamentos (local) | `src/core/equipment_images.py`, `data/equipment_images/` |
+| Imagem equipamentos (local) | `src/core/equipment_storage.py`, `data/equipments/{id}/` |
 | Excel / stock | `src/core/stock.py`, `data/stock.xlsx` |
 | GUI Components | `src/gui/stock_tracker_window.py` |
 | GUI Equipments | `src/gui/equipments_page.py` |

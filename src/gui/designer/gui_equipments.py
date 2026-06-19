@@ -206,7 +206,7 @@ class Ui_EquipmentsPage(object):
         self.layout_equipment_image_panel.setContentsMargins(-1, 9, 9, 9)
         self.equipment_image_preview = QLabel(self.equipment_image_panel)
         self.equipment_image_preview.setObjectName(u"equipment_image_preview")
-        self.equipment_image_preview.setMinimumSize(QSize(300, 260))
+        self.equipment_image_preview.setMinimumSize(QSize(300, 320))
         sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(1)

@@ -87,3 +87,10 @@ Screenshot anotado pelo utilizador (retângulo vermelho no ecrã **Inventory —
 | `src/gui/designer/gui_equipments.ui` | Layout Qt Designer |
 | `src/gui/equipments_page.py` | Imagem, drag & drop, botões |
 | `tools/generate_equipments_ui.py` | Regenerar `.ui` |
+
+---
+
+## Estado actual (código)
+
+- Caixa de imagem: **300×320 px** mínimo (`EQUIPMENT_IMAGE_PREVIEW_*` em `styles.py`).
+- Alinhamento vertical com a coluna direita pode ainda diferir ligeiramente do desenho original; ver `src/gui/equipments_page.py` e `equipment_image_panel_xml()` em `gui_ui_builder.py`.

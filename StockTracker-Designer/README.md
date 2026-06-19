@@ -16,9 +16,9 @@ Canonical `.ui` files for the running app. Metrics come from `styles.py` and Sie
 
 | Area | Key widgets |
 |------|-------------|
-| Left — Operations | `search_entry`, `btn_search`, `barcode_entry`, `btn_scan`, `quantity_entry` |
-| Left — Stock Actions | `label_stock_btn` (Stock Actions), `btn_add_stock`, `btn_remove_stock` |
-| Right — Details | `val_mouser` … `val_stock` (+ Copy buttons) |
+| Left — Operations | `search_entry`, `btn_search`, `barcode_entry`, `btn_scan`, `quantity_entry`, stock buttons |
+| Right — Details grid | Labels col 0 · offset 288px · fields+Copy col 2 · image 240×240 col 4 (flush right) |
+| Right — Catalog | `btn_open_product` (WEB), `btn_open_datasheet` (DS) — row hidden if no links |
 | Right — Catalog image | `component_image_preview` (runtime: `CatalogImagePreview` — zoom/lupa) |
 
 Runtime behaviour (catalog image, empty-field click → Add Manual) is in `stock_tracker_window.py` and `catalog_image_preview.py`.
@@ -28,8 +28,8 @@ Runtime behaviour (catalog image, empty-field click → Add Manual) is in `stock
 | Area | Key widgets |
 |------|-------------|
 | Left — Operations | `search_entry`, `supplier_ref_entry`, scan/copy buttons |
-| Left — Image | `equipment_image_preview`, `btn_set_equipment_image` (Add), `btn_clear_equipment_image` (Delete) |
-| Right — Details | `val_supplier_reference` … `val_datasheet` (all fields **100px** wide) |
+| Left — Image | `equipment_image_preview` (**300×320**), Add / Delete |
+| Right — Details | `val_supplier_reference`, `val_serial_number`, `val_name`, … `val_datasheet` |
 | Right — Docs | `doc_search_entry`, `doc_results_list` (hidden until SEARCH), LINK / OPEN FOLDER / ADD DOC |
 
 Runtime behaviour (images, list visibility, drag & drop) is in `equipments_page.py`, not in the `.ui` alone.
