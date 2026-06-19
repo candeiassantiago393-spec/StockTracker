@@ -28,7 +28,15 @@ def search(part_number: str, secrets: dict) -> Optional[PartInfo]:
         parts = data.get("SearchResults", {}).get("Parts", [])
         if not parts:
             return None
-        return normalize_part(parts[0], "mouser")
+        part = normalize_part(parts[0], "mouser")
+        if not str(part.get("datasheet_url", "")).strip():
+            from ..component_datasheet_urls import resolve_datasheet_url
+
+            datasheet_url = resolve_datasheet_url(part)
+            if datasheet_url:
+                part["datasheet_url"] = datasheet_url
+                part["DataSheetUrl"] = datasheet_url
+        return part
     except Exception as exc:
         print(f"ERRO Mouser: {exc}")
         return None

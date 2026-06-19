@@ -204,34 +204,6 @@ QPushButton:pressed {
                <property name="text"><string>SCAN</string></property>
               </widget>
              </item>
-             <item>
-              <widget class="QPushButton" name="btn_copy_supplier_ref">
-               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
-               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
-               <property name="toolTip"><string>Copy to clipboard</string></property>
-               <property name="styleSheet">
-   <string notr="true">
-QPushButton {
-    min-width: 60px;
-    max-width: 60px;
-    padding: 4px 6px;
-    border-radius: 2px;
-    text-align: center;
-    background-color: #00CCCC;
-    color: #000028;
-    font-size: 12px;
-}
-QPushButton:hover {
-    background-color: #00FFB9;
-}
-QPushButton:pressed {
-    background-color: #00E5AA;
-}
-</string>
-               </property>
-               <property name="text"><string>Copy</string></property>
-              </widget>
-             </item>
             </layout>
            </widget>
           </item>

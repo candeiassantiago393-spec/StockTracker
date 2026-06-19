@@ -15,6 +15,7 @@ from . import styles
 from .designer.gui_equipments import Ui_EquipmentsPage
 from .equipment_dialog import EquipmentDialog
 from .equipment_search_dialog import EquipmentSearchDialog
+from .confirm_dialog import SiemensConfirmDialog
 from .message_dialog import SiemensMessage
 
 
@@ -24,6 +25,8 @@ _IMAGE_FILE_FILTER = (
 
 
 _IMAGE_PLACEHOLDER = "Drop image here"
+
+_MAX_IGNORABLE_SCAN_LEN = 4
 
 
 class _EquipmentImageDropFilter(QObject):
@@ -626,7 +629,7 @@ class EquipmentsPage(QWidget):
 
         self.ui.btn_search.clicked.connect(self.search_equipment)
 
-        self.ui.supplier_ref_entry.returnPressed.connect(self.lookup_supplier_ref)
+        self.ui.supplier_ref_entry.returnPressed.connect(self._on_supplier_ref_scanned)
 
         self.ui.btn_scan_supplier_ref.clicked.connect(self.scan_supplier_ref)
 
@@ -659,8 +662,6 @@ class EquipmentsPage(QWidget):
     def _setup_copy_buttons(self) -> None:
 
         fields = (
-
-            ("btn_copy_supplier_ref", "supplier_ref_entry", "Supplier reference"),
 
             ("btn_copy_val_supplier_reference", "val_supplier_reference", "Supplier Reference"),
 
@@ -782,7 +783,7 @@ class EquipmentsPage(QWidget):
 
 
 
-    def show_equipment(self, row, *, open_datasheet: bool = True) -> None:
+    def show_equipment(self, row, *, open_datasheet: bool = False) -> None:
 
         self._selected_row = row
 
@@ -804,19 +805,25 @@ class EquipmentsPage(QWidget):
 
         self._set_datasheet_display(datasheet)
 
-        self._load_equipment_datasheet(datasheet, open_datasheet=open_datasheet)
-
         self._show_equipment_image(str(data.get("image", "")))
 
         if datasheet:
 
             self.set_status(f"Equipment loaded. Datasheet: {datasheet}")
 
+        elif open_datasheet:
+
+            self.set_status("No datasheet found.")
+
         else:
 
             self.set_status("Equipment loaded. Datasheet: (not linked)")
 
         self._refresh_empty_detail_cursor()
+
+        if open_datasheet:
+
+            self._prompt_open_equipment_datasheet(datasheet)
 
 
 
@@ -886,6 +893,22 @@ class EquipmentsPage(QWidget):
 
 
 
+    def _is_ignorable_scan(self, text: str) -> bool:
+        code = str(text or "").strip()
+        return bool(code) and len(code) <= _MAX_IGNORABLE_SCAN_LEN
+
+    def _clear_ignorable_scan(self) -> None:
+        self.ui.supplier_ref_entry.clear()
+        self.main.set_status("Short scan ignored — scan the part reference.")
+        self.ui.supplier_ref_entry.setFocus()
+
+    def _on_supplier_ref_scanned(self) -> None:
+        ref = self.ui.supplier_ref_entry.text().strip()
+        if self._is_ignorable_scan(ref):
+            self._clear_ignorable_scan()
+            return
+        self.lookup_supplier_ref()
+
     def scan_supplier_ref(self) -> None:
 
         if not self.main.validate_user():
@@ -908,6 +931,10 @@ class EquipmentsPage(QWidget):
 
             return
 
+        if self._is_ignorable_scan(ref):
+            self._clear_ignorable_scan()
+            return
+
         self.lookup_supplier_ref()
 
 
@@ -926,7 +953,9 @@ class EquipmentsPage(QWidget):
 
             return
 
-
+        if self._is_ignorable_scan(ref):
+            self._clear_ignorable_scan()
+            return
 
         workbook = self.tracker.get_workbook()
 
@@ -956,7 +985,7 @@ class EquipmentsPage(QWidget):
 
 
 
-        self.show_equipment(row)
+        self.show_equipment(row, open_datasheet=True)
 
         self.set_status("Equipment found by supplier reference.")
 
@@ -980,7 +1009,7 @@ class EquipmentsPage(QWidget):
 
         if row is not None:
 
-            self.show_equipment(row)
+            self.show_equipment(row, open_datasheet=True)
 
 
 
@@ -1012,7 +1041,7 @@ class EquipmentsPage(QWidget):
 
 
 
-        self.show_equipment(row)
+        self.show_equipment(row, open_datasheet=True)
 
         self.set_status("Equipment found.")
 
@@ -1180,7 +1209,35 @@ class EquipmentsPage(QWidget):
 
 
 
-    def _load_equipment_datasheet(self, filename: str, *, open_datasheet: bool) -> None:
+    def _prompt_open_equipment_datasheet(self, filename: str) -> None:
+
+        name = str(filename).strip()
+
+        if not name:
+
+            return
+
+        if self._support_docs.document_for_filename(name) is None:
+
+            self.set_status(f"Datasheet not found: {name}")
+
+            return
+
+        if SiemensConfirmDialog.ask(
+
+            "Open datasheet",
+
+            "Open the datasheet for this equipment?",
+
+            self,
+
+        ):
+
+            self._open_equipment_datasheet_file(name)
+
+
+
+    def _open_equipment_datasheet_file(self, filename: str) -> None:
 
         name = str(filename).strip()
 
@@ -1196,17 +1253,15 @@ class EquipmentsPage(QWidget):
 
             return
 
-        if open_datasheet:
+        ok, message = self._support_docs.open_document(document)
 
-            ok, message = self._support_docs.open_document(document)
+        if not ok:
 
-            if not ok:
+            SiemensMessage.critical(self, "Open failed", message)
 
-                SiemensMessage.critical(self, "Open failed", message)
+        else:
 
-            else:
-
-                self.set_status(f"Equipment loaded. {message}")
+            self.set_status(message)
 
 
 

@@ -47,7 +47,7 @@ def build_ui() -> str:
             "Scan Barcode / Supplier Ref.",
             "btn_scan_supplier_ref",
             r,
-            copy_btn_name="btn_copy_supplier_ref",
+            with_copy=False,
         )
     )
     r += 1

@@ -235,7 +235,7 @@ def stock_btn_row_xml(row: int) -> str:
 
 
 def catalog_links_row_xml(row: int) -> str:
-    """Compact WEB / DS buttons; row hidden in runtime when no links."""
+    """Compact WEB / Datasheet buttons; row hidden in runtime when no links."""
     return (
         row_open("catalog_links", row, compact=True)
         + f"""             <item>
@@ -253,12 +253,11 @@ def catalog_links_row_xml(row: int) -> str:
              </item>
              <item>
               <widget class="QPushButton" name="btn_open_datasheet">
-               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
-               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
+               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
                <property name="toolTip"><string>Open datasheet in browser</string></property>
                <property name="styleSheet">
 {prop_string(styles.BTN_COPY_STYLE)}               </property>
-               <property name="text"><string>DS</string></property>
+               <property name="text"><string>Datasheet</string></property>
               </widget>
              </item>
              <item>
@@ -279,6 +278,7 @@ def input_scan_copy_row_xml(
     row: int,
     *,
     copy_btn_name: str | None = None,
+    with_copy: bool = True,
     compact: bool = False,
 ) -> str:
     copy_name = copy_btn_name or f"btn_copy_{name}"
@@ -307,7 +307,7 @@ def input_scan_copy_row_xml(
                <property name="text"><string>SCAN</string></property>
               </widget>
              </item>
-{copy_btn_xml(copy_name)}"""
+{(copy_btn_xml(copy_name) if with_copy else "")}"""
         + ROW_CLOSE
     )
 

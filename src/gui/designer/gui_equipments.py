@@ -195,31 +195,6 @@ class Ui_EquipmentsPage(object):
 
         self.layout_supplier_ref_entry.addWidget(self.btn_scan_supplier_ref)
 
-        self.btn_copy_supplier_ref = QPushButton(self.row_supplier_ref_entry)
-        self.btn_copy_supplier_ref.setObjectName(u"btn_copy_supplier_ref")
-        self.btn_copy_supplier_ref.setMinimumSize(QSize(60, 0))
-        self.btn_copy_supplier_ref.setMaximumSize(QSize(60, 16777215))
-        self.btn_copy_supplier_ref.setStyleSheet(u"\n"
-"QPushButton {\n"
-"    min-width: 60px;\n"
-"    max-width: 60px;\n"
-"    padding: 4px 6px;\n"
-"    border-radius: 2px;\n"
-"    text-align: center;\n"
-"    background-color: #00CCCC;\n"
-"    color: #000028;\n"
-"    font-size: 12px;\n"
-"}\n"
-"QPushButton:hover {\n"
-"    background-color: #00FFB9;\n"
-"}\n"
-"QPushButton:pressed {\n"
-"    background-color: #00E5AA;\n"
-"}\n"
-"")
-
-        self.layout_supplier_ref_entry.addWidget(self.btn_copy_supplier_ref)
-
 
         self.gridLayout_container_equipments_left.addWidget(self.row_supplier_ref_entry, 2, 0, 1, 2)
 
@@ -1012,10 +987,6 @@ class Ui_EquipmentsPage(object):
         self.btn_search.setText(QCoreApplication.translate("EquipmentsPage", u"SEARCH", None))
         self.label_supplier_ref_entry.setText(QCoreApplication.translate("EquipmentsPage", u"Scan Barcode / Supplier Ref.", None))
         self.btn_scan_supplier_ref.setText(QCoreApplication.translate("EquipmentsPage", u"SCAN", None))
-#if QT_CONFIG(tooltip)
-        self.btn_copy_supplier_ref.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Copy to clipboard", None))
-#endif // QT_CONFIG(tooltip)
-        self.btn_copy_supplier_ref.setText(QCoreApplication.translate("EquipmentsPage", u"Copy", None))
 #if QT_CONFIG(tooltip)
         self.equipment_image_preview.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Drag and drop an image file here", None))
 #endif // QT_CONFIG(tooltip)

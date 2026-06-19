@@ -98,10 +98,16 @@ def get_cached_links(cache_key: str) -> dict[str, str] | None:
             "product_url": str(entry.get("product_url", "")).strip(),
             "datasheet_url": str(entry.get("datasheet_url", "")).strip(),
             "image_url": str(entry.get("image_url", "")).strip(),
+            "manufacturer": str(entry.get("manufacturer", "")).strip(),
+            "manufacturer_part_number": str(
+                entry.get("manufacturer_part_number", "")
+            ).strip(),
         }
 
 
 def store_links(cache_key: str, part: dict[str, Any]) -> dict[str, str]:
+    from .component_datasheet_urls import resolve_datasheet_url, validated_datasheet_url
+
     key = str(cache_key or "").strip().upper()
     product_url = str(
         part.get("product_url")
@@ -113,6 +119,12 @@ def store_links(cache_key: str, part: dict[str, Any]) -> dict[str, str]:
         or part.get("DataSheetUrl")
         or ""
     ).strip()
+    if not datasheet_url:
+        datasheet_url = resolve_datasheet_url(part)
+    else:
+        datasheet_url = validated_datasheet_url(datasheet_url) or resolve_datasheet_url(
+            part
+        )
     if not key:
         return {
             "product_url": product_url,
@@ -121,6 +133,14 @@ def store_links(cache_key: str, part: dict[str, Any]) -> dict[str, str]:
         }
 
     image_url = str(part.get("image_url", "")).strip()
+    manufacturer = str(
+        part.get("manufacturer") or part.get("Manufacturer") or ""
+    ).strip()
+    manufacturer_part_number = str(
+        part.get("manufacturer_part_number")
+        or part.get("ManufacturerPartNumber")
+        or ""
+    ).strip()
     now = _now()
     with _lock:
         index = _load_index()
@@ -128,6 +148,8 @@ def store_links(cache_key: str, part: dict[str, Any]) -> dict[str, str]:
             "product_url": product_url,
             "datasheet_url": datasheet_url,
             "image_url": image_url,
+            "manufacturer": manufacturer,
+            "manufacturer_part_number": manufacturer_part_number,
             "cached_at": now,
             "last_access": now,
         }

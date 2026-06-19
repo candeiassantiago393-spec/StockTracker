@@ -1,5 +1,6 @@
 """Stock Tracker main window — uses StockTracker from src.core.stock."""
 import os
+import time
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QStringListModel, QThread, Signal, QUrl
@@ -38,6 +39,9 @@ from .equipments_table_dialog import EquipmentsTableDialog
 from .user_name_dialog import UserNameDialog
 
 from . import styles
+
+_MAX_IGNORABLE_SCAN_LEN = 4
+_CATALOG_URL_DEBOUNCE_SEC = 1.5
 
 _ACTION_LABELS = {
     "components": {
@@ -101,10 +105,24 @@ class _CatalogImageLoader(QThread):
             if not image_url:
                 image_url = self._tracker.lookup_catalog_image_url_any(*refs)
 
+            cache_ref = refs[0] if refs else ""
+            if part:
+                for candidate in (
+                    self._tracker.part_supplier_reference(part, cache_ref),
+                    self._tracker.part_manufacturer_reference(part),
+                    *refs,
+                ):
+                    text = str(candidate or "").strip()
+                    if text:
+                        cache_ref = text
+                        break
+
             def url_fetcher() -> str:
                 return image_url
 
-            pixmap = fetch_catalog_pixmap(refs[0], url_fetcher) if image_url else None
+            pixmap = (
+                fetch_catalog_pixmap(cache_ref, url_fetcher) if image_url and cache_ref else None
+            )
         elif fallback:
             from src.core.component_images import fetch_pixmap_from_url
 
@@ -154,6 +172,7 @@ class StockTrackerWindow(QMainWindow):
         self._catalog_links_token = 0
         self._catalog_product_url = ""
         self._catalog_datasheet_url = ""
+        self._catalog_url_last_open: dict[str, float] = {}
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
 
@@ -303,6 +322,27 @@ class StockTrackerWindow(QMainWindow):
         u.btn_clear.clicked.connect(self.clear_all_fields)
         if hasattr(u, "btn_exit"):
             u.btn_exit.clicked.connect(self.close)
+        u.barcode_entry.returnPressed.connect(self._on_barcode_scanned)
+
+    @staticmethod
+    def _is_ignorable_scan(text: str) -> bool:
+        """True for Mouser label noise (item #, qty, country) — 4 chars or less."""
+        code = str(text or "").strip()
+        return bool(code) and len(code) <= _MAX_IGNORABLE_SCAN_LEN
+
+    def _clear_ignorable_scan(self) -> None:
+        """Drop a short accidental scan and stay ready for the next one."""
+        self.ui.barcode_entry.clear()
+        self.set_status("Short scan ignored — scan the part reference.")
+        self.ui.barcode_entry.setFocus()
+
+    def _on_barcode_scanned(self) -> None:
+        """Scanner Enter: ignore label noise, otherwise run SCAN."""
+        code = self.ui.barcode_entry.text().strip()
+        if self._is_ignorable_scan(code):
+            self._clear_ignorable_scan()
+            return
+        self.scan_component()
 
     def _setup_open_excel_button(self) -> None:
         """Add OPEN EXCEL button near CLEAR/Exit."""
@@ -337,6 +377,10 @@ class StockTrackerWindow(QMainWindow):
                 lambda: self._open_catalog_url(self._catalog_product_url, "product")
             )
         if btn_ds is not None:
+            btn_ds.setText("Datasheet")
+            btn_ds.setToolTip("Open datasheet / ficha técnica (PDF)")
+            btn_ds.setMinimumWidth(124)
+            btn_ds.setMaximumWidth(16777215)
             btn_ds.clicked.connect(
                 lambda: self._open_catalog_url(self._catalog_datasheet_url, "datasheet")
             )
@@ -347,10 +391,31 @@ class StockTrackerWindow(QMainWindow):
         self._catalog_datasheet_url = ""
         self._update_catalog_links_ui()
 
-    def _set_catalog_links(self, product_url: str = "", datasheet_url: str = "") -> None:
+    def _set_catalog_links(
+        self,
+        product_url: str = "",
+        datasheet_url: str = "",
+        *,
+        open_datasheet: bool = False,
+    ) -> None:
         self._catalog_product_url = str(product_url or "").strip()
         self._catalog_datasheet_url = str(datasheet_url or "").strip()
         self._update_catalog_links_ui()
+        if open_datasheet:
+            if self._catalog_datasheet_url:
+                self._prompt_open_datasheet()
+            else:
+                self.set_status("No datasheet found.")
+
+    def _prompt_open_datasheet(self) -> None:
+        if not self._catalog_datasheet_url:
+            return
+        if SiemensConfirmDialog.ask(
+            "Open datasheet",
+            "Open the datasheet for this component in your browser?",
+            self,
+        ):
+            self._open_catalog_url(self._catalog_datasheet_url, "datasheet")
 
     def _update_catalog_links_ui(self) -> None:
         row = getattr(self.ui, "row_catalog_links", None)
@@ -372,25 +437,75 @@ class StockTrackerWindow(QMainWindow):
         if not target:
             self.set_status(f"No {label} link available.")
             return
+        now = time.monotonic()
+        last_open = self._catalog_url_last_open.get(target)
+        if last_open is not None and (now - last_open) < _CATALOG_URL_DEBOUNCE_SEC:
+            return
+        self._catalog_url_last_open[target] = now
         if QDesktopServices.openUrl(QUrl(target)):
             self.set_status(f"Opened {label} link in browser.")
         else:
+            self._catalog_url_last_open.pop(target, None)
             SiemensMessage.warning(self, "Open link", f"Could not open {label} link.")
 
     def _catalog_lookup_refs(self, data: dict | None = None) -> list[str]:
-        """References to try for catalog image/links (search text first)."""
+        """References for catalog image/links for the active component."""
         refs: list[str] = []
-        for candidate in (
-            self.ui.search_entry.text().strip(),
-            str((data or {}).get("mouser", "")).strip(),
-            str((data or {}).get("manufacturer_ref", "")).strip(),
-            self.ui.barcode_entry.text().strip(),
-        ):
-            if candidate and candidate not in refs:
-                refs.append(candidate)
+
+        def add(candidate: str) -> None:
+            text = str(candidate or "").strip()
+            if text and text not in refs:
+                refs.append(text)
+
+        if data:
+            add(str(data.get("mouser", "")))
+            add(str(data.get("manufacturer_ref", "")))
+            barcode = self.ui.barcode_entry.text().strip()
+            if barcode and barcode in refs:
+                return refs
+            if barcode:
+                add(barcode)
+            return refs
+
+        add(self.ui.barcode_entry.text().strip())
+        add(self.ui.search_entry.text().strip())
         return refs
 
-    def _refresh_catalog_links(self, lookup_refs: list[str]) -> None:
+    def _loader_is_running(self, loader: QThread | None) -> bool:
+        if loader is None:
+            return False
+        try:
+            return loader.isRunning()
+        except RuntimeError:
+            return False
+
+    def _stop_background_loader(self, attr_name: str) -> None:
+        loader = getattr(self, attr_name, None)
+        if loader is None:
+            return
+        try:
+            if loader.isRunning():
+                loader.requestInterruption()
+                loader.wait(200)
+        except RuntimeError:
+            pass
+        setattr(self, attr_name, None)
+
+    def _start_background_loader(self, attr_name: str, loader: QThread) -> None:
+        self._stop_background_loader(attr_name)
+
+        def clear_ref() -> None:
+            if getattr(self, attr_name) is loader:
+                setattr(self, attr_name, None)
+
+        loader.finished.connect(clear_ref)
+        loader.finished.connect(loader.deleteLater)
+        setattr(self, attr_name, loader)
+        loader.start()
+
+    def _refresh_catalog_links(
+        self, lookup_refs: list[str], *, open_datasheet: bool = False
+    ) -> None:
         if not lookup_refs:
             self._clear_catalog_links()
             return
@@ -402,21 +517,17 @@ class StockTrackerWindow(QMainWindow):
         token = self._catalog_links_token
         self._clear_catalog_links()
 
-        if self._catalog_links_loader and self._catalog_links_loader.isRunning():
-            self._catalog_links_loader.requestInterruption()
-            self._catalog_links_loader.wait(200)
-
         loader = _CatalogLinksLoader(lookup_refs, self.tracker)
 
         def on_loaded(product_url: str, datasheet_url: str) -> None:
             if token != self._catalog_links_token:
                 return
-            self._set_catalog_links(product_url, datasheet_url)
+            self._set_catalog_links(
+                product_url, datasheet_url, open_datasheet=open_datasheet
+            )
 
         loader.loaded.connect(on_loaded)
-        loader.finished.connect(loader.deleteLater)
-        self._catalog_links_loader = loader
-        loader.start()
+        self._start_background_loader("_catalog_links_loader", loader)
 
     def _clear_component_image(self, placeholder: str = "No image") -> None:
         preview = getattr(self.ui, "component_image_preview", None)
@@ -451,10 +562,6 @@ class StockTrackerWindow(QMainWindow):
         self._catalog_image_token += 1
         token = self._catalog_image_token
 
-        if self._catalog_image_loader and self._catalog_image_loader.isRunning():
-            self._catalog_image_loader.requestInterruption()
-            self._catalog_image_loader.wait(200)
-
         self._clear_component_image("Loading...")
         self.set_status("Loading catalog image...")
 
@@ -479,9 +586,7 @@ class StockTrackerWindow(QMainWindow):
             self.set_status("Catalog image loaded.")
 
         loader.loaded.connect(on_loaded)
-        loader.finished.connect(loader.deleteLater)
-        self._catalog_image_loader = loader
-        loader.start()
+        self._start_background_loader("_catalog_image_loader", loader)
 
     def _show_component_image_url(
         self,
@@ -529,6 +634,7 @@ class StockTrackerWindow(QMainWindow):
         self._set_catalog_links(
             str(part.get("product_url", "")),
             str(part.get("datasheet_url", "")),
+            open_datasheet=True,
         )
         self._load_component_catalog_image(
             refs,
@@ -642,7 +748,6 @@ class StockTrackerWindow(QMainWindow):
 
     def _setup_copy_buttons(self) -> None:
         fields = (
-            ("btn_copy_barcode_entry", "barcode_entry", "Supplier reference"),
             ("btn_copy_val_mouser", "val_mouser", "Supplier reference"),
             ("btn_copy_val_manufacturer", "val_manufacturer", "Manufacturer"),
             ("btn_copy_val_manufacturer_ref", "val_manufacturer_ref", "Manufacturer reference"),
@@ -680,7 +785,7 @@ class StockTrackerWindow(QMainWindow):
             return True
         return False
 
-    def show_component(self, row) -> None:
+    def show_component(self, row, *, open_datasheet: bool = False) -> None:
         data = self.tracker.row_to_dict(row)
         u = self.ui
         u.val_mouser.setText(str(data["mouser"]))
@@ -690,7 +795,7 @@ class StockTrackerWindow(QMainWindow):
         u.val_stock.setText(str(data["stock"]))
         self._refresh_empty_detail_cursor()
         refs = self._catalog_lookup_refs(data)
-        self._refresh_catalog_links(refs)
+        self._refresh_catalog_links(refs, open_datasheet=open_datasheet)
         self._refresh_component_catalog_image(refs)
 
     def clear_inputs_after_action(self) -> None:
@@ -780,10 +885,8 @@ class StockTrackerWindow(QMainWindow):
             SiemensMessage.warning(self, "Warning", "Please scan a barcode.")
             return
 
-        if len(code) < 5:
-            self.ui.barcode_entry.clear()
-            self.set_status("Scan ignored: reference too short.")
-            self.ui.barcode_entry.setFocus()
+        if self._is_ignorable_scan(code):
+            self._clear_ignorable_scan()
             return
 
         part_number = self.tracker.extract_part_number(code)
@@ -793,7 +896,7 @@ class StockTrackerWindow(QMainWindow):
 
         row = self.tracker.find_component_any(sheet, part_number, code)
         if row:
-            self.show_component(row)
+            self.show_component(row, open_datasheet=True)
             self.ui.barcode_entry.setText(str(row[1].value or ""))
             self.set_status("Component found in Excel.")
             return
@@ -814,6 +917,7 @@ class StockTrackerWindow(QMainWindow):
         self._set_catalog_links(
             str(part.get("product_url", "")),
             str(part.get("datasheet_url", "")),
+            open_datasheet=True,
         )
         self._show_component_image_url(
             str(part.get("image_url", "")),
@@ -949,7 +1053,7 @@ class StockTrackerWindow(QMainWindow):
                 return
 
         self.ui.barcode_entry.setText(str(row[1].value or ""))
-        self.show_component(row)
+        self.show_component(row, open_datasheet=True)
         count = len(matches)
         if count > 1:
             self.set_status(f"Selected 1 of {count} matches from Excel.")
@@ -971,9 +1075,8 @@ class StockTrackerWindow(QMainWindow):
             )
             return
 
-        if len(code) < 5:
-            self.ui.barcode_entry.clear()
-            self.set_status("Reference too short. Scan ignored.")
+        if self._is_ignorable_scan(code):
+            self._clear_ignorable_scan()
             return
 
         try:

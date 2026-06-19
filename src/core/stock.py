@@ -49,6 +49,7 @@ SHEET_EQUIPMENTS = "Equipments"
 SHEET_MATERIALS_LEGACY = "Materials"  # legacy Excel sheet name (migration only)
 
 _CATALOG_LOOKUP_LOCK = threading.Lock()
+_MIN_PARTIAL_REF_LEN = 4  # avoid "X" matching "RMH05-DK-XX" via substring
 
 ###############################################################################
 # 4. StockTracker class
@@ -177,7 +178,10 @@ class StockTracker:
         value = str(text).strip().upper()
         return value
 
-    def refs_match(self, query: str, *candidates) -> bool:
+    def refs_match(
+        self, query: str, *candidates: str, allow_short_substring: bool = False
+    ) -> bool:
+        """Match part refs or text; partial substring needs min length unless description."""
         q = self.normalize_ref(query)
         if not q or len(q) < 2:
             return False
@@ -185,9 +189,26 @@ class StockTracker:
             c = self.normalize_ref(raw)
             if not c:
                 continue
-            if q == c or q in c or c in q:
+            if q == c:
                 return True
+            if allow_short_substring:
+                if q in c or c in q:
+                    return True
+            elif len(q) >= _MIN_PARTIAL_REF_LEN and len(c) >= _MIN_PARTIAL_REF_LEN:
+                if q in c or c in q:
+                    return True
         return False
+
+    def row_matches_search(self, query: str, row) -> bool:
+        """Excel row match: strict on refs, looser on description."""
+        if self.refs_match(
+            query,
+            row[1].value,
+            row[2].value,
+            row[3].value,
+        ):
+            return True
+        return self.refs_match(query, row[5].value, allow_short_substring=True)
 
     @staticmethod
     def row_is_empty(row) -> bool:
@@ -205,7 +226,10 @@ class StockTracker:
                 row[1].value,
                 row[2].value,
                 row[3].value,
-                row[5].value,
+            ):
+                return row
+            if self.refs_match(
+                part_number, row[5].value, allow_short_substring=True
             ):
                 return row
         return None
@@ -228,13 +252,7 @@ class StockTracker:
         for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
             if self.row_is_empty(row):
                 continue
-            if self.refs_match(
-                query,
-                row[1].value,
-                row[2].value,
-                row[3].value,
-                row[5].value,
-            ):
+            if self.row_matches_search(query, row):
                 results.append(row)
         return results
 
@@ -532,6 +550,39 @@ class StockTracker:
                 return part, supplier
         return None, None
 
+    @staticmethod
+    def _catalog_key_usable(key: str) -> bool:
+        """Short text-only queries are Excel search terms, not catalog part numbers."""
+        if len(key) >= 5:
+            return True
+        return bool(re.search(r"\d", key))
+
+    def _catalog_part_matches_query(self, part_number: str, part: dict) -> bool:
+        """Reject vague API hits (e.g. Mouser returning an unrelated first result)."""
+        return self.refs_match(
+            part_number,
+            part.get("supplier_part_number"),
+            part.get("MouserPartNumber"),
+            part.get("manufacturer_part_number"),
+            part.get("ManufacturerPartNumber"),
+        )
+
+    def _merge_catalog_part(self, base: dict, fresh: dict | None) -> dict:
+        merged = dict(base)
+        if fresh:
+            for key, value in fresh.items():
+                if value is not None and str(value).strip():
+                    merged[key] = value
+        return merged
+
+    def _enrich_catalog_part(self, part: dict) -> dict:
+        from .component_datasheet_urls import resolve_datasheet_url
+
+        merged = dict(part)
+        datasheet = resolve_datasheet_url(merged)
+        merged["datasheet_url"] = datasheet
+        return merged
+
     def lookup_catalog_part(self, part_number: str) -> Optional[dict]:
         """Return distributor catalog fields (URLs, image) with session + disk cache."""
         key = self.normalize_ref(part_number)
@@ -542,22 +593,52 @@ class StockTracker:
 
         with _CATALOG_LOOKUP_LOCK:
             session = self._catalog_session_cache.get(key)
-            if session is not None:
-                return session
+            if session is not None and self._catalog_key_usable(key):
+                merged = self._merge_catalog_part(session, None)
+                if not str(merged.get("datasheet_url", "")).strip():
+                    merged = self._merge_catalog_part(
+                        merged, self.search_mouser(part_number)
+                    )
+                enriched = self._enrich_catalog_part(merged)
+                if self._catalog_part_matches_query(
+                    part_number,
+                    enriched,
+                ) or str(enriched.get("product_url", "")).strip():
+                    self._catalog_session_cache[key] = enriched
+                    return enriched
+                self._catalog_session_cache.pop(key, None)
 
-            cached = get_cached_links(key)
-            if cached is not None:
-                self._catalog_session_cache[key] = cached
-                return cached
+            if self._catalog_key_usable(key):
+                cached = get_cached_links(key)
+                if cached is not None:
+                    merged = dict(cached)
+                    if not str(merged.get("datasheet_url", "")).strip():
+                        merged = self._merge_catalog_part(
+                            merged, self.search_mouser(part_number)
+                        )
+                    enriched = self._enrich_catalog_part(merged)
+                    if str(enriched.get("product_url", "")).strip() or str(
+                        enriched.get("datasheet_url", "")
+                    ).strip():
+                        self._catalog_session_cache[key] = enriched
+                        if enriched.get("datasheet_url") != cached.get(
+                            "datasheet_url"
+                        ) or enriched.get("manufacturer_part_number") != cached.get(
+                            "manufacturer_part_number"
+                        ):
+                            store_links(key, enriched)
+                        return enriched
 
             part = self.search_mouser(part_number)
             if part is None:
                 part, _supplier = self.search_any_supplier(part_number)
             if part is None:
                 return None
+            if not self._catalog_part_matches_query(part_number, part):
+                return None
 
-            merged = dict(part)
-            merged.update(store_links(key, part))
+            merged = self._enrich_catalog_part(part)
+            merged.update(store_links(key, merged))
             self._catalog_session_cache[key] = merged
             return merged
 

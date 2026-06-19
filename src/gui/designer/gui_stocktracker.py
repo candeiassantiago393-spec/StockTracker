@@ -309,31 +309,6 @@ class Ui_StockTracker(object):
 
         self.layout_barcode_entry.addWidget(self.btn_scan)
 
-        self.btn_copy_barcode_entry = QPushButton(self.row_barcode_entry)
-        self.btn_copy_barcode_entry.setObjectName(u"btn_copy_barcode_entry")
-        self.btn_copy_barcode_entry.setMinimumSize(QSize(60, 0))
-        self.btn_copy_barcode_entry.setMaximumSize(QSize(60, 16777215))
-        self.btn_copy_barcode_entry.setStyleSheet(u"\n"
-"QPushButton {\n"
-"    min-width: 60px;\n"
-"    max-width: 60px;\n"
-"    padding: 4px 6px;\n"
-"    border-radius: 2px;\n"
-"    text-align: center;\n"
-"    background-color: #00CCCC;\n"
-"    color: #000028;\n"
-"    font-size: 12px;\n"
-"}\n"
-"QPushButton:hover {\n"
-"    background-color: #00FFB9;\n"
-"}\n"
-"QPushButton:pressed {\n"
-"    background-color: #00E5AA;\n"
-"}\n"
-"")
-
-        self.layout_barcode_entry.addWidget(self.btn_copy_barcode_entry)
-
 
         self.gridLayout_left.addWidget(self.row_barcode_entry, 3, 0, 1, 2)
 
@@ -1082,10 +1057,6 @@ class Ui_StockTracker(object):
         self.btn_search.setText(QCoreApplication.translate("StockTracker", u"SEARCH", None))
         self.label_barcode_entry.setText(QCoreApplication.translate("StockTracker", u"Scan Barcode / Supplier Ref.", None))
         self.btn_scan.setText(QCoreApplication.translate("StockTracker", u"SCAN", None))
-#if QT_CONFIG(tooltip)
-        self.btn_copy_barcode_entry.setToolTip(QCoreApplication.translate("StockTracker", u"Copy to clipboard", None))
-#endif // QT_CONFIG(tooltip)
-        self.btn_copy_barcode_entry.setText(QCoreApplication.translate("StockTracker", u"Copy", None))
         self.label_quantity_entry.setText(QCoreApplication.translate("StockTracker", u"Quantity", None))
         self.label_stock_btn.setText(QCoreApplication.translate("StockTracker", u"Stock Actions", None))
         self.btn_add_stock.setText(QCoreApplication.translate("StockTracker", u"ADD STOCK", None))
