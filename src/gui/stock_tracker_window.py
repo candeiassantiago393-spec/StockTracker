@@ -159,6 +159,7 @@ class StockTrackerWindow(QMainWindow):
         Ui_StockTracker = _load_ui_class()
         self.ui = Ui_StockTracker()
         self.ui.setupUi(self)
+        styles.apply_component_details_grid(self.ui.gridLayout_right)
         self._connect_signals()
         self._setup_page_navigation()
         self._setup_open_excel_button()
@@ -364,6 +365,21 @@ class StockTrackerWindow(QMainWindow):
             return
         preview = replace_label_with_catalog_preview(label)
         self.ui.component_image_preview = preview
+        h = styles.COMPONENT_IMAGE_PREVIEW_HEIGHT
+        w = styles.COMPONENT_IMAGE_PREVIEW_WIDTH
+        preview.setFixedSize(w, h)
+        preview.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        grid = self.ui.gridLayout_right
+        if grid.indexOf(preview) >= 0:
+            grid.removeWidget(preview)
+            grid.addWidget(
+                preview,
+                1,
+                4,
+                5,
+                1,
+                Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+            )
         preview.clear_image()
 
     def _setup_catalog_links(self) -> None:

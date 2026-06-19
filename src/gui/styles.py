@@ -4,6 +4,13 @@ Siemens template styles — values from gui_template.ui (Platform Test Bench).
 
 # Template form metrics (gui_template.ui)
 TEMPLATE_LABEL_MIN_WIDTH = 74
+# Fits longest Components detail label ("Manufacturer Reference").
+COMPONENT_DETAIL_LABEL_WIDTH = 152
+# Gap between labels (col 0) and fields (col 2); image shifts by the same amount.
+COMPONENT_DETAIL_CONTENT_OFFSET = 288
+# Fixed image box — same width and height (does not stretch).
+COMPONENT_IMAGE_PREVIEW_WIDTH = 240
+COMPONENT_IMAGE_PREVIEW_HEIGHT = 240
 TEMPLATE_FIELD_WIDTH = 100
 TEMPLATE_COMBO_MIN_SIZE = (172, 30)
 TEMPLATE_ROW_SPACING = 6
@@ -19,6 +26,19 @@ def apply_two_column_page_grid(grid) -> None:
     grid.setVerticalSpacing(0)
     grid.setColumnStretch(0, 1)
     grid.setColumnStretch(1, 1)
+
+
+def apply_component_details_grid(grid) -> None:
+    """Labels | offset | values | flex gap | image (flush right)."""
+    grid.setColumnStretch(0, 0)
+    grid.setColumnStretch(1, 0)
+    grid.setColumnStretch(2, 0)
+    grid.setColumnStretch(3, 1)
+    grid.setColumnStretch(4, 0)
+    grid.setColumnMinimumWidth(1, COMPONENT_DETAIL_CONTENT_OFFSET)
+    # Match row right inset so the image sits on the panel edge.
+    left, top, _right, bottom = grid.getContentsMargins()
+    grid.setContentsMargins(left, top, TEMPLATE_ROW_MARGINS[2], bottom)
 
 MAIN_WINDOW_STYLE = """
 * {

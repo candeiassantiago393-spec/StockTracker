@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file 'gui_stocktracker.ui'
@@ -433,6 +433,7 @@ class Ui_StockTracker(object):
         self.gridLayout_right = QGridLayout(self.container_tab1_right)
         self.gridLayout_right.setObjectName(u"gridLayout_right")
         self.gridLayout_right.setVerticalSpacing(0)
+        self.gridLayout_right.setProperty(u"columnStretch", 0)
         self.gridLayout_right.setContentsMargins(-1, 15, -1, -1)
         self.label_details = QLabel(self.container_tab1_right)
         self.label_details.setObjectName(u"label_details")
@@ -443,22 +444,26 @@ class Ui_StockTracker(object):
 "}\n"
 "")
 
-        self.gridLayout_right.addWidget(self.label_details, 0, 0, 1, 1)
+        self.gridLayout_right.addWidget(self.label_details, 0, 0, 1, 5)
+
+        self.title_val_mouser = QLabel(self.container_tab1_right)
+        self.title_val_mouser.setObjectName(u"title_val_mouser")
+        self.title_val_mouser.setMinimumSize(QSize(152, 0))
+        self.title_val_mouser.setMaximumSize(QSize(152, 16777215))
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.title_val_mouser.sizePolicy().hasHeightForWidth())
+        self.title_val_mouser.setSizePolicy(sizePolicy4)
+
+        self.gridLayout_right.addWidget(self.title_val_mouser, 1, 0, 1, 1)
 
         self.row_val_mouser = QWidget(self.container_tab1_right)
         self.row_val_mouser.setObjectName(u"row_val_mouser")
         self.layout_val_mouser = QHBoxLayout(self.row_val_mouser)
         self.layout_val_mouser.setSpacing(6)
         self.layout_val_mouser.setObjectName(u"layout_val_mouser")
-        self.layout_val_mouser.setContentsMargins(-1, 9, 9, 9)
-        self.title_val_mouser = QLabel(self.row_val_mouser)
-        self.title_val_mouser.setObjectName(u"title_val_mouser")
-        self.title_val_mouser.setMinimumSize(QSize(74, 0))
-        sizePolicy2.setHeightForWidth(self.title_val_mouser.sizePolicy().hasHeightForWidth())
-        self.title_val_mouser.setSizePolicy(sizePolicy2)
-
-        self.layout_val_mouser.addWidget(self.title_val_mouser)
-
+        self.layout_val_mouser.setContentsMargins(0, 9, 9, 9)
         self.val_mouser = QLabel(self.row_val_mouser)
         self.val_mouser.setObjectName(u"val_mouser")
         self.val_mouser.setStyleSheet(u"\n"
@@ -508,22 +513,23 @@ class Ui_StockTracker(object):
         self.layout_val_mouser.addWidget(self.btn_copy_val_mouser)
 
 
-        self.gridLayout_right.addWidget(self.row_val_mouser, 1, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.row_val_mouser, 1, 2, 1, 1)
+
+        self.title_val_manufacturer = QLabel(self.container_tab1_right)
+        self.title_val_manufacturer.setObjectName(u"title_val_manufacturer")
+        self.title_val_manufacturer.setMinimumSize(QSize(152, 0))
+        self.title_val_manufacturer.setMaximumSize(QSize(152, 16777215))
+        sizePolicy4.setHeightForWidth(self.title_val_manufacturer.sizePolicy().hasHeightForWidth())
+        self.title_val_manufacturer.setSizePolicy(sizePolicy4)
+
+        self.gridLayout_right.addWidget(self.title_val_manufacturer, 2, 0, 1, 1)
 
         self.row_val_manufacturer = QWidget(self.container_tab1_right)
         self.row_val_manufacturer.setObjectName(u"row_val_manufacturer")
         self.layout_val_manufacturer = QHBoxLayout(self.row_val_manufacturer)
         self.layout_val_manufacturer.setSpacing(6)
         self.layout_val_manufacturer.setObjectName(u"layout_val_manufacturer")
-        self.layout_val_manufacturer.setContentsMargins(-1, 9, 9, 9)
-        self.title_val_manufacturer = QLabel(self.row_val_manufacturer)
-        self.title_val_manufacturer.setObjectName(u"title_val_manufacturer")
-        self.title_val_manufacturer.setMinimumSize(QSize(74, 0))
-        sizePolicy2.setHeightForWidth(self.title_val_manufacturer.sizePolicy().hasHeightForWidth())
-        self.title_val_manufacturer.setSizePolicy(sizePolicy2)
-
-        self.layout_val_manufacturer.addWidget(self.title_val_manufacturer)
-
+        self.layout_val_manufacturer.setContentsMargins(0, 9, 9, 9)
         self.val_manufacturer = QLabel(self.row_val_manufacturer)
         self.val_manufacturer.setObjectName(u"val_manufacturer")
         self.val_manufacturer.setStyleSheet(u"\n"
@@ -573,22 +579,23 @@ class Ui_StockTracker(object):
         self.layout_val_manufacturer.addWidget(self.btn_copy_val_manufacturer)
 
 
-        self.gridLayout_right.addWidget(self.row_val_manufacturer, 2, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.row_val_manufacturer, 2, 2, 1, 1)
+
+        self.title_val_manufacturer_ref = QLabel(self.container_tab1_right)
+        self.title_val_manufacturer_ref.setObjectName(u"title_val_manufacturer_ref")
+        self.title_val_manufacturer_ref.setMinimumSize(QSize(152, 0))
+        self.title_val_manufacturer_ref.setMaximumSize(QSize(152, 16777215))
+        sizePolicy4.setHeightForWidth(self.title_val_manufacturer_ref.sizePolicy().hasHeightForWidth())
+        self.title_val_manufacturer_ref.setSizePolicy(sizePolicy4)
+
+        self.gridLayout_right.addWidget(self.title_val_manufacturer_ref, 3, 0, 1, 1)
 
         self.row_val_manufacturer_ref = QWidget(self.container_tab1_right)
         self.row_val_manufacturer_ref.setObjectName(u"row_val_manufacturer_ref")
         self.layout_val_manufacturer_ref = QHBoxLayout(self.row_val_manufacturer_ref)
         self.layout_val_manufacturer_ref.setSpacing(6)
         self.layout_val_manufacturer_ref.setObjectName(u"layout_val_manufacturer_ref")
-        self.layout_val_manufacturer_ref.setContentsMargins(-1, 9, 9, 9)
-        self.title_val_manufacturer_ref = QLabel(self.row_val_manufacturer_ref)
-        self.title_val_manufacturer_ref.setObjectName(u"title_val_manufacturer_ref")
-        self.title_val_manufacturer_ref.setMinimumSize(QSize(74, 0))
-        sizePolicy2.setHeightForWidth(self.title_val_manufacturer_ref.sizePolicy().hasHeightForWidth())
-        self.title_val_manufacturer_ref.setSizePolicy(sizePolicy2)
-
-        self.layout_val_manufacturer_ref.addWidget(self.title_val_manufacturer_ref)
-
+        self.layout_val_manufacturer_ref.setContentsMargins(0, 9, 9, 9)
         self.val_manufacturer_ref = QLabel(self.row_val_manufacturer_ref)
         self.val_manufacturer_ref.setObjectName(u"val_manufacturer_ref")
         self.val_manufacturer_ref.setStyleSheet(u"\n"
@@ -638,22 +645,23 @@ class Ui_StockTracker(object):
         self.layout_val_manufacturer_ref.addWidget(self.btn_copy_val_manufacturer_ref)
 
 
-        self.gridLayout_right.addWidget(self.row_val_manufacturer_ref, 3, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.row_val_manufacturer_ref, 3, 2, 1, 1)
+
+        self.title_val_description = QLabel(self.container_tab1_right)
+        self.title_val_description.setObjectName(u"title_val_description")
+        self.title_val_description.setMinimumSize(QSize(152, 0))
+        self.title_val_description.setMaximumSize(QSize(152, 16777215))
+        sizePolicy4.setHeightForWidth(self.title_val_description.sizePolicy().hasHeightForWidth())
+        self.title_val_description.setSizePolicy(sizePolicy4)
+
+        self.gridLayout_right.addWidget(self.title_val_description, 4, 0, 1, 1)
 
         self.row_val_description = QWidget(self.container_tab1_right)
         self.row_val_description.setObjectName(u"row_val_description")
         self.layout_val_description = QHBoxLayout(self.row_val_description)
         self.layout_val_description.setSpacing(6)
         self.layout_val_description.setObjectName(u"layout_val_description")
-        self.layout_val_description.setContentsMargins(-1, 9, 9, 9)
-        self.title_val_description = QLabel(self.row_val_description)
-        self.title_val_description.setObjectName(u"title_val_description")
-        self.title_val_description.setMinimumSize(QSize(74, 0))
-        sizePolicy2.setHeightForWidth(self.title_val_description.sizePolicy().hasHeightForWidth())
-        self.title_val_description.setSizePolicy(sizePolicy2)
-
-        self.layout_val_description.addWidget(self.title_val_description)
-
+        self.layout_val_description.setContentsMargins(0, 9, 9, 9)
         self.val_description = QLabel(self.row_val_description)
         self.val_description.setObjectName(u"val_description")
         self.val_description.setStyleSheet(u"\n"
@@ -703,22 +711,23 @@ class Ui_StockTracker(object):
         self.layout_val_description.addWidget(self.btn_copy_val_description)
 
 
-        self.gridLayout_right.addWidget(self.row_val_description, 4, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.row_val_description, 4, 2, 1, 1)
+
+        self.title_val_stock = QLabel(self.container_tab1_right)
+        self.title_val_stock.setObjectName(u"title_val_stock")
+        self.title_val_stock.setMinimumSize(QSize(152, 0))
+        self.title_val_stock.setMaximumSize(QSize(152, 16777215))
+        sizePolicy4.setHeightForWidth(self.title_val_stock.sizePolicy().hasHeightForWidth())
+        self.title_val_stock.setSizePolicy(sizePolicy4)
+
+        self.gridLayout_right.addWidget(self.title_val_stock, 5, 0, 1, 1)
 
         self.row_val_stock = QWidget(self.container_tab1_right)
         self.row_val_stock.setObjectName(u"row_val_stock")
         self.layout_val_stock = QHBoxLayout(self.row_val_stock)
         self.layout_val_stock.setSpacing(6)
         self.layout_val_stock.setObjectName(u"layout_val_stock")
-        self.layout_val_stock.setContentsMargins(-1, 9, 9, 9)
-        self.title_val_stock = QLabel(self.row_val_stock)
-        self.title_val_stock.setObjectName(u"title_val_stock")
-        self.title_val_stock.setMinimumSize(QSize(74, 0))
-        sizePolicy2.setHeightForWidth(self.title_val_stock.sizePolicy().hasHeightForWidth())
-        self.title_val_stock.setSizePolicy(sizePolicy2)
-
-        self.layout_val_stock.addWidget(self.title_val_stock)
-
+        self.layout_val_stock.setContentsMargins(0, 9, 9, 9)
         self.val_stock = QLabel(self.row_val_stock)
         self.val_stock.setObjectName(u"val_stock")
         self.val_stock.setStyleSheet(u"\n"
@@ -768,22 +777,23 @@ class Ui_StockTracker(object):
         self.layout_val_stock.addWidget(self.btn_copy_val_stock)
 
 
-        self.gridLayout_right.addWidget(self.row_val_stock, 5, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.row_val_stock, 5, 2, 1, 1)
+
+        self.label_catalog_links = QLabel(self.container_tab1_right)
+        self.label_catalog_links.setObjectName(u"label_catalog_links")
+        self.label_catalog_links.setMinimumSize(QSize(152, 0))
+        self.label_catalog_links.setMaximumSize(QSize(152, 16777215))
+        sizePolicy4.setHeightForWidth(self.label_catalog_links.sizePolicy().hasHeightForWidth())
+        self.label_catalog_links.setSizePolicy(sizePolicy4)
+
+        self.gridLayout_right.addWidget(self.label_catalog_links, 6, 0, 1, 1)
 
         self.row_catalog_links = QWidget(self.container_tab1_right)
         self.row_catalog_links.setObjectName(u"row_catalog_links")
         self.layout_catalog_links = QHBoxLayout(self.row_catalog_links)
         self.layout_catalog_links.setSpacing(6)
         self.layout_catalog_links.setObjectName(u"layout_catalog_links")
-        self.layout_catalog_links.setContentsMargins(-1, 4, 9, 4)
-        self.label_catalog_links = QLabel(self.row_catalog_links)
-        self.label_catalog_links.setObjectName(u"label_catalog_links")
-        self.label_catalog_links.setMinimumSize(QSize(74, 0))
-        sizePolicy2.setHeightForWidth(self.label_catalog_links.sizePolicy().hasHeightForWidth())
-        self.label_catalog_links.setSizePolicy(sizePolicy2)
-
-        self.layout_catalog_links.addWidget(self.label_catalog_links)
-
+        self.layout_catalog_links.setContentsMargins(0, 4, 9, 4)
         self.btn_open_product = QPushButton(self.row_catalog_links)
         self.btn_open_product.setObjectName(u"btn_open_product")
         self.btn_open_product.setMinimumSize(QSize(60, 0))
@@ -811,8 +821,7 @@ class Ui_StockTracker(object):
 
         self.btn_open_datasheet = QPushButton(self.row_catalog_links)
         self.btn_open_datasheet.setObjectName(u"btn_open_datasheet")
-        self.btn_open_datasheet.setMinimumSize(QSize(60, 0))
-        self.btn_open_datasheet.setMaximumSize(QSize(60, 16777215))
+        self.btn_open_datasheet.setMinimumSize(QSize(124, 0))
         self.btn_open_datasheet.setStyleSheet(u"\n"
 "QPushButton {\n"
 "    min-width: 60px;\n"
@@ -834,21 +843,15 @@ class Ui_StockTracker(object):
 
         self.layout_catalog_links.addWidget(self.btn_open_datasheet)
 
-        self.horizontalSpacer_catalog_links = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.layout_catalog_links.addItem(self.horizontalSpacer_catalog_links)
-
-
-        self.gridLayout_right.addWidget(self.row_catalog_links, 6, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.row_catalog_links, 6, 2, 1, 1)
 
         self.component_image_preview = QLabel(self.container_tab1_right)
         self.component_image_preview.setObjectName(u"component_image_preview")
         self.component_image_preview.setMinimumSize(QSize(240, 240))
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(1)
-        sizePolicy4.setHeightForWidth(self.component_image_preview.sizePolicy().hasHeightForWidth())
-        self.component_image_preview.setSizePolicy(sizePolicy4)
+        self.component_image_preview.setMaximumSize(QSize(240, 240))
+        sizePolicy3.setHeightForWidth(self.component_image_preview.sizePolicy().hasHeightForWidth())
+        self.component_image_preview.setSizePolicy(sizePolicy3)
         self.component_image_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.component_image_preview.setStyleSheet(u"\n"
 "QLabel {\n"
@@ -860,11 +863,11 @@ class Ui_StockTracker(object):
 "}\n"
 "")
 
-        self.gridLayout_right.addWidget(self.component_image_preview, 7, 0, 1, 2)
+        self.gridLayout_right.addWidget(self.component_image_preview, 1, 4, 5, 1, Qt.AlignmentFlag.AlignTop|Qt.AlignmentFlag.AlignRight)
 
         self.verticalSpacer_right = QSpacerItem(20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_right.addItem(self.verticalSpacer_right, 8, 1, 1, 1)
+        self.gridLayout_right.addItem(self.verticalSpacer_right, 7, 0, 1, 1)
 
 
         self.gridLayout_main.addWidget(self.container_tab1_right, 1, 1, 1, 1)
@@ -1100,7 +1103,7 @@ class Ui_StockTracker(object):
 #if QT_CONFIG(tooltip)
         self.btn_open_datasheet.setToolTip(QCoreApplication.translate("StockTracker", u"Open datasheet in browser", None))
 #endif // QT_CONFIG(tooltip)
-        self.btn_open_datasheet.setText(QCoreApplication.translate("StockTracker", u"DS", None))
+        self.btn_open_datasheet.setText(QCoreApplication.translate("StockTracker", u"Datasheet", None))
         self.component_image_preview.setText(QCoreApplication.translate("StockTracker", u"No image", None))
         self.btn_history_all.setText(QCoreApplication.translate("StockTracker", u"Last 20", None))
         self.btn_history_component.setText(QCoreApplication.translate("StockTracker", u"Comp. hist.", None))
@@ -1110,4 +1113,5 @@ class Ui_StockTracker(object):
         self.btn_exit.setText(QCoreApplication.translate("StockTracker", u"Exit", None))
         self.status_label.setText("")
     # retranslateUi
+
 
