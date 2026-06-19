@@ -22,9 +22,9 @@ config/secrets.py
 data/stock.xlsx
 ~$*.xlsx
 
-# Imagens de equipamentos associadas localmente
-data/equipment_images/*
-!data/equipment_images/README.txt
+# Pastas por equipamento (datasheet + imagem)
+data/equipments/*
+!data/equipments/README.txt
 
 # Cache de imagens de catalogo (so componentes visualizados; limitado)
 data/component_image_cache/*

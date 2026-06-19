@@ -62,6 +62,7 @@ def build_ui() -> str:
     for name, label in (
         ("val_supplier_reference", "Supplier Reference"),
         ("val_serial_number", "Serial Number"),
+        ("val_name", "Name"),
         ("val_description", "Description"),
         ("val_calibration", "Calibration Date"),
         ("val_expiration", "Calibration Expiration"),

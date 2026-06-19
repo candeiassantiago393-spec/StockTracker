@@ -8,28 +8,30 @@ Place your inventory file here: **`stock.xlsx`**
 |-------|---------|
 | `Components` | Parts and stock levels |
 | `History` | Stock movements (IN/OUT) |
-| `Equipments` | Calibrated equipments (supplier ref, serial, description, dates, **Datasheet**, **Image**) |
+| `Equipments` | Calibrated equipments (supplier ref, serial, **Name**, description, dates, **Datasheet**, **Image**) |
 
 The app creates headers automatically if the file is missing or empty.
 
-## Support documentation
+## Equipment files (per equipment)
 
-Folder: **`support_documentation/`** (inside `data/`)
+Folder: **`equipments/{id}/`** (inside `data/`)
 
-Store datasheets, manuals and other support files here. From the **Equipments** page:
+Each equipment has its own subfolder (name = Excel **ID**). Store the **datasheet** and **image** there so you can browse or open files directly in Explorer.
 
-- **SEARCH** — shows matching files in `doc_results_list` (list is hidden until you search)
-- **OPEN** — opens the selected file from the list, or the linked datasheet if the list is hidden
-- **LINK** — associates the selected file with the current equipment (saved in Excel column **Datasheet**)
-- When you **search equipment**, its linked datasheet opens automatically (if the file exists)
-- **ADD DOC** — copies a file; if an equipment is selected, it is linked automatically
+Example:
 
-## Equipment images
+```
+data/equipments/
+  3/
+    DS_Fluke_87V.pdf
+    image.jpg
+```
 
-Folder: **`equipment_images/`** (inside `data/`)
+From the **Equipments** page:
 
-From the **Equipments** page: drag & drop an image onto the preview area, or use **Add**.  
-Linked filename is stored in Excel column **Image**. Use **Delete** to remove.
+- **LINK** / **ADD DOC** — copies the file into the selected equipment folder
+- **OPEN FOLDER** — opens that equipment folder (or all equipment folders if none selected)
+- Excel columns **Datasheet** and **Image** store the **filename** inside that folder
 
 ## Component catalog image cache
 
@@ -40,9 +42,14 @@ When you open a component on the **Components** page, its distributor image may 
 
 Automatic limits: **800 images**, **150 MB** total, **90 days** per entry (oldest removed first).
 
+## Catalog link cache (Components)
+
+Folder: **`catalog_links/`** (inside `data/`)
+
+Caches distributor **WEB** and **datasheet URLs** (`_links.json`) for components you have viewed. Refreshed from the API when the cache expires (~30 days).
+
 ### Example data (demo)
 
-Sample datasheets live in `support_documentation/DS_*.pdf`.  
 To load **5 example equipments** (oscilloscope, multimeters, power analyzer, generator):
 
 ```powershell

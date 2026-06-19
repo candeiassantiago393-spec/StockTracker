@@ -447,6 +447,71 @@ class Ui_EquipmentsPage(object):
 
         self.gridLayout_container_equipments_right.addWidget(self.row_val_serial_number, 2, 0, 1, 2)
 
+        self.row_val_name = QWidget(self.container_equipments_right)
+        self.row_val_name.setObjectName(u"row_val_name")
+        self.layout_val_name = QHBoxLayout(self.row_val_name)
+        self.layout_val_name.setSpacing(6)
+        self.layout_val_name.setObjectName(u"layout_val_name")
+        self.layout_val_name.setContentsMargins(-1, 9, 9, 9)
+        self.title_val_name = QLabel(self.row_val_name)
+        self.title_val_name.setObjectName(u"title_val_name")
+        self.title_val_name.setMinimumSize(QSize(74, 0))
+        sizePolicy.setHeightForWidth(self.title_val_name.sizePolicy().hasHeightForWidth())
+        self.title_val_name.setSizePolicy(sizePolicy)
+
+        self.layout_val_name.addWidget(self.title_val_name)
+
+        self.val_name = QLabel(self.row_val_name)
+        self.val_name.setObjectName(u"val_name")
+        self.val_name.setStyleSheet(u"\n"
+"QLabel {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    max-height: 18px;\n"
+"    padding: 5px;\n"
+"    padding-bottom: 7px;\n"
+"    margin-top: 0px;\n"
+"    border-radius: 2px;\n"
+"    border: 1px solid #B3B3BE;\n"
+"    background-color: #00183B;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QLabel:hover {\n"
+"    background-color: #001F39;\n"
+"    border: 1px solid #00FFB9;\n"
+"}\n"
+"")
+
+        self.layout_val_name.addWidget(self.val_name)
+
+        self.btn_copy_val_name = QPushButton(self.row_val_name)
+        self.btn_copy_val_name.setObjectName(u"btn_copy_val_name")
+        self.btn_copy_val_name.setMinimumSize(QSize(60, 0))
+        self.btn_copy_val_name.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_val_name.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_val_name.addWidget(self.btn_copy_val_name)
+
+
+        self.gridLayout_container_equipments_right.addWidget(self.row_val_name, 3, 0, 1, 2)
+
         self.row_val_description = QWidget(self.container_equipments_right)
         self.row_val_description.setObjectName(u"row_val_description")
         self.layout_val_description = QHBoxLayout(self.row_val_description)
@@ -510,7 +575,7 @@ class Ui_EquipmentsPage(object):
         self.layout_val_description.addWidget(self.btn_copy_val_description)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_val_description, 3, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_val_description, 4, 0, 1, 2)
 
         self.row_val_calibration = QWidget(self.container_equipments_right)
         self.row_val_calibration.setObjectName(u"row_val_calibration")
@@ -575,7 +640,7 @@ class Ui_EquipmentsPage(object):
         self.layout_val_calibration.addWidget(self.btn_copy_val_calibration)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_val_calibration, 4, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_val_calibration, 5, 0, 1, 2)
 
         self.row_val_expiration = QWidget(self.container_equipments_right)
         self.row_val_expiration.setObjectName(u"row_val_expiration")
@@ -640,7 +705,7 @@ class Ui_EquipmentsPage(object):
         self.layout_val_expiration.addWidget(self.btn_copy_val_expiration)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_val_expiration, 5, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_val_expiration, 6, 0, 1, 2)
 
         self.row_val_datasheet = QWidget(self.container_equipments_right)
         self.row_val_datasheet.setObjectName(u"row_val_datasheet")
@@ -705,7 +770,7 @@ class Ui_EquipmentsPage(object):
         self.layout_val_datasheet.addWidget(self.btn_copy_val_datasheet)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_val_datasheet, 6, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_val_datasheet, 7, 0, 1, 2)
 
         self.label_support_docs = QLabel(self.container_equipments_right)
         self.label_support_docs.setObjectName(u"label_support_docs")
@@ -717,7 +782,7 @@ class Ui_EquipmentsPage(object):
 "}\n"
 "")
 
-        self.gridLayout_container_equipments_right.addWidget(self.label_support_docs, 7, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.label_support_docs, 8, 0, 1, 2)
 
         self.row_doc_search_entry = QWidget(self.container_equipments_right)
         self.row_doc_search_entry.setObjectName(u"row_doc_search_entry")
@@ -807,7 +872,7 @@ class Ui_EquipmentsPage(object):
         self.layout_doc_search_entry.addWidget(self.btn_doc_open)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_doc_search_entry, 8, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_doc_search_entry, 9, 0, 1, 2)
 
         self.doc_results_list = QListWidget(self.container_equipments_right)
         self.doc_results_list.setObjectName(u"doc_results_list")
@@ -843,7 +908,7 @@ class Ui_EquipmentsPage(object):
 "}\n"
 "")
 
-        self.gridLayout_container_equipments_right.addWidget(self.doc_results_list, 9, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.doc_results_list, 10, 0, 1, 2)
 
         self.row_btn_link_datasheet = QWidget(self.container_equipments_right)
         self.row_btn_link_datasheet.setObjectName(u"row_btn_link_datasheet")
@@ -884,7 +949,7 @@ class Ui_EquipmentsPage(object):
         self.layout_btn_link_datasheet.addWidget(self.btn_link_datasheet)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_btn_link_datasheet, 10, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_btn_link_datasheet, 11, 0, 1, 2)
 
         self.row_btn_open_support_docs = QWidget(self.container_equipments_right)
         self.row_btn_open_support_docs.setObjectName(u"row_btn_open_support_docs")
@@ -925,7 +990,7 @@ class Ui_EquipmentsPage(object):
         self.layout_btn_open_support_docs.addWidget(self.btn_open_support_docs)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_btn_open_support_docs, 11, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_btn_open_support_docs, 12, 0, 1, 2)
 
         self.row_btn_add_support_doc = QWidget(self.container_equipments_right)
         self.row_btn_add_support_doc.setObjectName(u"row_btn_add_support_doc")
@@ -966,11 +1031,11 @@ class Ui_EquipmentsPage(object):
         self.layout_btn_add_support_doc.addWidget(self.btn_add_support_doc)
 
 
-        self.gridLayout_container_equipments_right.addWidget(self.row_btn_add_support_doc, 12, 0, 1, 2)
+        self.gridLayout_container_equipments_right.addWidget(self.row_btn_add_support_doc, 13, 0, 1, 2)
 
         self.verticalSpacer_equipments_right = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_container_equipments_right.addItem(self.verticalSpacer_equipments_right, 13, 1, 1, 1)
+        self.gridLayout_container_equipments_right.addItem(self.verticalSpacer_equipments_right, 14, 1, 1, 1)
 
 
         self.gridLayout_equipments.addWidget(self.container_equipments_right, 0, 1, 1, 1)
@@ -1012,6 +1077,12 @@ class Ui_EquipmentsPage(object):
         self.btn_copy_val_serial_number.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Copy to clipboard", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_copy_val_serial_number.setText(QCoreApplication.translate("EquipmentsPage", u"Copy", None))
+        self.title_val_name.setText(QCoreApplication.translate("EquipmentsPage", u"Name", None))
+        self.val_name.setText("")
+#if QT_CONFIG(tooltip)
+        self.btn_copy_val_name.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_val_name.setText(QCoreApplication.translate("EquipmentsPage", u"Copy", None))
         self.title_val_description.setText(QCoreApplication.translate("EquipmentsPage", u"Description", None))
         self.val_description.setText("")
 #if QT_CONFIG(tooltip)

@@ -29,7 +29,7 @@ Coluna esquerda (container_equipments_left)
   Comportamento (equipments_page.py, nao no .ui):
     - Botoes Add/Delete so aparecem com equipamento selecionado
     - Arrastar imagem para equipment_image_preview ou clicar Add
-    - Ficheiros em data\equipment_images\
+    - Ficheiros em data\equipments\{id}\
     - Excel: coluna Image (folha Equipments)
 
 
@@ -60,7 +60,7 @@ Coluna direita (container_equipments_right)
     - OPEN: documento selecionado na lista, ou datasheet ligado se lista oculta
     - LINK: documento selecionado na lista (fazer SEARCH primeiro)
 
-  Pasta de documentos: data\support_documentation\
+  Pasta do equipamento: data\equipments\{id}\
   Excel: coluna Datasheet (nome do ficheiro)
 
 

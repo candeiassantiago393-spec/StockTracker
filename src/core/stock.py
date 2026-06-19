@@ -48,6 +48,17 @@ SHEET_HISTORY = "History"
 SHEET_EQUIPMENTS = "Equipments"
 SHEET_MATERIALS_LEGACY = "Materials"  # legacy Excel sheet name (migration only)
 
+# Equipments sheet columns (1-based Excel column index)
+EQ_COL_ID = 1
+EQ_COL_SUPPLIER_REF = 2
+EQ_COL_SERIAL = 3
+EQ_COL_NAME = 4
+EQ_COL_DESCRIPTION = 5
+EQ_COL_CALIB_DATE = 6
+EQ_COL_CALIB_EXPIRY = 7
+EQ_COL_DATASHEET = 8
+EQ_COL_IMAGE = 9
+
 _CATALOG_LOOKUP_LOCK = threading.Lock()
 _MIN_PARTIAL_REF_LEN = 4  # avoid "X" matching "RMH05-DK-XX" via substring
 
@@ -837,6 +848,7 @@ class StockTracker:
                 "ID",
                 "Supplier Reference",
                 "Serial Number",
+                "Name",
                 "Description",
                 "Calibration Date",
                 "Calibration Expiration Date",
@@ -866,12 +878,16 @@ class StockTracker:
         if b1 == "Supplier Reference" and c1 == "Description":
             sheet.insert_cols(3)
             sheet["C1"] = "Serial Number"
-        g1 = str(sheet.cell(row=1, column=7).value or "").strip()
-        if sheet.max_column < 7 or not g1:
-            sheet.cell(row=1, column=7, value="Datasheet")
-        h1 = str(sheet.cell(row=1, column=8).value or "").strip()
-        if sheet.max_column < 8 or not h1:
-            sheet.cell(row=1, column=8, value="Image")
+        g1 = str(sheet.cell(row=1, column=EQ_COL_DATASHEET).value or "").strip()
+        if sheet.max_column < EQ_COL_DATASHEET or not g1:
+            sheet.cell(row=1, column=EQ_COL_DATASHEET, value="Datasheet")
+        h1 = str(sheet.cell(row=1, column=EQ_COL_IMAGE).value or "").strip()
+        if sheet.max_column < EQ_COL_IMAGE or not h1:
+            sheet.cell(row=1, column=EQ_COL_IMAGE, value="Image")
+        d1 = str(sheet.cell(row=1, column=EQ_COL_NAME).value or "").strip()
+        if d1 == "Description":
+            sheet.insert_cols(EQ_COL_NAME)
+            sheet.cell(row=1, column=EQ_COL_NAME, value="Name")
 
     @staticmethod
     def normalize_date(text) -> str:
@@ -911,12 +927,15 @@ class StockTracker:
                 continue
             supplier_ref = self.normalize_ref(row[1].value)
             serial = self.normalize_ref(row[2].value)
-            desc = self.normalize_ref(row[3].value)
+            name = self.normalize_ref(row[3].value)
+            desc = self.normalize_ref(row[4].value)
             if (
                 q in supplier_ref
                 or supplier_ref in q
                 or q in serial
                 or serial in q
+                or q in name
+                or name in q
                 or q in desc
                 or desc in q
             ):
@@ -940,24 +959,35 @@ class StockTracker:
         row_idx = row[0].row
         sheet = row[0].parent
         if sheet is not None:
-            cell_val = sheet.cell(row=row_idx, column=7).value
+            cell_val = sheet.cell(row=row_idx, column=EQ_COL_DATASHEET).value
             if cell_val is not None:
                 datasheet = str(cell_val).strip()
-            image_val = sheet.cell(row=row_idx, column=8).value
+            image_val = sheet.cell(row=row_idx, column=EQ_COL_IMAGE).value
             if image_val is not None:
                 image = str(image_val).strip()
+            name = sheet.cell(row=row_idx, column=EQ_COL_NAME).value or ""
+            description = sheet.cell(row=row_idx, column=EQ_COL_DESCRIPTION).value or ""
+            calibration_date = sheet.cell(row=row_idx, column=EQ_COL_CALIB_DATE).value
+            calibration_expiration = sheet.cell(
+                row=row_idx, column=EQ_COL_CALIB_EXPIRY
+            ).value
         else:
-            if len(row) > 6 and row[6].value is not None:
-                datasheet = str(row[6].value).strip()
+            name = row[3].value if len(row) > 3 else ""
+            description = row[4].value if len(row) > 4 else ""
+            calibration_date = row[5].value if len(row) > 5 else ""
+            calibration_expiration = row[6].value if len(row) > 6 else ""
             if len(row) > 7 and row[7].value is not None:
-                image = str(row[7].value).strip()
+                datasheet = str(row[7].value).strip()
+            if len(row) > 8 and row[8].value is not None:
+                image = str(row[8].value).strip()
         return {
             "id": row[0].value or "",
             "supplier_reference": row[1].value or "",
             "serial_number": row[2].value or "",
-            "description": row[3].value or "",
-            "calibration_date": self.normalize_date(row[4].value),
-            "calibration_expiration": self.normalize_date(row[5].value),
+            "name": str(name or "").strip(),
+            "description": str(description or "").strip(),
+            "calibration_date": self.normalize_date(calibration_date),
+            "calibration_expiration": self.normalize_date(calibration_expiration),
             "datasheet": datasheet,
             "image": image,
         }
@@ -976,15 +1006,17 @@ class StockTracker:
         description: str = "",
         supplier_reference: str = "",
         serial_number: str = "",
+        name: str = "",
         calibration_date: str = "",
         calibration_expiration: str = "",
         datasheet: str = "",
     ) -> tuple[bool, str]:
         description = str(description).strip()
+        name = str(name).strip()
         supplier_reference = str(supplier_reference).strip()
         serial_number = str(serial_number).strip()
-        if not description and not supplier_reference and not serial_number:
-            return False, "Provide Description, Supplier Reference or Serial Number."
+        if not description and not name and not supplier_reference and not serial_number:
+            return False, "Provide Name, Description, Supplier Reference or Serial Number."
 
         ok, calib = self.validate_date(calibration_date)
         if not ok:
@@ -1007,14 +1039,17 @@ class StockTracker:
             ) == self.normalize_ref(serial_number):
                 return False, "An equipment with this serial number already exists."
             if description and self.normalize_ref(
-                row[3].value
+                row[4].value
             ) == self.normalize_ref(description):
                 return False, "An equipment with this description already exists."
+            if name and self.normalize_ref(row[3].value) == self.normalize_ref(name):
+                return False, "An equipment with this name already exists."
 
         sheet.append([
             self.next_equipment_id(sheet),
             supplier_reference,
             serial_number,
+            name,
             description,
             calib,
             expiry,
@@ -1031,15 +1066,17 @@ class StockTracker:
         description: str = "",
         supplier_reference: str = "",
         serial_number: str = "",
+        name: str = "",
         calibration_date: str = "",
         calibration_expiration: str = "",
         datasheet: str | None = None,
     ) -> tuple[bool, str]:
         description = str(description).strip()
+        name = str(name).strip()
         supplier_reference = str(supplier_reference).strip()
         serial_number = str(serial_number).strip()
-        if not description and not supplier_reference and not serial_number:
-            return False, "Provide Description, Supplier Reference or Serial Number."
+        if not description and not name and not supplier_reference and not serial_number:
+            return False, "Provide Name, Description, Supplier Reference or Serial Number."
 
         ok, calib = self.validate_date(calibration_date)
         if not ok:
@@ -1053,6 +1090,7 @@ class StockTracker:
         target_row = row[0].row
         ref_norm = self.normalize_ref(supplier_reference)
         serial_norm = self.normalize_ref(serial_number)
+        name_norm = self.normalize_ref(name)
         desc_norm = self.normalize_ref(description)
 
         for other in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
@@ -1062,18 +1100,23 @@ class StockTracker:
                 return False, "Another equipment already uses this supplier reference."
             if serial_number and self.normalize_ref(other[2].value) == serial_norm:
                 return False, "Another equipment already uses this serial number."
-            if description and self.normalize_ref(other[3].value) == desc_norm:
+            if name and self.normalize_ref(other[3].value) == name_norm:
+                return False, "Another equipment already uses this name."
+            if description and self.normalize_ref(other[4].value) == desc_norm:
                 return False, "Another equipment already uses this description."
 
         row[1].value = supplier_reference
         row[2].value = serial_number
-        row[3].value = description
-        row[4].value = calib
-        row[5].value = expiry
+        row[3].value = name
+        row[4].value = description
+        row[5].value = calib
+        row[6].value = expiry
         if datasheet is not None:
             sheet = row[0].parent
             if sheet is not None:
-                sheet.cell(row=row[0].row, column=7, value=str(datasheet).strip())
+                sheet.cell(
+                    row=row[0].row, column=EQ_COL_DATASHEET, value=str(datasheet).strip()
+                )
 
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
@@ -1084,7 +1127,7 @@ class StockTracker:
         workbook = self.get_workbook()
         sheet = self.get_equipments_sheet(workbook)
         row_idx = row[0].row
-        sheet.cell(row=row_idx, column=7, value=str(filename).strip())
+        sheet.cell(row=row_idx, column=EQ_COL_DATASHEET, value=str(filename).strip())
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
         label = filename.strip() or "(none)"
@@ -1095,7 +1138,7 @@ class StockTracker:
         workbook = self.get_workbook()
         sheet = self.get_equipments_sheet(workbook)
         row_idx = row[0].row
-        sheet.cell(row=row_idx, column=8, value=str(filename).strip())
+        sheet.cell(row=row_idx, column=EQ_COL_IMAGE, value=str(filename).strip())
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
         label = filename.strip() or "(none)"
@@ -1106,7 +1149,7 @@ class StockTracker:
         workbook = self.get_workbook()
         sheet = self.get_equipments_sheet(workbook)
         row_idx = row[0].row
-        sheet.cell(row=row_idx, column=8, value="")
+        sheet.cell(row=row_idx, column=EQ_COL_IMAGE, value="")
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
         return True, "Image removed."
@@ -1128,16 +1171,18 @@ class StockTracker:
                 continue
             if equipment_only and (ref_filter or desc_filter):
                 row_ref = self.normalize_ref(row[1].value)
-                row_desc = self.normalize_ref(row[3].value)
+                row_name = self.normalize_ref(row[3].value)
+                row_desc = self.normalize_ref(row[4].value)
                 if ref_filter and row_ref != ref_filter:
                     continue
-                if desc_filter and row_desc != desc_filter:
+                if desc_filter and desc_filter not in row_name and desc_filter not in row_desc:
                     continue
             data = self.equipment_row_to_dict(row)
             rows.append((
                 data["id"],
                 data["supplier_reference"],
                 data["serial_number"],
+                data["name"],
                 data["description"],
                 data["calibration_date"],
                 data["calibration_expiration"],

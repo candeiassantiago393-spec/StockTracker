@@ -8,6 +8,7 @@ COLUMNS = (
     "ID",
     "Supplier Reference",
     "Serial Number",
+    "Name",
     "Description",
     "Calibration Date",
     "Calibration Expiration",

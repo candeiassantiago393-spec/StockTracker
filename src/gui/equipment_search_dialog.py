@@ -7,6 +7,7 @@ from .siemens_template.popup_shell import fill_readonly_table
 COLUMNS = (
     "Supplier Reference",
     "Serial Number",
+    "Name",
     "Description",
     "Calibration Date",
     "Calibration Expiration",
@@ -32,6 +33,7 @@ class EquipmentSearchDialog(QDialog):
             return (
                 data["supplier_reference"],
                 data["serial_number"],
+                data["name"],
                 data["description"],
                 data["calibration_date"],
                 data["calibration_expiration"],

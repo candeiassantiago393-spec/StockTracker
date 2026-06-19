@@ -163,6 +163,7 @@ EQUIPMENT_HISTORY_COLUMNS = (
     "ID",
     "Supplier Reference",
     "Serial Number",
+    "Name",
     "Description",
     "Calibration Date",
     "Calibration Expiration",
@@ -170,6 +171,7 @@ EQUIPMENT_HISTORY_COLUMNS = (
 EQUIPMENT_SEARCH_COLUMNS = (
     "Supplier Reference",
     "Serial Number",
+    "Name",
     "Description",
     "Calibration Date",
     "Calibration Expiration",
@@ -184,10 +186,11 @@ def form_equipment_body() -> str:
     rows = [
         (0, "Supplier Reference", line_edit_xml("supplier_reference")),
         (1, "Serial Number", line_edit_xml("serial_number")),
-        (2, "Description", line_edit_xml("description_field")),
-        (3, "Calibration Date", line_edit_xml("calibration_date")),
-        (4, "Calibration Expiration", line_edit_xml("calibration_expiration")),
-        (5, "Datasheet", line_edit_xml("datasheet")),
+        (2, "Name", line_edit_xml("equipment_name")),
+        (3, "Description", line_edit_xml("description_field")),
+        (4, "Calibration Date", line_edit_xml("calibration_date")),
+        (5, "Calibration Expiration", line_edit_xml("calibration_expiration")),
+        (6, "Datasheet", line_edit_xml("datasheet")),
     ]
     items = "\n".join(form_row_xml(r, lbl, fld) for r, lbl, fld in rows)
     return f"""      <item>
@@ -348,10 +351,10 @@ def main() -> None:
                 class_name="PopupEquipment",
                 title="Equipment",
                 subtitle=(
-                    "Provide Supplier Reference, Serial Number or Description."
+                    "Provide Name, Supplier Reference, Serial Number or Description."
                 ),
                 width=641,
-                height=520,
+                height=560,
                 body_xml=form_equipment_body(),
                 ok_text="Save",
                 cancel_text="Cancel",

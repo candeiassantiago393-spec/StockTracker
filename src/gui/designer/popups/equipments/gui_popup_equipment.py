@@ -24,7 +24,7 @@ class Ui_PopupEquipment(object):
     def setupUi(self, PopupEquipment):
         if not PopupEquipment.objectName():
             PopupEquipment.setObjectName(u"PopupEquipment")
-        PopupEquipment.resize(641, 520)
+        PopupEquipment.resize(641, 560)
         PopupEquipment.setStyleSheet(u"*{\n"
 "	border:none;\n"
 "	background: #000028;\n"
@@ -160,10 +160,38 @@ class Ui_PopupEquipment(object):
 
         self.form_equipment.setWidget(1, QFormLayout.ItemRole.FieldRole, self.serial_number)
 
+        self.label_Name = QLabel(self.body_form)
+        self.label_Name.setObjectName(u"label_Name")
+
+        self.form_equipment.setWidget(2, QFormLayout.ItemRole.LabelRole, self.label_Name)
+
+        self.equipment_name = QLineEdit(self.body_form)
+        self.equipment_name.setObjectName(u"equipment_name")
+        self.equipment_name.setStyleSheet(u"\n"
+"QLineEdit {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    max-height: 18px;\n"
+"    padding: 5px;\n"
+"    padding-bottom: 7px;\n"
+"    margin-top: 0px;\n"
+"    border-radius: 2px;\n"
+"    border: 1px solid #B3B3BE;\n"
+"    background-color: #00183B;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QLineEdit:hover {\n"
+"    background-color: #001F39;\n"
+"    border: 1px solid #00FFB9;\n"
+"}\n"
+"")
+
+        self.form_equipment.setWidget(2, QFormLayout.ItemRole.FieldRole, self.equipment_name)
+
         self.label_Description = QLabel(self.body_form)
         self.label_Description.setObjectName(u"label_Description")
 
-        self.form_equipment.setWidget(2, QFormLayout.ItemRole.LabelRole, self.label_Description)
+        self.form_equipment.setWidget(3, QFormLayout.ItemRole.LabelRole, self.label_Description)
 
         self.description_field = QLineEdit(self.body_form)
         self.description_field.setObjectName(u"description_field")
@@ -186,12 +214,12 @@ class Ui_PopupEquipment(object):
 "}\n"
 "")
 
-        self.form_equipment.setWidget(2, QFormLayout.ItemRole.FieldRole, self.description_field)
+        self.form_equipment.setWidget(3, QFormLayout.ItemRole.FieldRole, self.description_field)
 
         self.label_Calibration_Date = QLabel(self.body_form)
         self.label_Calibration_Date.setObjectName(u"label_Calibration_Date")
 
-        self.form_equipment.setWidget(3, QFormLayout.ItemRole.LabelRole, self.label_Calibration_Date)
+        self.form_equipment.setWidget(4, QFormLayout.ItemRole.LabelRole, self.label_Calibration_Date)
 
         self.calibration_date = QLineEdit(self.body_form)
         self.calibration_date.setObjectName(u"calibration_date")
@@ -214,12 +242,12 @@ class Ui_PopupEquipment(object):
 "}\n"
 "")
 
-        self.form_equipment.setWidget(3, QFormLayout.ItemRole.FieldRole, self.calibration_date)
+        self.form_equipment.setWidget(4, QFormLayout.ItemRole.FieldRole, self.calibration_date)
 
         self.label_Calibration_Expiration = QLabel(self.body_form)
         self.label_Calibration_Expiration.setObjectName(u"label_Calibration_Expiration")
 
-        self.form_equipment.setWidget(4, QFormLayout.ItemRole.LabelRole, self.label_Calibration_Expiration)
+        self.form_equipment.setWidget(5, QFormLayout.ItemRole.LabelRole, self.label_Calibration_Expiration)
 
         self.calibration_expiration = QLineEdit(self.body_form)
         self.calibration_expiration.setObjectName(u"calibration_expiration")
@@ -242,12 +270,12 @@ class Ui_PopupEquipment(object):
 "}\n"
 "")
 
-        self.form_equipment.setWidget(4, QFormLayout.ItemRole.FieldRole, self.calibration_expiration)
+        self.form_equipment.setWidget(5, QFormLayout.ItemRole.FieldRole, self.calibration_expiration)
 
         self.label_Datasheet = QLabel(self.body_form)
         self.label_Datasheet.setObjectName(u"label_Datasheet")
 
-        self.form_equipment.setWidget(5, QFormLayout.ItemRole.LabelRole, self.label_Datasheet)
+        self.form_equipment.setWidget(6, QFormLayout.ItemRole.LabelRole, self.label_Datasheet)
 
         self.datasheet = QLineEdit(self.body_form)
         self.datasheet.setObjectName(u"datasheet")
@@ -270,7 +298,7 @@ class Ui_PopupEquipment(object):
 "}\n"
 "")
 
-        self.form_equipment.setWidget(5, QFormLayout.ItemRole.FieldRole, self.datasheet)
+        self.form_equipment.setWidget(6, QFormLayout.ItemRole.FieldRole, self.datasheet)
 
 
         self.verticalLayout.addWidget(self.body_form)
@@ -341,9 +369,10 @@ class Ui_PopupEquipment(object):
     def retranslateUi(self, PopupEquipment):
         PopupEquipment.setWindowTitle(QCoreApplication.translate("PopupEquipment", u"Dialog", None))
         self.tittle.setText(QCoreApplication.translate("PopupEquipment", u"Equipment", None))
-        self.description.setText(QCoreApplication.translate("PopupEquipment", u"Provide Supplier Reference, Serial Number or Description.", None))
+        self.description.setText(QCoreApplication.translate("PopupEquipment", u"Provide Name, Supplier Reference, Serial Number or Description.", None))
         self.label_Supplier_Reference.setText(QCoreApplication.translate("PopupEquipment", u"Supplier Reference", None))
         self.label_Serial_Number.setText(QCoreApplication.translate("PopupEquipment", u"Serial Number", None))
+        self.label_Name.setText(QCoreApplication.translate("PopupEquipment", u"Name", None))
         self.label_Description.setText(QCoreApplication.translate("PopupEquipment", u"Description", None))
         self.label_Calibration_Date.setText(QCoreApplication.translate("PopupEquipment", u"Calibration Date", None))
         self.label_Calibration_Expiration.setText(QCoreApplication.translate("PopupEquipment", u"Calibration Expiration", None))

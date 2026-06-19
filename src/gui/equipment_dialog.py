@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QDialog, QFileDialog, QFormLayout, QHBoxLayout, QPushButton, QWidget
 
-from src.core.support_documentation import SUPPORT_DOCS_DIR
+from src.core.equipment_storage import EQUIPMENTS_DIR
 
 from .designer.popups.equipments.gui_popup_equipment import Ui_PopupEquipment
 from . import styles
@@ -20,6 +20,7 @@ class EquipmentDialog(QDialog):
         initial = initial or {}
         self.ui.supplier_reference.setText(str(initial.get("supplier_reference", "")))
         self.ui.serial_number.setText(str(initial.get("serial_number", "")))
+        self.ui.equipment_name.setText(str(initial.get("name", "")))
         self.ui.description_field.setText(str(initial.get("description", "")))
         self.ui.calibration_date.setText(str(initial.get("calibration_date", "")))
         self.ui.calibration_date.setPlaceholderText("YYYY-MM-DD")
@@ -28,7 +29,8 @@ class EquipmentDialog(QDialog):
         )
         self.ui.calibration_expiration.setPlaceholderText("YYYY-MM-DD")
         self.ui.datasheet.setText(str(initial.get("datasheet", "")))
-        self.ui.datasheet.setPlaceholderText("Filename in support_documentation/")
+        self.ui.datasheet.setPlaceholderText("Filename in data/equipments/{id}/")
+        self._datasheet_source: Path | None = None
         self._add_datasheet_browse_button()
 
         self.ui.btn_ok.clicked.connect(self._validate_and_accept)
@@ -52,7 +54,7 @@ class EquipmentDialog(QDialog):
         layout.addWidget(field)
         browse = QPushButton("Browse", wrapper)
         browse.setStyleSheet(styles.BTN_COPY_STYLE)
-        browse.setToolTip("Pick a file from the support documentation folder")
+        browse.setToolTip("Pick a datasheet file to copy into this equipment folder")
         browse.clicked.connect(self._browse_datasheet)
         layout.addWidget(browse)
 
@@ -61,8 +63,11 @@ class EquipmentDialog(QDialog):
         else:
             form.addRow("Datasheet", wrapper)
 
+    def datasheet_source(self) -> Path | None:
+        return self._datasheet_source
+
     def _browse_datasheet(self) -> None:
-        start_dir = str(SUPPORT_DOCS_DIR) if SUPPORT_DOCS_DIR.exists() else ""
+        start_dir = str(EQUIPMENTS_DIR) if EQUIPMENTS_DIR.exists() else ""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select datasheet",
@@ -70,18 +75,20 @@ class EquipmentDialog(QDialog):
             "Documents (*.pdf *.doc *.docx *.xls *.xlsx *.txt *.zip);;All files (*.*)",
         )
         if file_path:
-            self.ui.datasheet.setText(Path(file_path).name)
+            self._datasheet_source = Path(file_path)
+            self.ui.datasheet.setText(self._datasheet_source.name)
 
     def _validate_and_accept(self) -> None:
         if (
             not self.ui.supplier_reference.text().strip()
             and not self.ui.serial_number.text().strip()
+            and not self.ui.equipment_name.text().strip()
             and not self.ui.description_field.text().strip()
         ):
             SiemensMessage.warning(
                 self,
                 "Missing field",
-                "Provide Supplier Reference, Serial Number or Description.",
+                "Provide Name, Supplier Reference, Serial Number or Description.",
             )
             return
         self.accept()
@@ -90,6 +97,7 @@ class EquipmentDialog(QDialog):
         return {
             "supplier_reference": self.ui.supplier_reference.text().strip(),
             "serial_number": self.ui.serial_number.text().strip(),
+            "name": self.ui.equipment_name.text().strip(),
             "description": self.ui.description_field.text().strip(),
             "calibration_date": self.ui.calibration_date.text().strip(),
             "calibration_expiration": self.ui.calibration_expiration.text().strip(),
