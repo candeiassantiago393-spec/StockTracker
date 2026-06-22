@@ -1100,23 +1100,27 @@ class StockTracker:
                 return False, "Another equipment already uses this supplier reference."
             if serial_number and self.normalize_ref(other[2].value) == serial_norm:
                 return False, "Another equipment already uses this serial number."
-            if name and self.normalize_ref(other[3].value) == name_norm:
+            if name and self.normalize_ref(
+                sheet.cell(row=other[0].row, column=EQ_COL_NAME).value
+            ) == name_norm:
                 return False, "Another equipment already uses this name."
-            if description and self.normalize_ref(other[4].value) == desc_norm:
+            if description and self.normalize_ref(
+                sheet.cell(row=other[0].row, column=EQ_COL_DESCRIPTION).value
+            ) == desc_norm:
                 return False, "Another equipment already uses this description."
 
-        row[1].value = supplier_reference
-        row[2].value = serial_number
-        row[3].value = name
-        row[4].value = description
-        row[5].value = calib
-        row[6].value = expiry
+        sheet.cell(row=target_row, column=EQ_COL_SUPPLIER_REF, value=supplier_reference)
+        sheet.cell(row=target_row, column=EQ_COL_SERIAL, value=serial_number)
+        sheet.cell(row=target_row, column=EQ_COL_NAME, value=name)
+        sheet.cell(row=target_row, column=EQ_COL_DESCRIPTION, value=description)
+        sheet.cell(row=target_row, column=EQ_COL_CALIB_DATE, value=calib)
+        sheet.cell(row=target_row, column=EQ_COL_CALIB_EXPIRY, value=expiry)
         if datasheet is not None:
-            sheet = row[0].parent
-            if sheet is not None:
-                sheet.cell(
-                    row=row[0].row, column=EQ_COL_DATASHEET, value=str(datasheet).strip()
-                )
+            sheet.cell(
+                row=target_row,
+                column=EQ_COL_DATASHEET,
+                value=str(datasheet).strip(),
+            )
 
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."

@@ -4,17 +4,26 @@ from pathlib import Path
 
 from PySide6.QtCore import QEvent, QObject, Qt
 from PySide6.QtGui import QFontMetrics, QGuiApplication, QPixmap
-from PySide6.QtWidgets import QDialog, QFileDialog, QLabel, QLineEdit, QListWidgetItem, QWidget
+from PySide6.QtWidgets import (
+    QDialog,
+    QFileDialog,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
+    QListWidgetItem,
+    QWidget,
+)
 
-from src.core.equipment_images import is_image_file
+from src.core.equipment_images import EquipmentImages, is_image_file
 from src.core.equipment_storage import EquipmentStorage, SupportDocument
+from src.core.stock import StockTracker
 
 from . import styles
 
+from .confirm_dialog import SiemensConfirmDialog
 from .designer.gui_equipments import Ui_EquipmentsPage
 from .equipment_dialog import EquipmentDialog
 from .equipment_search_dialog import EquipmentSearchDialog
-from .confirm_dialog import SiemensConfirmDialog
 from .message_dialog import SiemensMessage
 
 
@@ -24,8 +33,6 @@ _IMAGE_FILE_FILTER = (
 
 
 _IMAGE_PLACEHOLDER = "Drop image here"
-
-_MAX_IGNORABLE_SCAN_LEN = 4
 
 
 class _EquipmentImageDropFilter(QObject):
@@ -94,6 +101,8 @@ class EquipmentsPage(QWidget):
 
         self._storage = EquipmentStorage()
 
+        self._equipment_images = EquipmentImages()
+
         self._doc_results: list[SupportDocument] = []
 
         self.ui = Ui_EquipmentsPage()
@@ -108,7 +117,19 @@ class EquipmentsPage(QWidget):
 
         self._setup_empty_details_click_targets()
 
+        self._setup_name_field_click()
+
         self._connect_signals()
+
+
+
+    def _equipment_id(self) -> str:
+
+        if self._selected_row is None:
+
+            return ""
+
+        return str(self.tracker.equipment_row_to_dict(self._selected_row).get("id", ""))
 
 
 
@@ -171,7 +192,9 @@ class EquipmentsPage(QWidget):
         )
 
         self.ui.btn_open_support_docs.setToolTip(
-            "Open this equipment folder (datasheet + image), or all equipment folders"
+
+            "Open this equipment folder (datasheet + image)"
+
         )
 
         self.ui.btn_add_support_doc.setToolTip("Add a document to the support folder")
@@ -240,8 +263,6 @@ class EquipmentsPage(QWidget):
 
             ("row_val_serial_number", "val_serial_number"),
 
-            ("row_val_name", "val_name"),
-
             ("row_val_description", "val_description"),
 
             ("row_val_calibration", "val_calibration"),
@@ -279,6 +300,162 @@ class EquipmentsPage(QWidget):
                 )
 
         self._refresh_empty_detail_cursor()
+
+
+
+    def _setup_name_field_click(self) -> None:
+
+        """Click Name to quick-edit when equipment is loaded."""
+
+        self._name_click_targets: list[QWidget] = []
+
+        row = getattr(self.ui, "row_val_name", None)
+
+        value = self.ui.val_name
+
+        value.setToolTip("Click to set or edit the equipment name")
+
+        title = getattr(self.ui, "title_val_name", None)
+
+        for widget in (row, value, title):
+
+            if widget is None:
+
+                continue
+
+            self._name_click_targets.append(widget)
+
+            widget.mousePressEvent = (  # type: ignore[method-assign]
+
+                lambda event, w=value: self._on_name_field_click(w, event)
+
+            )
+
+        self._refresh_name_field_cursor()
+
+
+
+    def _refresh_name_field_cursor(self) -> None:
+
+        clickable = (
+
+            self._selected_row is not None
+
+            or self._detail_value_empty(self.ui.val_name)
+
+        )
+
+        cursor = (
+
+            Qt.CursorShape.PointingHandCursor
+
+            if clickable
+
+            else Qt.CursorShape.ArrowCursor
+
+        )
+
+        for widget in getattr(self, "_name_click_targets", []):
+
+            widget.setCursor(cursor)
+
+
+
+    def _on_name_field_click(self, value_widget: QWidget, _event) -> None:
+
+        if self._selected_row is not None:
+
+            self._edit_equipment_name()
+
+            return
+
+        if self._detail_value_empty(value_widget):
+
+            self.add_equipment()
+
+
+
+    def _edit_equipment_name(self) -> None:
+
+        if not self.main.validate_user():
+
+            return
+
+        if self._selected_row is None:
+
+            SiemensMessage.warning(
+
+                self,
+
+                "Warning",
+
+                "Search or select an equipment first.",
+
+            )
+
+            return
+
+        data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+        current = str(data.get("name", "")).strip()
+
+        new_name, accepted = QInputDialog.getText(
+
+            self,
+
+            "Equipment name",
+
+            "Name:",
+
+            text=current,
+
+        )
+
+        if not accepted:
+
+            self.set_status("Name edit cancelled.")
+
+            return
+
+        new_name = new_name.strip()
+
+        if new_name == current:
+
+            return
+
+        ok, message = self.tracker.update_equipment(
+
+            self._selected_row,
+
+            description=data["description"],
+
+            supplier_reference=data["supplier_reference"],
+
+            serial_number=data["serial_number"],
+
+            name=new_name,
+
+            calibration_date=data["calibration_date"],
+
+            calibration_expiration=data["calibration_expiration"],
+
+        )
+
+        if not ok:
+
+            SiemensMessage.warning(self, "Equipment", message)
+
+            self.set_status(message)
+
+            return
+
+        self._reload_selected_row()
+
+        self.show_equipment(self._selected_row)
+
+        self.set_status(message)
+
+        SiemensMessage.information(self, "Updated", message)
 
 
 
@@ -332,6 +509,8 @@ class EquipmentsPage(QWidget):
 
                 title.setCursor(cursor)
 
+        self._refresh_name_field_cursor()
+
 
 
     def _on_empty_detail_click(self, value_widget: QWidget, _event) -> None:
@@ -370,41 +549,6 @@ class EquipmentsPage(QWidget):
 
 
 
-    def _equipment_id(self) -> str:
-        if self._selected_row is None:
-            return ""
-        return str(self.tracker.equipment_row_to_dict(self._selected_row).get("id", ""))
-
-    def _prepare_equipment_folder(self, row) -> Path:
-        """Create data/equipments/{id}/ and move legacy datasheet/image into it."""
-        data = self.tracker.equipment_row_to_dict(row)
-        eq_id = data["id"]
-        folder = self._storage.ensure_equipment_dir(eq_id)
-
-        ds_name = str(data.get("datasheet", "")).strip()
-        if ds_name and not (folder / ds_name).is_file():
-            resolved = self._storage.resolve_datasheet(eq_id, ds_name)
-            if (
-                resolved is not None
-                and resolved.parent.resolve() != folder.resolve()
-            ):
-                ok, installed = self._storage.install_datasheet(resolved, eq_id)
-                if ok and installed != ds_name:
-                    self.tracker.link_equipment_datasheet(row, installed)
-
-        img_name = str(data.get("image", "")).strip()
-        if img_name and not (folder / img_name).is_file():
-            resolved = self._storage.resolve_image(eq_id, img_name)
-            if (
-                resolved is not None
-                and resolved.parent.resolve() != folder.resolve()
-            ):
-                ok, installed = self._storage.add_image(resolved, eq_id)
-                if ok and installed != img_name:
-                    self.tracker.link_equipment_image(row, installed)
-
-        return folder
-
     def _show_equipment_image(self, filename: str) -> None:
 
         name = str(filename).strip()
@@ -419,7 +563,11 @@ class EquipmentsPage(QWidget):
 
         eq_id = self._equipment_id()
 
-        path = self._storage.resolve_image(eq_id, name) if eq_id else None
+        path = (
+
+            self._equipment_images.resolve_path(name, eq_id) if eq_id else None
+
+        )
 
         if path is None:
 
@@ -483,7 +631,7 @@ class EquipmentsPage(QWidget):
 
         old_image = str(data.get("image", "")).strip()
 
-        ok, result = self._storage.add_image(source, data["id"])
+        ok, result = self._equipment_images.add_image(source, data["id"])
 
         if not ok:
 
@@ -495,7 +643,7 @@ class EquipmentsPage(QWidget):
 
         if old_image and old_image != result:
 
-            self._storage.remove_image_file(data["id"], old_image)
+            self._equipment_images.remove_image(old_image, data["id"])
 
         ok, message = self.tracker.link_equipment_image(self._selected_row, result)
 
@@ -569,7 +717,11 @@ class EquipmentsPage(QWidget):
 
             return
 
-        ok, remove_msg = self._storage.remove_image_file(data["id"], old_image)
+        ok, remove_msg = self._equipment_images.remove_image(
+
+            old_image, data["id"]
+
+        )
 
         if not ok:
 
@@ -667,7 +819,7 @@ class EquipmentsPage(QWidget):
 
         self.ui.btn_search.clicked.connect(self.search_equipment)
 
-        self.ui.supplier_ref_entry.returnPressed.connect(self._on_supplier_ref_scanned)
+        self.ui.supplier_ref_entry.returnPressed.connect(self.lookup_supplier_ref)
 
         self.ui.btn_scan_supplier_ref.clicked.connect(self.scan_supplier_ref)
 
@@ -700,6 +852,8 @@ class EquipmentsPage(QWidget):
     def _setup_copy_buttons(self) -> None:
 
         fields = (
+
+            ("btn_copy_supplier_ref", "supplier_ref_entry", "Supplier reference"),
 
             ("btn_copy_val_supplier_reference", "val_supplier_reference", "Supplier Reference"),
 
@@ -801,14 +955,6 @@ class EquipmentsPage(QWidget):
 
     @property
 
-    def val_name(self):
-
-        return self.ui.val_name
-
-
-
-    @property
-
     def val_description(self):
 
         return self.ui.val_description
@@ -835,8 +981,6 @@ class EquipmentsPage(QWidget):
 
         self._selected_row = row
 
-        folder = self._prepare_equipment_folder(row)
-
         data = self.tracker.equipment_row_to_dict(row)
 
         self.ui.supplier_ref_entry.setText(str(data["supplier_reference"]))
@@ -845,7 +989,7 @@ class EquipmentsPage(QWidget):
 
         self.ui.val_serial_number.setText(str(data["serial_number"]))
 
-        self.ui.val_name.setText(str(data["name"]))
+        self.ui.val_name.setText(str(data.get("name", "")))
 
         self.ui.val_description.setText(str(data["description"]))
 
@@ -857,29 +1001,21 @@ class EquipmentsPage(QWidget):
 
         self._set_datasheet_display(datasheet)
 
+        if open_datasheet and datasheet:
+
+            self._prompt_open_equipment_datasheet(datasheet)
+
         self._show_equipment_image(str(data.get("image", "")))
 
         if datasheet:
 
-            self.set_status(
-                f"Equipment loaded. Datasheet: {datasheet} — folder: {folder}"
-            )
-
-        elif open_datasheet:
-
-            self.set_status(f"No datasheet found. Folder: {folder}")
+            self.set_status(f"Equipment loaded. Datasheet: {datasheet}")
 
         else:
 
-            self.set_status(
-                f"Equipment loaded. Datasheet: (not linked) — folder: {folder}"
-            )
+            self.set_status("Equipment loaded. Datasheet: (not linked)")
 
         self._refresh_empty_detail_cursor()
-
-        if open_datasheet:
-
-            self._prompt_open_equipment_datasheet(datasheet)
 
 
 
@@ -951,22 +1087,6 @@ class EquipmentsPage(QWidget):
 
 
 
-    def _is_ignorable_scan(self, text: str) -> bool:
-        code = str(text or "").strip()
-        return bool(code) and len(code) <= _MAX_IGNORABLE_SCAN_LEN
-
-    def _clear_ignorable_scan(self) -> None:
-        self.ui.supplier_ref_entry.clear()
-        self.main.set_status("Short scan ignored — scan the part reference.")
-        self.ui.supplier_ref_entry.setFocus()
-
-    def _on_supplier_ref_scanned(self) -> None:
-        ref = self.ui.supplier_ref_entry.text().strip()
-        if self._is_ignorable_scan(ref):
-            self._clear_ignorable_scan()
-            return
-        self.lookup_supplier_ref()
-
     def scan_supplier_ref(self) -> None:
 
         if not self.main.validate_user():
@@ -989,10 +1109,6 @@ class EquipmentsPage(QWidget):
 
             return
 
-        if self._is_ignorable_scan(ref):
-            self._clear_ignorable_scan()
-            return
-
         self.lookup_supplier_ref()
 
 
@@ -1011,9 +1127,7 @@ class EquipmentsPage(QWidget):
 
             return
 
-        if self._is_ignorable_scan(ref):
-            self._clear_ignorable_scan()
-            return
+
 
         workbook = self.tracker.get_workbook()
 
@@ -1153,7 +1267,7 @@ class EquipmentsPage(QWidget):
 
 
 
-        self._refresh_after_save(payload, dialog=dialog)
+        self._refresh_after_save(payload)
 
         self.set_status(message)
 
@@ -1225,7 +1339,7 @@ class EquipmentsPage(QWidget):
 
 
 
-        self._refresh_after_save(payload, dialog=dialog)
+        self._refresh_after_save(payload)
 
         self.set_status(message)
 
@@ -1233,33 +1347,7 @@ class EquipmentsPage(QWidget):
 
 
 
-    def _sync_equipment_datasheet_file(self, row, dialog: EquipmentDialog) -> None:
-
-        data = self.tracker.equipment_row_to_dict(row)
-
-        eq_id = data["id"]
-
-        source = dialog.datasheet_source()
-
-        if source is not None and source.is_file():
-
-            ok, name = self._storage.install_datasheet(source, eq_id)
-
-            if ok:
-
-                self.tracker.link_equipment_datasheet(row, name)
-
-            return
-
-        name = str(dialog.payload().get("datasheet", "")).strip()
-
-        if not name or self._storage.resolve_datasheet(eq_id, name) is not None:
-
-            return
-
-
-
-    def _refresh_after_save(self, payload: dict, *, dialog: EquipmentDialog | None = None) -> None:
+    def _refresh_after_save(self, payload: dict) -> None:
 
         workbook = self.tracker.get_workbook()
 
@@ -1301,10 +1389,6 @@ class EquipmentsPage(QWidget):
 
         if row is not None:
 
-            if dialog is not None:
-
-                self._sync_equipment_datasheet_file(row, dialog)
-
             self.show_equipment(row)
 
 
@@ -1317,13 +1401,15 @@ class EquipmentsPage(QWidget):
 
             return
 
-        if self._storage.document_for_datasheet(self._equipment_id(), name) is None:
+        document = self._storage.document_for_datasheet(self._equipment_id(), name)
+
+        if document is None:
 
             self.set_status(f"Datasheet not found: {name}")
 
             return
 
-        if SiemensConfirmDialog.ask(
+        if not SiemensConfirmDialog.ask(
 
             "Open datasheet",
 
@@ -1332,26 +1418,6 @@ class EquipmentsPage(QWidget):
             self,
 
         ):
-
-            self._open_equipment_datasheet_file(name)
-
-
-
-    def _open_equipment_datasheet_file(self, filename: str) -> None:
-
-        name = str(filename).strip()
-
-        if not name:
-
-            return
-
-        eq_id = self._equipment_id()
-
-        document = self._storage.document_for_datasheet(eq_id, name)
-
-        if document is None:
-
-            self.set_status(f"Datasheet not found: {name}")
 
             return
 
@@ -1413,19 +1479,7 @@ class EquipmentsPage(QWidget):
 
             return
 
-        source = Path(item.data(Qt.ItemDataRole.UserRole))
-
-        data = self.tracker.equipment_row_to_dict(self._selected_row)
-
-        ok_copy, filename = self._storage.install_datasheet(source, data["id"])
-
-        if not ok_copy:
-
-            SiemensMessage.warning(self, "Link datasheet", filename)
-
-            self.set_status(filename)
-
-            return
+        filename = Path(item.data(Qt.ItemDataRole.UserRole)).name
 
         ok, message = self.tracker.link_equipment_datasheet(self._selected_row, filename)
 
@@ -1509,9 +1563,11 @@ class EquipmentsPage(QWidget):
 
         if display and display != "(not linked)":
 
-            eq_id = self._equipment_id()
+            document = self._storage.document_for_datasheet(
 
-            document = self._storage.document_for_datasheet(eq_id, display)
+                self._equipment_id(), display
+
+            )
 
             if document is not None:
 
@@ -1553,9 +1609,9 @@ class EquipmentsPage(QWidget):
 
             return
 
-        self._prepare_equipment_folder(self._selected_row)
-
         eq_id = self._equipment_id()
+
+        self._storage.ensure_equipment_dir(eq_id)
 
         ok, message = self._storage.open_equipment_folder(eq_id)
 
@@ -1605,7 +1661,11 @@ class EquipmentsPage(QWidget):
 
         data = self.tracker.equipment_row_to_dict(self._selected_row)
 
-        ok, filename = self._storage.install_datasheet(Path(file_path), data["id"])
+        ok, filename = self._storage.install_datasheet(
+
+            Path(file_path), data["id"]
+
+        )
 
         if not ok:
 
@@ -1614,6 +1674,10 @@ class EquipmentsPage(QWidget):
             self.set_status(filename)
 
             return
+
+        self.set_status(f"Added {filename}.")
+
+        SiemensMessage.information(self, "Added", f"Added {filename}.")
 
         ok_link, link_msg = self.tracker.link_equipment_datasheet(
 
@@ -1628,8 +1692,6 @@ class EquipmentsPage(QWidget):
             self._set_datasheet_display(filename)
 
             self.set_status(f"Datasheet linked: {filename}")
-
-        SiemensMessage.information(self, "Added", f"Added {filename}.")
 
         self.search_support_document()
 
