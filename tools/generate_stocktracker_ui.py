@@ -14,17 +14,15 @@ from src.gui import styles  # noqa: E402
 from tools.gui_ui_builder import (  # noqa: E402
     PM,
     RS,
-    catalog_links_grid_xml,
-    component_details_grid_columns_xml,
-    component_image_preview_side_xml,
+    catalog_links_row_xml,
+    component_image_preview_xml,
     esc,
     header_side_margins_xml,
     input_btn_row_xml,
     input_row_xml,
     input_scan_copy_row_xml,
-    output_row_label_grid_xml,
-    output_row_value_grid_xml,
     page_grid_margins_xml,
+    output_row_xml,
     prop_string,
     stock_btn_row_xml,
     vertical_spacer_xml,
@@ -78,8 +76,7 @@ def build_ui() -> str:
 
     right = []
     rr = 0
-    detail_start = rr + 1
-    right.append(f"""          <item row="{rr}" column="0" colspan="5">
+    right.append(f"""          <item row="{rr}" column="0">
            <widget class="QLabel" name="label_details">
             <property name="styleSheet">
 {prop_string(styles.SECTION_TITLE_STYLE)}            </property>
@@ -94,19 +91,13 @@ def build_ui() -> str:
         ("val_description", "Description"),
         ("val_stock", "Current Stock"),
     ):
-        right.append(output_row_label_grid_xml(name, label, rr))
-        right.append(output_row_value_grid_xml(name, rr))
+        right.append(output_row_xml(name, label, rr))
         rr += 1
-    right.append(catalog_links_grid_xml(rr))
-    catalog_row = rr
+    right.append(catalog_links_row_xml(rr))
     rr += 1
-    right.append(
-        component_image_preview_side_xml(
-            detail_start,
-            catalog_row - detail_start,
-        )
-    )
-    right.append(vertical_spacer_xml("verticalSpacer_right", rr, col=0, height=12))
+    right.append(component_image_preview_xml(rr))
+    rr += 1
+    right.append(vertical_spacer_xml("verticalSpacer_right", rr, height=12))
 
     footer = "".join(
         [
@@ -225,7 +216,6 @@ def build_ui() -> str:
          <layout class="QGridLayout" name="gridLayout_right">
           <property name="topMargin"><number>15</number></property>
           <property name="verticalSpacing"><number>0</number></property>
-{component_details_grid_columns_xml()}
 {chr(10).join(right)}
          </layout>
         </widget>

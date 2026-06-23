@@ -4,7 +4,6 @@ from __future__ import annotations
 from src.gui import styles
 
 LW = styles.TEMPLATE_LABEL_MIN_WIDTH
-DLW = styles.COMPONENT_DETAIL_LABEL_WIDTH
 RS = styles.TEMPLATE_ROW_SPACING
 RM = styles.TEMPLATE_ROW_MARGINS
 PM = styles.TEMPLATE_PAGE_MARGINS
@@ -235,43 +234,6 @@ def stock_btn_row_xml(row: int) -> str:
     )
 
 
-def catalog_links_grid_xml(row: int) -> str:
-    """Catalog label + WEB / Datasheet buttons (Components grid layout)."""
-    return f"""          <item row="{row}" column="0">
-{detail_title_label_xml("label_catalog_links", "Catalog")}
-          </item>
-          <item row="{row}" column="2">
-           <widget class="QWidget" name="row_catalog_links" native="true">
-            <layout class="QHBoxLayout" name="layout_catalog_links">
-             <property name="spacing"><number>{RS}</number></property>
-             <property name="leftMargin"><number>0</number></property>
-             <property name="topMargin"><number>4</number></property>
-             <property name="rightMargin"><number>{RM[2]}</number></property>
-             <property name="bottomMargin"><number>4</number></property>
-             <item>
-              <widget class="QPushButton" name="btn_open_product">
-               <property name="minimumSize"><size><width>60</width><height>0</height></size></property>
-               <property name="maximumSize"><size><width>60</width><height>16777215</height></size></property>
-               <property name="toolTip"><string>Open product page on distributor site</string></property>
-               <property name="styleSheet">
-{prop_string(styles.BTN_COPY_STYLE)}               </property>
-               <property name="text"><string>WEB</string></property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_open_datasheet">
-               <property name="minimumSize"><size><width>124</width><height>0</height></size></property>
-               <property name="toolTip"><string>Open datasheet in browser</string></property>
-               <property name="styleSheet">
-{prop_string(styles.BTN_COPY_STYLE)}               </property>
-               <property name="text"><string>Datasheet</string></property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>"""
-
-
 def catalog_links_row_xml(row: int) -> str:
     """Compact WEB / Datasheet buttons; row hidden in runtime when no links."""
     return (
@@ -366,49 +328,6 @@ def output_row_wide_xml(name: str, label: str, row: int) -> str:
 {copy_btn_xml(f"btn_copy_{name}")}"""
         + ROW_CLOSE
     )
-
-
-def detail_title_label_xml(name: str, text: str) -> str:
-    return f"""           <widget class="QLabel" name="{name}">
-            <property name="minimumSize"><size><width>{DLW}</width><height>0</height></size></property>
-            <property name="maximumSize"><size><width>{DLW}</width><height>16777215</height></size></property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text"><string>{esc(text)}</string></property>
-           </widget>
-"""
-
-
-def output_row_label_grid_xml(name: str, label: str, row: int) -> str:
-    return f"""          <item row="{row}" column="0">
-{detail_title_label_xml(f"title_{name}", label)}
-          </item>"""
-
-
-def output_row_value_grid_xml(name: str, row: int) -> str:
-    top, bottom = RM[1], RM[3]
-    return f"""          <item row="{row}" column="2">
-           <widget class="QWidget" name="row_{name}" native="true">
-            <layout class="QHBoxLayout" name="layout_{name}">
-             <property name="spacing"><number>{RS}</number></property>
-             <property name="leftMargin"><number>0</number></property>
-             <property name="topMargin"><number>{top}</number></property>
-             <property name="rightMargin"><number>{RM[2]}</number></property>
-             <property name="bottomMargin"><number>{bottom}</number></property>
-             <item>
-              <widget class="QLabel" name="{name}">
-               <property name="styleSheet">
-{prop_string(styles.VALUE_FIELD_STYLE)}               </property>
-               <property name="text"><string></string></property>
-              </widget>
-             </item>
-{copy_btn_xml(f"btn_copy_{name}")}            </layout>
-           </widget>
-          </item>"""
 
 
 def output_row_xml(name: str, label: str, row: int) -> str:
@@ -542,38 +461,6 @@ def list_widget_row_xml(
           </item>"""
 
 
-def component_details_grid_columns_xml() -> str:
-    """Labels | offset | values | flex gap | image (flush right)."""
-    return """          <property name="columnStretch" stdset="0">
-           <number>0</number>
-           <number>0</number>
-           <number>0</number>
-           <number>1</number>
-           <number>0</number>
-          </property>"""
-
-
-def component_image_preview_side_xml(start_row: int, row_span: int) -> str:
-    w = styles.COMPONENT_IMAGE_PREVIEW_WIDTH
-    h = styles.COMPONENT_IMAGE_PREVIEW_HEIGHT
-    return f"""          <item row="{start_row}" column="4" rowspan="{row_span}" alignment="Qt::AlignmentFlag::AlignTop|Qt::AlignmentFlag::AlignRight">
-           <widget class="QLabel" name="component_image_preview">
-            <property name="minimumSize"><size><width>{w}</width><height>{h}</height></size></property>
-            <property name="maximumSize"><size><width>{w}</width><height>{h}</height></size></property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
-            <property name="styleSheet">
-{prop_string(styles.EQUIPMENT_IMAGE_PREVIEW_STYLE)}            </property>
-            <property name="text"><string>No image</string></property>
-           </widget>
-          </item>"""
-
-
 def component_image_preview_xml(row: int) -> str:
     return f"""          <item row="{row}" column="0" colspan="2">
            <widget class="QLabel" name="component_image_preview">
@@ -602,7 +489,7 @@ def equipment_image_panel_xml(row: int) -> str:
              <property name="bottomMargin"><number>9</number></property>
              <item>
               <widget class="QLabel" name="equipment_image_preview">
-               <property name="minimumSize"><size><width>{styles.EQUIPMENT_IMAGE_PREVIEW_MIN_WIDTH}</width><height>{styles.EQUIPMENT_IMAGE_PREVIEW_HEIGHT}</height></size></property>
+               <property name="minimumSize"><size><width>300</width><height>260</height></size></property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                  <horstretch>0</horstretch>
@@ -647,6 +534,38 @@ def equipment_image_panel_xml(row: int) -> str:
                   <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
                   <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
                  </spacer>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QWidget" name="equipment_location_panel" native="true">
+               <layout class="QVBoxLayout" name="layout_equipment_location_panel">
+                <property name="spacing"><number>4</number></property>
+                <property name="topMargin"><number>0</number></property>
+                <property name="bottomMargin"><number>0</number></property>
+                <item>
+                 <widget class="QLabel" name="label_equipment_location_title">
+                  <property name="text"><string>Location</string></property>
+                  <property name="styleSheet">
+{prop_string(styles.SUBSECTION_TITLE_STYLE)}                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="val_equipment_location">
+                  <property name="minimumSize"><size><width>0</width><height>28</height></size></property>
+                  <property name="wordWrap"><bool>true</bool></property>
+                  <property name="toolTip"><string>Click to set home location (when not on loan)</string></property>
+                  <property name="styleSheet">
+{prop_string(styles.VALUE_FIELD_STYLE)}                  </property>
+                  <property name="text"><string>(not set)</string></property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="chk_equipment_loaned">
+                  <property name="text"><string>Loaned</string></property>
+                  <property name="toolTip"><string>Mark equipment as loaned and record details</string></property>
+                 </widget>
                 </item>
                </layout>
               </widget>

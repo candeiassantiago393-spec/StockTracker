@@ -38,3 +38,16 @@ ROBERT_MAUSER_API_KEY = ""
 # RS COMPONENTS — key from RS portal; URL in src/core/suppliers/rs.py
 # =============================================================================
 RS_API_KEY = "YOUR_RS_API_KEY"
+
+# =============================================================================
+# CALIBRATION ALERTS — email when equipment calibration is about to expire
+# Gmail: use an App Password (https://myaccount.google.com/apppasswords)
+# =============================================================================
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 465
+SMTP_SECURITY = "ssl"  # ssl (port 465) | starttls (port 587) | auto
+SMTP_USER = "your.email@gmail.com"
+SMTP_PASSWORD = "YOUR_GMAIL_APP_PASSWORD"
+SMTP_FROM = ""  # optional; defaults to SMTP_USER
+CALIBRATION_ALERT_TO = "candeiassantiago393@gmail.com"
+CALIBRATION_ALERT_DAYS = 30  # alert when expiration is within this many days

@@ -3,7 +3,7 @@ import os
 import time
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QStringListModel, QThread, Signal, QUrl
+from PySide6.QtCore import Qt, QStringListModel, QThread, QTimer, Signal, QUrl
 from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QCompleter,
@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from src.core.calibration_alerts import run_calibration_alert_check
 from src.core.component_images import fetch_catalog_pixmap
 from src.core.stock import StockTracker
 from src.core.suppliers import supplier_label
@@ -134,6 +135,21 @@ class _CatalogImageLoader(QThread):
             self.loaded.emit(pixmap)
 
 
+class _CalibrationAlertWorker(QThread):
+    """Check calibration expiration and send alert emails off the UI thread."""
+
+    finished_check = Signal(object)
+
+    def __init__(self, tracker: StockTracker) -> None:
+        super().__init__()
+        self._tracker = tracker
+
+    def run(self) -> None:
+        result = run_calibration_alert_check(self._tracker)
+        if not self.isInterruptionRequested():
+            self.finished_check.emit(result)
+
+
 class _CatalogLinksLoader(QThread):
     """Resolve distributor WEB/DS links without blocking the UI."""
 
@@ -174,6 +190,8 @@ class StockTrackerWindow(QMainWindow):
         self._catalog_product_url = ""
         self._catalog_datasheet_url = ""
         self._catalog_url_last_open: dict[str, float] = {}
+        self._calibration_alert_worker: _CalibrationAlertWorker | None = None
+        self._setup_calibration_alerts()
         self._setup_autocompletes()
         self.ui.user_entry.setFocus()
 
@@ -198,26 +216,13 @@ class StockTrackerWindow(QMainWindow):
         self._equipments_page = EquipmentsPage(self.tracker, self)
         self._page_stack.addWidget(self._equipments_page)
 
-        # The User Name row overlays the top of the page area instead of taking
-        # its own full-width slot. This lets the right-hand column ("Equipment
-        # Details" / "Component Details") start level with User Name; the left
-        # column is offset down by the same amount so its content stays put.
         body_wrap = QWidget(self.ui.centralwidget)
         body_grid = QGridLayout(body_wrap)
         body_grid.setContentsMargins(0, 0, 0, 0)
         body_grid.setSpacing(0)
         body_grid.addWidget(self._page_stack, 0, 0)
-        body_grid.addWidget(user_wrap, 0, 0, Qt.AlignmentFlag.AlignTop)
-        self.ui.verticalLayout.insertWidget(body_index + 1, body_wrap)
-
-        band = user_wrap.sizeHint().height()
-        self._offset_left_column(self.ui.gridLayout_left, band)
-        equipments_left = self._equipments_page.findChild(
-            QWidget, "container_equipments_left"
-        )
-        if equipments_left is not None:
-            self._offset_left_column(equipments_left.layout(), band)
-        user_wrap.raise_()
+        self.ui.verticalLayout.insertWidget(body_index + 1, user_wrap)
+        self.ui.verticalLayout.insertWidget(body_index + 2, body_wrap)
 
         header_layout = self.ui.horizontalLayout_header
         header_layout.addItem(
@@ -241,6 +246,55 @@ class StockTrackerWindow(QMainWindow):
         self._current_section = "components"
         self._show_components_page()
 
+    def _setup_calibration_alerts(self) -> None:
+        """Check equipment calibration expiry on startup and once per day."""
+        self._calibration_alert_timer = QTimer(self)
+        self._calibration_alert_timer.setInterval(24 * 60 * 60 * 1000)
+        self._calibration_alert_timer.timeout.connect(self._run_calibration_alert_check)
+        self._calibration_alert_timer.start()
+        QTimer.singleShot(3000, self._run_calibration_alert_check)
+
+    def _run_calibration_alert_check(self) -> None:
+        worker = self._calibration_alert_worker
+        if worker is not None and worker.isRunning():
+            return
+        self._calibration_alert_worker = _CalibrationAlertWorker(self.tracker)
+        self._calibration_alert_worker.finished_check.connect(
+            self._on_calibration_alerts_finished
+        )
+        self._calibration_alert_worker.start()
+
+    def _on_calibration_alerts_finished(self, result) -> None:
+        if result.sent_count > 0:
+            SiemensMessage.information(
+                self,
+                "Calibration alert",
+                (
+                    f"Sent {result.sent_count} calibration alert email(s) to "
+                    "candeiassantiago393@gmail.com."
+                ),
+            )
+            return
+        if result.expiring_count > 0 and result.failures:
+            SiemensMessage.information(
+                self,
+                "Calibration alert",
+                "Could not send calibration alert email:\n\n"
+                + "\n".join(result.failures),
+            )
+            return
+        if result.expiring_count > 0 and not result.smtp_configured:
+            SiemensMessage.information(
+                self,
+                "Calibration alert",
+                (
+                    f"{result.expiring_count} equipment item(s) have calibration "
+                    "expiring soon.\n\n"
+                    "Configure SMTP_HOST, SMTP_USER and SMTP_PASSWORD in "
+                    "config/secrets.py to send emails automatically."
+                ),
+            )
+
     def _apply_action_bar_labels(self, section: str) -> None:
         labels = _ACTION_LABELS[section]
         u = self.ui
@@ -258,7 +312,7 @@ class StockTrackerWindow(QMainWindow):
             )
 
     def _build_shared_user_row(self) -> QWidget:
-        """User Name — overlay above both pages (same slot as Components .ui)."""
+        """User Name — shared bar above Components / Equipments pages."""
         self.ui.gridLayout_left.removeWidget(self.ui.row_user_entry)
 
         for widget, new_row in (
@@ -274,21 +328,16 @@ class StockTrackerWindow(QMainWindow):
         self.ui.gridLayout_left.addItem(self.ui.verticalSpacer_left, 5, 1, 1, 1)
 
         user_wrap = QWidget(self.ui.centralwidget)
-        # Transparent so the overlay only shows the User Name row, never a panel
-        # covering the right column behind it.
-        user_wrap.setStyleSheet("background: transparent;")
-        grid = QGridLayout(user_wrap)
-        styles.apply_two_column_page_grid(grid)
-        grid.addWidget(self.ui.row_user_entry, 0, 0)
+        user_wrap.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Maximum,
+        )
+        layout = QHBoxLayout(user_wrap)
+        layout.setContentsMargins(*styles.TEMPLATE_PAGE_MARGINS)
+        layout.setSpacing(0)
+        layout.addWidget(self.ui.row_user_entry)
+        layout.addStretch()
         return user_wrap
-
-    @staticmethod
-    def _offset_left_column(layout, extra_top: int) -> None:
-        """Push a left-column grid down so its content clears the User Name row."""
-        if layout is None:
-            return
-        m = layout.contentsMargins()
-        layout.setContentsMargins(m.left(), m.top() + extra_top, m.right(), m.bottom())
 
     def _show_components_page(self) -> None:
         self._current_section = "components"

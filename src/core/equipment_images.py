@@ -1,4 +1,4 @@
-"""Equipment image helpers — files live under data/equipments/{id}/."""
+"""Equipment image helpers — files live under data/equipments/{id}-{name}/."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -18,18 +18,38 @@ class EquipmentImages:
         return self._storage.ensure_root()
 
     def resolve_path(
-        self, filename: str, equipment_id: str | int | None = None
+        self,
+        filename: str,
+        equipment_id: str | int | None = None,
+        *,
+        equipment_name: str = "",
     ) -> Path | None:
         if equipment_id is None:
             return None
-        return self._storage.resolve_image(equipment_id, filename)
+        return self._storage.resolve_image(
+            equipment_id, filename, equipment_name=equipment_name
+        )
 
-    def add_image(self, source: Path, equipment_id: str | int) -> tuple[bool, str]:
-        return self._storage.add_image(source, equipment_id)
+    def add_image(
+        self,
+        source: Path,
+        equipment_id: str | int,
+        *,
+        equipment_name: str = "",
+    ) -> tuple[bool, str]:
+        return self._storage.add_image(
+            source, equipment_id, equipment_name=equipment_name
+        )
 
     def remove_image(
-        self, filename: str, equipment_id: str | int | None = None
+        self,
+        filename: str,
+        equipment_id: str | int | None = None,
+        *,
+        equipment_name: str = "",
     ) -> tuple[bool, str]:
         if equipment_id is None:
             return True, ""
-        return self._storage.remove_image_file(equipment_id, filename)
+        return self._storage.remove_image_file(
+            equipment_id, filename, equipment_name=equipment_name
+        )

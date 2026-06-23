@@ -29,7 +29,7 @@ class EquipmentDialog(QDialog):
         )
         self.ui.calibration_expiration.setPlaceholderText("YYYY-MM-DD")
         self.ui.datasheet.setText(str(initial.get("datasheet", "")))
-        self.ui.datasheet.setPlaceholderText("Filename in data/equipments/{id}/")
+        self.ui.datasheet.setPlaceholderText("Filename in data/equipments/{id}-{name}/")
         self._datasheet_source: Path | None = None
         self._add_datasheet_browse_button()
 

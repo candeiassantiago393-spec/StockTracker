@@ -22,6 +22,7 @@ from . import styles
 
 from .confirm_dialog import SiemensConfirmDialog
 from .designer.gui_equipments import Ui_EquipmentsPage
+from .equipment_loan_dialog import EquipmentLoanDialog
 from .equipment_dialog import EquipmentDialog
 from .equipment_search_dialog import EquipmentSearchDialog
 from .message_dialog import SiemensMessage
@@ -33,6 +34,17 @@ _IMAGE_FILE_FILTER = (
 
 
 _IMAGE_PLACEHOLDER = "Drop image here"
+
+# value widget | Excel field key | dialog title | dialog label | date field
+_DETAIL_EDIT_FIELDS: tuple[tuple[str, str, str, str, bool], ...] = (
+    ("val_supplier_reference", "supplier_reference", "Supplier reference", "Supplier reference:", False),
+    ("val_serial_number", "serial_number", "Serial number", "Serial number:", False),
+    ("val_name", "name", "Equipment name", "Name:", False),
+    ("val_description", "description", "Description", "Description:", False),
+    ("val_calibration", "calibration_date", "Calibration date", "Calibration date (YYYY-MM-DD):", True),
+    ("val_expiration", "calibration_expiration", "Calibration expiration", "Expiration date (YYYY-MM-DD):", True),
+    ("val_datasheet", "datasheet", "Datasheet", "Datasheet filename:", False),
+)
 
 
 class _EquipmentImageDropFilter(QObject):
@@ -105,6 +117,8 @@ class EquipmentsPage(QWidget):
 
         self._doc_results: list[SupportDocument] = []
 
+        self._loan_checkbox_blocked = False
+
         self.ui = Ui_EquipmentsPage()
 
         self.ui.setupUi(self)
@@ -115,9 +129,9 @@ class EquipmentsPage(QWidget):
 
         self._setup_equipment_image()
 
-        self._setup_empty_details_click_targets()
+        self._setup_location_panel()
 
-        self._setup_name_field_click()
+        self._setup_detail_field_clicks()
 
         self._connect_signals()
 
@@ -130,6 +144,34 @@ class EquipmentsPage(QWidget):
             return ""
 
         return str(self.tracker.equipment_row_to_dict(self._selected_row).get("id", ""))
+
+
+
+    def _equipment_folder_key(self, row=None) -> tuple[str, str]:
+
+        target = row if row is not None else self._selected_row
+
+        if target is None:
+
+            return "", ""
+
+        data = self.tracker.equipment_row_to_dict(target)
+
+        return str(data["id"]), str(data.get("name", "")).strip()
+
+
+
+    def _sync_equipment_folder(self, row=None) -> Path:
+
+        target = row if row is not None else self._selected_row
+
+        if target is None:
+
+            return self._storage.ensure_root()
+
+        eq_id, eq_name = self._equipment_folder_key(target)
+
+        return self._storage.ensure_equipment_dir(eq_id, eq_name)
 
 
 
@@ -235,6 +277,286 @@ class EquipmentsPage(QWidget):
 
 
 
+    def _setup_location_panel(self) -> None:
+
+        label = self.ui.val_equipment_location
+
+        label.mousePressEvent = lambda event: self._on_location_click(event)  # type: ignore[method-assign]
+
+        self.ui.chk_equipment_loaned.stateChanged.connect(
+
+            self._on_loan_checkbox_changed
+
+        )
+
+        self._refresh_location_display(empty=True)
+
+
+
+    def _current_user(self) -> str:
+
+        return self.main.ui.user_entry.text().strip()
+
+
+
+    def _refresh_location_display(self, *, empty: bool = False) -> None:
+
+        chk = self.ui.chk_equipment_loaned
+
+        label = self.ui.val_equipment_location
+
+        self._loan_checkbox_blocked = True
+
+        if empty or self._selected_row is None:
+
+            label.setText("(not set)")
+
+            label.setToolTip("Load an equipment to see location")
+
+            label.setCursor(Qt.CursorShape.ArrowCursor)
+
+            chk.setChecked(False)
+
+            chk.setEnabled(False)
+
+            self._loan_checkbox_blocked = False
+
+            return
+
+        data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+        chk.setEnabled(True)
+
+        if data.get("loaned"):
+
+            loaned_to = str(data.get("loaned_to", "")).strip()
+
+            place = str(data.get("loan_place", "")).strip()
+
+            since = str(data.get("loan_since", "")).strip()
+
+            parts = [f"Loaned to {loaned_to} @ {place}"]
+
+            if since:
+
+                parts.append(f"since {since}")
+
+            home = str(data.get("location", "")).strip()
+
+            if home:
+
+                parts.append(f"(home: {home})")
+
+            label.setText(" — ".join(parts))
+
+            label.setToolTip("Equipment is on loan")
+
+            label.setCursor(Qt.CursorShape.ArrowCursor)
+
+            chk.setChecked(True)
+
+        else:
+
+            home = str(data.get("location", "")).strip() or "(not set)"
+
+            label.setText(home)
+
+            label.setToolTip("Click to set home location")
+
+            label.setCursor(Qt.CursorShape.PointingHandCursor)
+
+            chk.setChecked(False)
+
+        self._loan_checkbox_blocked = False
+
+
+
+    def _on_location_click(self, _event) -> None:
+
+        if self._selected_row is None:
+
+            return
+
+        data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+        if data.get("loaned"):
+
+            return
+
+        if not self.main.validate_user():
+
+            return
+
+        current = str(data.get("location", "")).strip()
+
+        new_location, accepted = QInputDialog.getText(
+
+            self,
+
+            "Equipment location",
+
+            "Home location (when not on loan):",
+
+            text=current,
+
+        )
+
+        if not accepted:
+
+            return
+
+        ok, message = self.tracker.set_equipment_location(
+
+            self._selected_row,
+
+            new_location.strip(),
+
+            user=self._current_user(),
+
+        )
+
+        if not ok:
+
+            SiemensMessage.warning(self, "Location", message)
+
+            self.set_status(message)
+
+            return
+
+        self._reload_selected_row()
+
+        self._refresh_location_display()
+
+        self.set_status(message)
+
+
+
+    def _on_loan_checkbox_changed(self, state: int) -> None:
+
+        if self._loan_checkbox_blocked:
+
+            return
+
+        if self._selected_row is None:
+
+            self._refresh_location_display(empty=True)
+
+            return
+
+        if not self.main.validate_user():
+
+            self._refresh_location_display()
+
+            return
+
+        checked = state == Qt.CheckState.Checked.value
+
+        data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+        user = self._current_user()
+
+        if checked:
+
+            dialog = EquipmentLoanDialog(
+
+                self,
+
+                initial=data,
+
+                title="Loan equipment",
+
+            )
+
+            if dialog.exec() != QDialog.DialogCode.Accepted:
+
+                self._refresh_location_display()
+
+                return
+
+            payload = dialog.payload()
+
+            ok, message = self.tracker.loan_equipment_out(
+
+                self._selected_row,
+
+                user=user,
+
+                loaned_to=payload["loaned_to"],
+
+                place=payload["loan_place"],
+
+                home_location=payload["location"],
+
+                notes=payload["notes"],
+
+            )
+
+            if not ok:
+
+                SiemensMessage.warning(self, "Loan", message)
+
+                self._refresh_location_display()
+
+                self.set_status(message)
+
+                return
+
+            self._reload_selected_row()
+
+            self._refresh_location_display()
+
+            self.set_status(message)
+
+            SiemensMessage.information(self, "Loaned", message)
+
+            return
+
+        if not data.get("loaned"):
+
+            return
+
+        if not SiemensConfirmDialog.ask(
+
+            "Return equipment",
+
+            "Mark this equipment as returned to its home location?",
+
+            self,
+
+        ):
+
+            self._refresh_location_display()
+
+            return
+
+        ok, message = self.tracker.return_equipment_loan(
+
+            self._selected_row,
+
+            user=user,
+
+        )
+
+        if not ok:
+
+            SiemensMessage.warning(self, "Return", message)
+
+            self._refresh_location_display()
+
+            self.set_status(message)
+
+            return
+
+        self._reload_selected_row()
+
+        self._refresh_location_display()
+
+        self.set_status(message)
+
+        SiemensMessage.information(self, "Returned", message)
+
+
+
     def _update_image_buttons(self) -> None:
 
         has_selection = self._selected_row is not None
@@ -253,209 +575,126 @@ class EquipmentsPage(QWidget):
 
 
 
-    def _setup_empty_details_click_targets(self) -> None:
+    def _setup_detail_field_clicks(self) -> None:
 
-        """Clicking empty Equipment Details fields opens Add Equipment dialog."""
+        """Click Equipment Details fields to quick-edit or open Add Equipment."""
 
-        pairs = (
+        self._detail_field_specs: dict[QWidget, dict] = {}
+        self._detail_field_click_targets: list[tuple[QWidget, QWidget]] = []
 
-            ("row_val_supplier_reference", "val_supplier_reference"),
-
-            ("row_val_serial_number", "val_serial_number"),
-
-            ("row_val_description", "val_description"),
-
-            ("row_val_calibration", "val_calibration"),
-
-            ("row_val_expiration", "val_expiration"),
-
-            ("row_val_datasheet", "val_datasheet"),
-
-        )
-
-        self._detail_click_targets: list[tuple[QWidget, QWidget]] = []
-
-        for row_name, value_name in pairs:
-
-            row = getattr(self.ui, row_name, None)
-
+        for value_name, data_key, title, label, is_date in _DETAIL_EDIT_FIELDS:
+            row = getattr(self.ui, f"row_{value_name}", None)
             value = getattr(self.ui, value_name, None)
-
             if row is None or value is None:
-
                 continue
 
-            self._detail_click_targets.append((row, value))
+            spec = {
+                "data_key": data_key,
+                "title": title,
+                "label": label,
+                "is_date": is_date,
+            }
+            self._detail_field_specs[value] = spec
+            self._detail_field_click_targets.append((row, value))
+            value.setToolTip(f"Click to set or edit {title.lower()}")
 
-            title = getattr(self.ui, f"title_{value_name}", None)
-
-            click_targets = [w for w in (row, value, title) if w is not None]
-
+            title_widget = getattr(self.ui, f"title_{value_name}", None)
+            click_targets = [w for w in (row, value, title_widget) if w is not None]
             for widget in click_targets:
-
                 widget.mousePressEvent = (  # type: ignore[method-assign]
-
-                    lambda event, w=value: self._on_empty_detail_click(w, event)
-
+                    lambda event, w=value: self._on_detail_field_click(w, event)
                 )
 
-        self._refresh_empty_detail_cursor()
+        self._refresh_detail_field_cursors()
 
+    def _detail_field_current_value(self, value_widget: QWidget, data: dict) -> str:
+        spec = self._detail_field_specs.get(value_widget)
+        if spec is None:
+            return self._widget_text(value_widget)
+        return str(data.get(spec["data_key"], "")).strip()
 
-
-    def _setup_name_field_click(self) -> None:
-
-        """Click Name to quick-edit when equipment is loaded."""
-
-        self._name_click_targets: list[QWidget] = []
-
-        row = getattr(self.ui, "row_val_name", None)
-
-        value = self.ui.val_name
-
-        value.setToolTip("Click to set or edit the equipment name")
-
-        title = getattr(self.ui, "title_val_name", None)
-
-        for widget in (row, value, title):
-
-            if widget is None:
-
-                continue
-
-            self._name_click_targets.append(widget)
-
-            widget.mousePressEvent = (  # type: ignore[method-assign]
-
-                lambda event, w=value: self._on_name_field_click(w, event)
-
-            )
-
-        self._refresh_name_field_cursor()
-
-
-
-    def _refresh_name_field_cursor(self) -> None:
-
-        clickable = (
-
-            self._selected_row is not None
-
-            or self._detail_value_empty(self.ui.val_name)
-
-        )
-
-        cursor = (
-
-            Qt.CursorShape.PointingHandCursor
-
-            if clickable
-
-            else Qt.CursorShape.ArrowCursor
-
-        )
-
-        for widget in getattr(self, "_name_click_targets", []):
-
-            widget.setCursor(cursor)
-
-
-
-    def _on_name_field_click(self, value_widget: QWidget, _event) -> None:
-
+    def _on_detail_field_click(self, value_widget: QWidget, _event) -> None:
         if self._selected_row is not None:
-
-            self._edit_equipment_name()
-
+            spec = self._detail_field_specs.get(value_widget)
+            if spec is not None:
+                self._edit_equipment_field(value_widget, spec)
             return
-
         if self._detail_value_empty(value_widget):
-
             self.add_equipment()
 
+    def _equipment_payload_from_row(self, data: dict) -> dict:
+        return {
+            "description": data["description"],
+            "supplier_reference": data["supplier_reference"],
+            "serial_number": data["serial_number"],
+            "name": data.get("name", ""),
+            "calibration_date": data["calibration_date"],
+            "calibration_expiration": data["calibration_expiration"],
+        }
 
-
-    def _edit_equipment_name(self) -> None:
-
+    def _edit_equipment_field(self, value_widget: QWidget, spec: dict) -> None:
         if not self.main.validate_user():
-
             return
-
         if self._selected_row is None:
-
             SiemensMessage.warning(
-
                 self,
-
                 "Warning",
-
                 "Search or select an equipment first.",
-
             )
-
             return
 
         data = self.tracker.equipment_row_to_dict(self._selected_row)
+        data_key = spec["data_key"]
+        current = self._detail_field_current_value(value_widget, data)
 
-        current = str(data.get("name", "")).strip()
-
-        new_name, accepted = QInputDialog.getText(
-
+        new_value, accepted = QInputDialog.getText(
             self,
-
-            "Equipment name",
-
-            "Name:",
-
+            spec["title"],
+            spec["label"],
             text=current,
-
         )
-
         if not accepted:
-
-            self.set_status("Name edit cancelled.")
-
+            self.set_status(f"{spec['title']} edit cancelled.")
             return
 
-        new_name = new_name.strip()
+        new_value = new_value.strip()
+        if spec["is_date"]:
+            ok, normalized = self.tracker.validate_date(new_value)
+            if not ok:
+                SiemensMessage.warning(
+                    self,
+                    "Equipment",
+                    "Invalid date (use YYYY-MM-DD or leave empty).",
+                )
+                return
+            new_value = normalized
 
-        if new_name == current:
-
+        if new_value == current:
             return
 
-        ok, message = self.tracker.update_equipment(
-
-            self._selected_row,
-
-            description=data["description"],
-
-            supplier_reference=data["supplier_reference"],
-
-            serial_number=data["serial_number"],
-
-            name=new_name,
-
-            calibration_date=data["calibration_date"],
-
-            calibration_expiration=data["calibration_expiration"],
-
-        )
+        payload = self._equipment_payload_from_row(data)
+        update_kwargs = dict(payload)
+        if data_key == "datasheet":
+            ok, message = self.tracker.update_equipment(
+                self._selected_row,
+                datasheet=new_value,
+                **payload,
+            )
+        else:
+            update_kwargs[data_key] = new_value
+            ok, message = self.tracker.update_equipment(
+                self._selected_row,
+                **update_kwargs,
+            )
 
         if not ok:
-
             SiemensMessage.warning(self, "Equipment", message)
-
             self.set_status(message)
-
             return
 
         self._reload_selected_row()
-
         self.show_equipment(self._selected_row)
-
         self.set_status(message)
-
-        SiemensMessage.information(self, "Updated", message)
 
 
 
@@ -483,43 +722,22 @@ class EquipmentsPage(QWidget):
 
 
 
-    def _refresh_empty_detail_cursor(self) -> None:
+    def _refresh_detail_field_cursors(self) -> None:
 
-        for row, value in getattr(self, "_detail_click_targets", []):
-
-            clickable = self._detail_value_empty(value)
-
-            cursor = (
-
-                Qt.CursorShape.PointingHandCursor
-
-                if clickable
-
-                else Qt.CursorShape.ArrowCursor
-
+        for row, value in getattr(self, "_detail_field_click_targets", []):
+            clickable = (
+                self._selected_row is not None or self._detail_value_empty(value)
             )
-
+            cursor = (
+                Qt.CursorShape.PointingHandCursor
+                if clickable
+                else Qt.CursorShape.ArrowCursor
+            )
             row.setCursor(cursor)
-
             value.setCursor(cursor)
-
             title = getattr(self.ui, f"title_{value.objectName()}", None)
-
             if title is not None:
-
                 title.setCursor(cursor)
-
-        self._refresh_name_field_cursor()
-
-
-
-    def _on_empty_detail_click(self, value_widget: QWidget, _event) -> None:
-
-        if not self._detail_value_empty(value_widget):
-
-            return
-
-        self.add_equipment()
 
 
 
@@ -561,11 +779,19 @@ class EquipmentsPage(QWidget):
 
             return
 
-        eq_id = self._equipment_id()
+        eq_id, eq_name = self._equipment_folder_key()
 
         path = (
 
-            self._equipment_images.resolve_path(name, eq_id) if eq_id else None
+            self._equipment_images.resolve_path(
+
+                name, eq_id, equipment_name=eq_name
+
+            )
+
+            if eq_id
+
+            else None
 
         )
 
@@ -631,7 +857,13 @@ class EquipmentsPage(QWidget):
 
         old_image = str(data.get("image", "")).strip()
 
-        ok, result = self._equipment_images.add_image(source, data["id"])
+        eq_name = str(data.get("name", "")).strip()
+
+        ok, result = self._equipment_images.add_image(
+
+            source, data["id"], equipment_name=eq_name
+
+        )
 
         if not ok:
 
@@ -643,7 +875,11 @@ class EquipmentsPage(QWidget):
 
         if old_image and old_image != result:
 
-            self._equipment_images.remove_image(old_image, data["id"])
+            self._equipment_images.remove_image(
+
+                old_image, data["id"], equipment_name=eq_name
+
+            )
 
         ok, message = self.tracker.link_equipment_image(self._selected_row, result)
 
@@ -719,7 +955,7 @@ class EquipmentsPage(QWidget):
 
         ok, remove_msg = self._equipment_images.remove_image(
 
-            old_image, data["id"]
+            old_image, data["id"], equipment_name=str(data.get("name", "")).strip()
 
         )
 
@@ -791,7 +1027,7 @@ class EquipmentsPage(QWidget):
 
         )
 
-        self._refresh_empty_detail_cursor()
+        self._refresh_detail_field_cursors()
 
 
 
@@ -981,6 +1217,8 @@ class EquipmentsPage(QWidget):
 
         self._selected_row = row
 
+        self._sync_equipment_folder(row)
+
         data = self.tracker.equipment_row_to_dict(row)
 
         self.ui.supplier_ref_entry.setText(str(data["supplier_reference"]))
@@ -1015,7 +1253,9 @@ class EquipmentsPage(QWidget):
 
             self.set_status("Equipment loaded. Datasheet: (not linked)")
 
-        self._refresh_empty_detail_cursor()
+        self._refresh_detail_field_cursors()
+
+        self._refresh_location_display()
 
 
 
@@ -1047,7 +1287,9 @@ class EquipmentsPage(QWidget):
 
         self._update_image_buttons()
 
-        self._refresh_empty_detail_cursor()
+        self._refresh_detail_field_cursors()
+
+        self._refresh_location_display(empty=True)
 
         self.set_status("")
 
@@ -1401,7 +1643,13 @@ class EquipmentsPage(QWidget):
 
             return
 
-        document = self._storage.document_for_datasheet(self._equipment_id(), name)
+        eq_id, eq_name = self._equipment_folder_key()
+
+        document = self._storage.document_for_datasheet(
+
+            eq_id, name, equipment_name=eq_name
+
+        )
 
         if document is None:
 
@@ -1563,9 +1811,11 @@ class EquipmentsPage(QWidget):
 
         if display and display != "(not linked)":
 
+            eq_id, eq_name = self._equipment_folder_key()
+
             document = self._storage.document_for_datasheet(
 
-                self._equipment_id(), display
+                eq_id, display, equipment_name=eq_name
 
             )
 
@@ -1609,11 +1859,15 @@ class EquipmentsPage(QWidget):
 
             return
 
-        eq_id = self._equipment_id()
+        eq_id, eq_name = self._equipment_folder_key(self._selected_row)
 
-        self._storage.ensure_equipment_dir(eq_id)
+        self._storage.ensure_equipment_dir(eq_id, eq_name)
 
-        ok, message = self._storage.open_equipment_folder(eq_id)
+        ok, message = self._storage.open_equipment_folder(
+
+            eq_id, equipment_name=eq_name
+
+        )
 
         if not ok:
 
@@ -1661,9 +1915,13 @@ class EquipmentsPage(QWidget):
 
         data = self.tracker.equipment_row_to_dict(self._selected_row)
 
+        data = self.tracker.equipment_row_to_dict(self._selected_row)
+
+        eq_name = str(data.get("name", "")).strip()
+
         ok, filename = self._storage.install_datasheet(
 
-            Path(file_path), data["id"]
+            Path(file_path), data["id"], equipment_name=eq_name
 
         )
 

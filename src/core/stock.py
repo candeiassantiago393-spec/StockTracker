@@ -58,6 +58,13 @@ EQ_COL_CALIB_DATE = 6
 EQ_COL_CALIB_EXPIRY = 7
 EQ_COL_DATASHEET = 8
 EQ_COL_IMAGE = 9
+EQ_COL_LOCATION = 10
+EQ_COL_LOANED = 11
+EQ_COL_LOANED_TO = 12
+EQ_COL_LOAN_PLACE = 13
+EQ_COL_LOAN_SINCE = 14
+
+SHEET_EQUIPMENT_LOANS = "EquipmentLoans"
 
 _CATALOG_LOOKUP_LOCK = threading.Lock()
 _MIN_PARTIAL_REF_LEN = 4  # avoid "X" matching "RMH05-DK-XX" via substring
@@ -148,13 +155,14 @@ class StockTracker:
         self.get_components_sheet(workbook)
         self.get_history_sheet(workbook)
         self.get_equipments_sheet(workbook)
+        self.get_equipment_loans_sheet(workbook)
         self._order_workbook_sheets(workbook)
         self._remove_default_sheet(workbook)
         return self.save_workbook(workbook)
 
     @staticmethod
     def _order_workbook_sheets(workbook) -> None:
-        order = (SHEET_COMPONENTS, SHEET_EQUIPMENTS, SHEET_HISTORY)
+        order = (SHEET_COMPONENTS, SHEET_EQUIPMENTS, SHEET_EQUIPMENT_LOANS, SHEET_HISTORY)
         for target_idx, name in enumerate(order):
             if name not in workbook.sheetnames:
                 continue
@@ -854,6 +862,11 @@ class StockTracker:
                 "Calibration Expiration Date",
                 "Datasheet",
                 "Image",
+                "Location",
+                "Loaned",
+                "Loaned To",
+                "Loan Place",
+                "Loan Since",
             ]
             if sheet.max_row == 0:
                 sheet.append(headers)
@@ -888,6 +901,91 @@ class StockTracker:
         if d1 == "Description":
             sheet.insert_cols(EQ_COL_NAME)
             sheet.cell(row=1, column=EQ_COL_NAME, value="Name")
+        loan_headers = {
+            EQ_COL_LOCATION: "Location",
+            EQ_COL_LOANED: "Loaned",
+            EQ_COL_LOANED_TO: "Loaned To",
+            EQ_COL_LOAN_PLACE: "Loan Place",
+            EQ_COL_LOAN_SINCE: "Loan Since",
+        }
+        for col, header in loan_headers.items():
+            current = str(sheet.cell(row=1, column=col).value or "").strip()
+            if sheet.max_column < col or not current:
+                sheet.cell(row=1, column=col, value=header)
+
+    def get_equipment_loans_sheet(self, workbook):
+        if SHEET_EQUIPMENT_LOANS not in workbook.sheetnames:
+            sheet = workbook.create_sheet(SHEET_EQUIPMENT_LOANS)
+        else:
+            sheet = workbook[SHEET_EQUIPMENT_LOANS]
+
+        if sheet.max_row == 0 or (
+            sheet.max_row == 1 and sheet["A1"].value is None
+        ):
+            headers = [
+                "Date",
+                "User",
+                "Equipment ID",
+                "Action",
+                "Loaned To",
+                "Place",
+                "Home Location",
+                "Notes",
+            ]
+            if sheet.max_row == 0:
+                sheet.append(headers)
+            else:
+                for col, value in enumerate(headers, start=1):
+                    sheet.cell(row=1, column=col, value=value)
+        return sheet
+
+    @staticmethod
+    def _loan_datetime_now() -> str:
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def _append_equipment_loan_record(
+        self,
+        workbook,
+        *,
+        user: str,
+        equipment_id: str | int,
+        action: str,
+        loaned_to: str = "",
+        place: str = "",
+        home_location: str = "",
+        notes: str = "",
+    ) -> None:
+        loans = self.get_equipment_loans_sheet(workbook)
+        loans.append([
+            self._loan_datetime_now(),
+            str(user).strip(),
+            str(equipment_id).strip(),
+            str(action).strip().upper(),
+            str(loaned_to).strip(),
+            str(place).strip(),
+            str(home_location).strip(),
+            str(notes).strip(),
+        ])
+
+    @staticmethod
+    def _equipment_cell_str(sheet, row_idx: int, column: int) -> str:
+        if sheet is None:
+            return ""
+        value = sheet.cell(row=row_idx, column=column).value
+        if value is None:
+            return ""
+        return str(value).strip()
+
+    def _equipment_loan_fields_from_sheet(self, sheet, row_idx: int) -> dict:
+        loaned_raw = self._equipment_cell_str(sheet, row_idx, EQ_COL_LOANED)
+        loaned = loaned_raw.lower() in {"yes", "y", "sim", "1", "true"}
+        return {
+            "location": self._equipment_cell_str(sheet, row_idx, EQ_COL_LOCATION),
+            "loaned": loaned,
+            "loaned_to": self._equipment_cell_str(sheet, row_idx, EQ_COL_LOANED_TO),
+            "loan_place": self._equipment_cell_str(sheet, row_idx, EQ_COL_LOAN_PLACE),
+            "loan_since": self._equipment_cell_str(sheet, row_idx, EQ_COL_LOAN_SINCE),
+        }
 
     @staticmethod
     def normalize_date(text) -> str:
@@ -971,6 +1069,7 @@ class StockTracker:
             calibration_expiration = sheet.cell(
                 row=row_idx, column=EQ_COL_CALIB_EXPIRY
             ).value
+            loan_fields = self._equipment_loan_fields_from_sheet(sheet, row_idx)
         else:
             name = row[3].value if len(row) > 3 else ""
             description = row[4].value if len(row) > 4 else ""
@@ -980,6 +1079,13 @@ class StockTracker:
                 datasheet = str(row[7].value).strip()
             if len(row) > 8 and row[8].value is not None:
                 image = str(row[8].value).strip()
+            loan_fields = {
+                "location": "",
+                "loaned": False,
+                "loaned_to": "",
+                "loan_place": "",
+                "loan_since": "",
+            }
         return {
             "id": row[0].value or "",
             "supplier_reference": row[1].value or "",
@@ -990,6 +1096,7 @@ class StockTracker:
             "calibration_expiration": self.normalize_date(calibration_expiration),
             "datasheet": datasheet,
             "image": image,
+            **loan_fields,
         }
 
     def next_equipment_id(self, sheet) -> int:
@@ -1157,6 +1264,99 @@ class StockTracker:
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
         return True, "Image removed."
+
+    def set_equipment_location(
+        self, row, location: str, *, user: str = ""
+    ) -> tuple[bool, str]:
+        location = str(location).strip()
+        workbook = self.get_workbook()
+        sheet = self.get_equipments_sheet(workbook)
+        row_idx = row[0].row
+        data = self.equipment_row_to_dict(row)
+        if data.get("loaned"):
+            return False, "Return the equipment before changing home location."
+        sheet.cell(row=row_idx, column=EQ_COL_LOCATION, value=location)
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Location updated."
+
+    def loan_equipment_out(
+        self,
+        row,
+        *,
+        user: str,
+        loaned_to: str,
+        place: str,
+        home_location: str = "",
+        notes: str = "",
+    ) -> tuple[bool, str]:
+        loaned_to = str(loaned_to).strip()
+        place = str(place).strip()
+        home_location = str(home_location).strip()
+        notes = str(notes).strip()
+        if not loaned_to:
+            return False, "Provide who received the equipment."
+        if not place:
+            return False, "Provide where the equipment is (Lab, Factory, etc.)."
+
+        workbook = self.get_workbook()
+        sheet = self.get_equipments_sheet(workbook)
+        row_idx = row[0].row
+        data = self.equipment_row_to_dict(row)
+        eq_id = data["id"]
+        if not home_location:
+            home_location = str(data.get("location", "")).strip()
+
+        since = self._loan_datetime_now()
+        sheet.cell(row=row_idx, column=EQ_COL_LOCATION, value=home_location)
+        sheet.cell(row=row_idx, column=EQ_COL_LOANED, value="Yes")
+        sheet.cell(row=row_idx, column=EQ_COL_LOANED_TO, value=loaned_to)
+        sheet.cell(row=row_idx, column=EQ_COL_LOAN_PLACE, value=place)
+        sheet.cell(row=row_idx, column=EQ_COL_LOAN_SINCE, value=since)
+        self._append_equipment_loan_record(
+            workbook,
+            user=user,
+            equipment_id=eq_id,
+            action="OUT",
+            loaned_to=loaned_to,
+            place=place,
+            home_location=home_location,
+            notes=notes,
+        )
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, f"Loaned to {loaned_to} @ {place} ({since})."
+
+    def return_equipment_loan(
+        self, row, *, user: str, notes: str = ""
+    ) -> tuple[bool, str]:
+        workbook = self.get_workbook()
+        sheet = self.get_equipments_sheet(workbook)
+        row_idx = row[0].row
+        data = self.equipment_row_to_dict(row)
+        if not data.get("loaned"):
+            return True, "Equipment is not on loan."
+
+        eq_id = data["id"]
+        home_location = str(data.get("location", "")).strip()
+        self._append_equipment_loan_record(
+            workbook,
+            user=user,
+            equipment_id=eq_id,
+            action="IN",
+            loaned_to=str(data.get("loaned_to", "")).strip(),
+            place=str(data.get("loan_place", "")).strip(),
+            home_location=home_location,
+            notes=notes,
+        )
+        sheet.cell(row=row_idx, column=EQ_COL_LOANED, value="No")
+        sheet.cell(row=row_idx, column=EQ_COL_LOANED_TO, value="")
+        sheet.cell(row=row_idx, column=EQ_COL_LOAN_PLACE, value="")
+        sheet.cell(row=row_idx, column=EQ_COL_LOAN_SINCE, value="")
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        label = home_location or "home"
+        return True, f"Equipment returned to {label}."
 
     def get_equipment_rows(
         self,

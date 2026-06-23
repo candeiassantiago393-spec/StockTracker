@@ -101,8 +101,8 @@ class Ui_PopupEquipmentHistory(object):
         self.verticalLayout.addWidget(self.widget)
 
         self.table_history = QTableWidget(self.container_main_body)
-        if (self.table_history.columnCount() < 6):
-            self.table_history.setColumnCount(6)
+        if (self.table_history.columnCount() < 7):
+            self.table_history.setColumnCount(7)
         __qtablewidgetitem = QTableWidgetItem()
         self.table_history.setHorizontalHeaderItem(0, __qtablewidgetitem)
         __qtablewidgetitem1 = QTableWidgetItem()
@@ -115,6 +115,8 @@ class Ui_PopupEquipmentHistory(object):
         self.table_history.setHorizontalHeaderItem(4, __qtablewidgetitem4)
         __qtablewidgetitem5 = QTableWidgetItem()
         self.table_history.setHorizontalHeaderItem(5, __qtablewidgetitem5)
+        __qtablewidgetitem6 = QTableWidgetItem()
+        self.table_history.setHorizontalHeaderItem(6, __qtablewidgetitem6)
         self.table_history.setObjectName(u"table_history")
         self.table_history.setMinimumSize(QSize(0, 280))
         self.table_history.setMaximumSize(QSize(16777215, 280))
@@ -242,11 +244,13 @@ class Ui_PopupEquipmentHistory(object):
         ___qtablewidgetitem2 = self.table_history.horizontalHeaderItem(2)
         ___qtablewidgetitem2.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Serial Number", None))
         ___qtablewidgetitem3 = self.table_history.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Description", None))
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Name", None))
         ___qtablewidgetitem4 = self.table_history.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Calibration Date", None))
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Description", None))
         ___qtablewidgetitem5 = self.table_history.horizontalHeaderItem(5)
-        ___qtablewidgetitem5.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Calibration Expiration", None))
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Calibration Date", None))
+        ___qtablewidgetitem6 = self.table_history.horizontalHeaderItem(6)
+        ___qtablewidgetitem6.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Calibration Expiration", None))
         self.btn_ok.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Close", None))
         self.btn_cancel.setText(QCoreApplication.translate("PopupEquipmentHistory", u"Cancel", None))
     # retranslateUi

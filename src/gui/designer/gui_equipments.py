@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout,
-    QLabel, QLineEdit, QListWidget, QListWidgetItem,
-    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGridLayout,
+    QHBoxLayout, QLabel, QLineEdit, QListWidget,
+    QListWidgetItem, QPushButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
 
 class Ui_EquipmentsPage(object):
     def setupUi(self, EquipmentsPage):
@@ -195,6 +195,31 @@ class Ui_EquipmentsPage(object):
 
         self.layout_supplier_ref_entry.addWidget(self.btn_scan_supplier_ref)
 
+        self.btn_copy_supplier_ref = QPushButton(self.row_supplier_ref_entry)
+        self.btn_copy_supplier_ref.setObjectName(u"btn_copy_supplier_ref")
+        self.btn_copy_supplier_ref.setMinimumSize(QSize(60, 0))
+        self.btn_copy_supplier_ref.setMaximumSize(QSize(60, 16777215))
+        self.btn_copy_supplier_ref.setStyleSheet(u"\n"
+"QPushButton {\n"
+"    min-width: 60px;\n"
+"    max-width: 60px;\n"
+"    padding: 4px 6px;\n"
+"    border-radius: 2px;\n"
+"    text-align: center;\n"
+"    background-color: #00CCCC;\n"
+"    color: #000028;\n"
+"    font-size: 12px;\n"
+"}\n"
+"QPushButton:hover {\n"
+"    background-color: #00FFB9;\n"
+"}\n"
+"QPushButton:pressed {\n"
+"    background-color: #00E5AA;\n"
+"}\n"
+"")
+
+        self.layout_supplier_ref_entry.addWidget(self.btn_copy_supplier_ref)
+
 
         self.gridLayout_container_equipments_left.addWidget(self.row_supplier_ref_entry, 2, 0, 1, 2)
 
@@ -206,7 +231,7 @@ class Ui_EquipmentsPage(object):
         self.layout_equipment_image_panel.setContentsMargins(-1, 9, 9, 9)
         self.equipment_image_preview = QLabel(self.equipment_image_panel)
         self.equipment_image_preview.setObjectName(u"equipment_image_preview")
-        self.equipment_image_preview.setMinimumSize(QSize(300, 320))
+        self.equipment_image_preview.setMinimumSize(QSize(300, 260))
         sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(1)
@@ -287,6 +312,57 @@ class Ui_EquipmentsPage(object):
 
 
         self.layout_equipment_image_panel.addWidget(self.row_equipment_image_buttons)
+
+        self.equipment_location_panel = QWidget(self.equipment_image_panel)
+        self.equipment_location_panel.setObjectName(u"equipment_location_panel")
+        self.layout_equipment_location_panel = QVBoxLayout(self.equipment_location_panel)
+        self.layout_equipment_location_panel.setSpacing(4)
+        self.layout_equipment_location_panel.setObjectName(u"layout_equipment_location_panel")
+        self.layout_equipment_location_panel.setContentsMargins(-1, 0, -1, 0)
+        self.label_equipment_location_title = QLabel(self.equipment_location_panel)
+        self.label_equipment_location_title.setObjectName(u"label_equipment_location_title")
+        self.label_equipment_location_title.setStyleSheet(u"\n"
+"QLabel {\n"
+"    font-size: 16px;\n"
+"    font-weight: bold;\n"
+"    padding-top: 4px;\n"
+"}\n"
+"")
+
+        self.layout_equipment_location_panel.addWidget(self.label_equipment_location_title)
+
+        self.val_equipment_location = QLabel(self.equipment_location_panel)
+        self.val_equipment_location.setObjectName(u"val_equipment_location")
+        self.val_equipment_location.setMinimumSize(QSize(0, 28))
+        self.val_equipment_location.setWordWrap(True)
+        self.val_equipment_location.setStyleSheet(u"\n"
+"QLabel {\n"
+"    min-width: 100px;\n"
+"    max-width: 100px;\n"
+"    max-height: 18px;\n"
+"    padding: 5px;\n"
+"    padding-bottom: 7px;\n"
+"    margin-top: 0px;\n"
+"    border-radius: 2px;\n"
+"    border: 1px solid #B3B3BE;\n"
+"    background-color: #00183B;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QLabel:hover {\n"
+"    background-color: #001F39;\n"
+"    border: 1px solid #00FFB9;\n"
+"}\n"
+"")
+
+        self.layout_equipment_location_panel.addWidget(self.val_equipment_location)
+
+        self.chk_equipment_loaned = QCheckBox(self.equipment_location_panel)
+        self.chk_equipment_loaned.setObjectName(u"chk_equipment_loaned")
+
+        self.layout_equipment_location_panel.addWidget(self.chk_equipment_loaned)
+
+
+        self.layout_equipment_image_panel.addWidget(self.equipment_location_panel)
 
 
         self.gridLayout_container_equipments_left.addWidget(self.equipment_image_panel, 3, 0, 1, 2)
@@ -1053,6 +1129,10 @@ class Ui_EquipmentsPage(object):
         self.label_supplier_ref_entry.setText(QCoreApplication.translate("EquipmentsPage", u"Scan Barcode / Supplier Ref.", None))
         self.btn_scan_supplier_ref.setText(QCoreApplication.translate("EquipmentsPage", u"SCAN", None))
 #if QT_CONFIG(tooltip)
+        self.btn_copy_supplier_ref.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Copy to clipboard", None))
+#endif // QT_CONFIG(tooltip)
+        self.btn_copy_supplier_ref.setText(QCoreApplication.translate("EquipmentsPage", u"Copy", None))
+#if QT_CONFIG(tooltip)
         self.equipment_image_preview.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Drag and drop an image file here", None))
 #endif // QT_CONFIG(tooltip)
         self.equipment_image_preview.setText(QCoreApplication.translate("EquipmentsPage", u"Drop image here", None))
@@ -1064,6 +1144,15 @@ class Ui_EquipmentsPage(object):
         self.btn_clear_equipment_image.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Delete equipment image", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_clear_equipment_image.setText(QCoreApplication.translate("EquipmentsPage", u"Delete", None))
+        self.label_equipment_location_title.setText(QCoreApplication.translate("EquipmentsPage", u"Location", None))
+#if QT_CONFIG(tooltip)
+        self.val_equipment_location.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Click to set home location (when not on loan)", None))
+#endif // QT_CONFIG(tooltip)
+        self.val_equipment_location.setText(QCoreApplication.translate("EquipmentsPage", u"(not set)", None))
+        self.chk_equipment_loaned.setText(QCoreApplication.translate("EquipmentsPage", u"Loaned", None))
+#if QT_CONFIG(tooltip)
+        self.chk_equipment_loaned.setToolTip(QCoreApplication.translate("EquipmentsPage", u"Mark equipment as loaned and record details", None))
+#endif // QT_CONFIG(tooltip)
         self.label_details.setText(QCoreApplication.translate("EquipmentsPage", u"Equipment Details", None))
         self.title_val_supplier_reference.setText(QCoreApplication.translate("EquipmentsPage", u"Supplier Reference", None))
         self.val_supplier_reference.setText("")

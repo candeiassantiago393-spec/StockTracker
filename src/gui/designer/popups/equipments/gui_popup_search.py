@@ -100,8 +100,8 @@ class Ui_PopupEquipmentSearch(object):
         self.verticalLayout.addWidget(self.widget)
 
         self.table_search = QTableWidget(self.container_main_body)
-        if (self.table_search.columnCount() < 5):
-            self.table_search.setColumnCount(5)
+        if (self.table_search.columnCount() < 6):
+            self.table_search.setColumnCount(6)
         __qtablewidgetitem = QTableWidgetItem()
         self.table_search.setHorizontalHeaderItem(0, __qtablewidgetitem)
         __qtablewidgetitem1 = QTableWidgetItem()
@@ -112,6 +112,8 @@ class Ui_PopupEquipmentSearch(object):
         self.table_search.setHorizontalHeaderItem(3, __qtablewidgetitem3)
         __qtablewidgetitem4 = QTableWidgetItem()
         self.table_search.setHorizontalHeaderItem(4, __qtablewidgetitem4)
+        __qtablewidgetitem5 = QTableWidgetItem()
+        self.table_search.setHorizontalHeaderItem(5, __qtablewidgetitem5)
         self.table_search.setObjectName(u"table_search")
         self.table_search.setMinimumSize(QSize(0, 280))
         self.table_search.setMaximumSize(QSize(16777215, 280))
@@ -236,11 +238,13 @@ class Ui_PopupEquipmentSearch(object):
         ___qtablewidgetitem1 = self.table_search.horizontalHeaderItem(1)
         ___qtablewidgetitem1.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Serial Number", None))
         ___qtablewidgetitem2 = self.table_search.horizontalHeaderItem(2)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Description", None))
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Name", None))
         ___qtablewidgetitem3 = self.table_search.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Calibration Date", None))
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Description", None))
         ___qtablewidgetitem4 = self.table_search.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Calibration Expiration", None))
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Calibration Date", None))
+        ___qtablewidgetitem5 = self.table_search.horizontalHeaderItem(5)
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Calibration Expiration", None))
         self.btn_ok.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Ok", None))
         self.btn_cancel.setText(QCoreApplication.translate("PopupEquipmentSearch", u"Cancel", None))
     # retranslateUi
