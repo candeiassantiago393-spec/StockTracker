@@ -11,5 +11,5 @@ Typical top-level sections:
 5. `## Modes` / `## Status` — bit masks or mode codes  
 6. `# Versions` / `## Current changes` / `# TODO`
 
-Stock Tracker equivalent: [`../PROJETO_STOCKTRACKER.md`](../PROJETO_STOCKTRACKER.md)  
+Stock Tracker equivalent: [`../especificacao/PROJETO_STOCKTRACKER.md`](../especificacao/PROJETO_STOCKTRACKER.md)  
 (Excel columns instead of Modbus registers; REST APIs instead of RS-485.)

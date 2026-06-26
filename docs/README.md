@@ -4,18 +4,18 @@
 
 | Audience | Document |
 |----------|----------|
-| **Portuguese (operators / GUI)** | [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md) |
+| **Portuguese (operators / GUI)** | [guias/GUIA_RAPIDO_PT.md](guias/GUIA_RAPIDO_PT.md) |
 | **English (commands)** | [user/COMMANDS.md](user/COMMANDS.md) |
 | **Run the app** | `python -m src.main` or `run.bat` |
 
 ---
 
-## Specification
+## Specification (`docs/especificacao/`)
 
 | Document | Content |
 |----------|---------|
-| [PROJETO_STOCKTRACKER.md](PROJETO_STOCKTRACKER.md) | Product specification (English, Siemens-style) |
-| [PROJETO_STOCKTRACKER_PT.md](PROJETO_STOCKTRACKER_PT.md) | Same specification in Portuguese |
+| [especificacao/PROJETO_STOCKTRACKER.md](especificacao/PROJETO_STOCKTRACKER.md) | Product specification (English, Siemens-style) |
+| [especificacao/PROJETO_STOCKTRACKER_PT.md](especificacao/PROJETO_STOCKTRACKER_PT.md) | Same specification in Portuguese |
 
 ---
 
@@ -35,6 +35,16 @@
 
 ---
 
+## Qt Designer (`docs/designer/`)
+
+| Document | Content |
+|----------|---------|
+| [designer/README.md](designer/README.md) | **Índice** — pacotes, estrutura, comandos |
+| [../src/gui/designer/README.md](../src/gui/designer/README.md) | Canonical `.ui` workflow |
+| [../StockTracker-Designer/LEIA-ME.txt](../StockTracker-Designer/LEIA-ME.txt) | Pacote Designer (PT) |
+
+---
+
 ## Fluxogramas (`docs/fluxogramas/`)
 
 | Documento | Conteúdo |
@@ -46,12 +56,19 @@
 
 ---
 
+## Layout (`docs/layout/`)
+
+| Document | Content |
+|----------|---------|
+| [layout/EQUIPMENTS_CAIXA_IMAGEM.md](layout/EQUIPMENTS_CAIXA_IMAGEM.md) | Equipments image box reference |
+
+---
+
 ## GUI module (Portuguese)
 
 | Document | Content |
 |----------|---------|
 | [../src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md) | GUI file map |
-| [../src/gui/designer/README.md](../src/gui/designer/README.md) | Designer `.ui` workflow |
 | [../src/gui/designer/EQUIPMENTS-LEIA-ME.txt](../src/gui/designer/EQUIPMENTS-LEIA-ME.txt) | Equipments in Qt Designer (PT) |
 
 ---
@@ -59,6 +76,14 @@
 ## Templates (`docs/modelos/`)
 
 Reference layouts for documentation style: [modelos/README.md](modelos/README.md).
+
+---
+
+## Roadmap (`docs/roadmap/`)
+
+| Document | Content |
+|----------|---------|
+| [roadmap/MELHORIAS_SUGERIDAS.md](roadmap/MELHORIAS_SUGERIDAS.md) | Ideias de evolução |
 
 ---
 
@@ -71,14 +96,6 @@ Reference layouts for documentation style: [modelos/README.md](modelos/README.md
 | `export-ui.bat` | Export `.ui` → `.py` |
 
 Full list: [../tools/README.md](../tools/README.md).
-
----
-
-## Roadmap / melhorias sugeridas
-
-| Document | Content |
-|----------|---------|
-| [MELHORIAS_SUGERIDAS.md](MELHORIAS_SUGERIDAS.md) | Ideias de evolução (cache imagens, stock mínimo, backup, etc.) |
 
 ---
 

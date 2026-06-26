@@ -54,4 +54,4 @@ Icones, fontes e widgets de referencia. A janela usa `designer/*.ui`; metricas e
 | `tools/sync_designer_package.ps1` | Atualiza `StockTracker-Designer/` (repo e/ou Desktop) |
 | `tools/ABRIR-DESIGNER.bat` | Abre Components ou Equipments no Designer |
 
-Documentacao: [docs/GUIA_RAPIDO_PT.md](../../docs/GUIA_RAPIDO_PT.md) · [designer/EQUIPMENTS-LEIA-ME.txt](designer/EQUIPMENTS-LEIA-ME.txt)
+Documentacao: [docs/guias/GUIA_RAPIDO_PT.md](../../docs/guias/GUIA_RAPIDO_PT.md) · [designer/EQUIPMENTS-LEIA-ME.txt](designer/EQUIPMENTS-LEIA-ME.txt)

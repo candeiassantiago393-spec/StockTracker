@@ -19,6 +19,7 @@ Generated modules (`gui_stocktracker.py`, `gui_equipments.py`, `popups/**/gui_po
 Reference: `src/gui/siemens_template/gui_template.ui`  
 Shared metrics: `src/gui/styles.py`, `tools/gui_ui_builder.py`  
 Portuguese Equipments guide: `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`  
+Documentation index: `docs/designer/README.md`  
 Flowcharts: `docs/fluxogramas/`
 
 ---

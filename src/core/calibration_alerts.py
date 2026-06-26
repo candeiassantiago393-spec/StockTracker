@@ -266,6 +266,16 @@ def send_calibration_alert_email(
     return True, f"Email sent to {recipient}."
 
 
+def count_expiring_equipment(
+    tracker: StockTracker,
+    *,
+    secrets: Mapping[str, object] | None = None,
+) -> int:
+    """Equipments with calibration expiring within the configured alert window."""
+    active_secrets = secrets if secrets is not None else tracker._secrets
+    return len(_iter_expiring_equipment(tracker, alert_days=_alert_days(active_secrets)))
+
+
 def run_calibration_alert_check(
     tracker: StockTracker,
     *,

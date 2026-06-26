@@ -1,11 +1,11 @@
 """Stock Tracker main window — uses StockTracker from src.core.stock."""
-import os
 import time
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QStringListModel, QThread, QTimer, Signal, QUrl
 from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
+    QComboBox,
     QCompleter,
     QDialog,
     QGridLayout,
@@ -21,9 +21,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.core.calibration_alerts import run_calibration_alert_check
+from src.core.calibration_alerts import count_expiring_equipment, run_calibration_alert_check
 from src.core.component_images import fetch_catalog_pixmap
-from src.core.stock import StockTracker
+from src.core.excel_open import launch_excel
+from src.core.stock import (
+    SHEET_COMPONENTS,
+    SHEET_EQUIPMENTS,
+    SHEET_GENERIC,
+    StockTracker,
+)
 from src.core.suppliers import supplier_label
 from src.core.suppliers.base import SupplierId
 
@@ -33,10 +39,17 @@ from .confirm_dialog import SiemensConfirmDialog
 from .message_dialog import SiemensMessage
 from .edit_component_dialog import EditComponentDialog
 from .history_dialog import HistoryDialog
+from .location_combo import (
+    format_locations_display,
+    locations_tooltip,
+    pick_locations,
+)
 from .manual_component_dialog import ManualComponentDialog
 from .search_results_dialog import SearchResultsDialog
 from .equipments_page import EquipmentsPage
 from .equipments_table_dialog import EquipmentsTableDialog
+from .components_massive_mode import ComponentsMassiveMode
+from .statistics_page import StatisticsPage
 from .user_name_dialog import UserNameDialog
 
 from . import styles
@@ -55,6 +68,12 @@ _ACTION_LABELS = {
         "history_all": "Last 20",
         "history_item": "Eq. hist.",
         "manual": "ADD MANUAL",
+        "edit": "EDIT",
+    },
+    "generic": {
+        "history_all": "Last 20",
+        "history_item": "Part hist.",
+        "manual": "ADD PASSIVE",
         "edit": "EDIT",
     },
 }
@@ -177,12 +196,12 @@ class StockTrackerWindow(QMainWindow):
         self.ui.setupUi(self)
         styles.apply_component_details_grid(self.ui.gridLayout_right)
         self._connect_signals()
-        self._setup_page_navigation()
         self._setup_open_excel_button()
         self._setup_copy_buttons()
         self._setup_empty_details_click_targets()
         self._setup_component_image_preview()
         self._setup_catalog_links()
+        self._setup_component_location_row()
         self._catalog_image_loader: _CatalogImageLoader | None = None
         self._catalog_image_token = 0
         self._catalog_links_loader: _CatalogLinksLoader | None = None
@@ -191,8 +210,13 @@ class StockTrackerWindow(QMainWindow):
         self._catalog_datasheet_url = ""
         self._catalog_url_last_open: dict[str, float] = {}
         self._calibration_alert_worker: _CalibrationAlertWorker | None = None
+        self._components_selected_row = None
         self._setup_calibration_alerts()
+        self._setup_page_navigation()
+        self._setup_inventory_mode()
         self._setup_autocompletes()
+        self._refresh_calibration_badge()
+        self._show_components_page()
         self.ui.user_entry.setFocus()
 
     def _setup_page_navigation(self) -> None:
@@ -215,6 +239,8 @@ class StockTrackerWindow(QMainWindow):
         self._page_stack.addWidget(self.ui.container_main_body)
         self._equipments_page = EquipmentsPage(self.tracker, self)
         self._page_stack.addWidget(self._equipments_page)
+        self._statistics_page = StatisticsPage(self.tracker, self)
+        self._page_stack.addWidget(self._statistics_page)
 
         body_wrap = QWidget(self.ui.centralwidget)
         body_grid = QGridLayout(body_wrap)
@@ -234,17 +260,28 @@ class StockTrackerWindow(QMainWindow):
             )
         )
 
+        self._calibration_badge = QLabel("", self.ui.header)
+        self._calibration_badge.setObjectName("calibration_badge")
+        self._calibration_badge.hide()
+        header_layout.addWidget(self._calibration_badge)
+
         self.btn_nav_components = QPushButton("COMPONENTS", self.ui.header)
         self.btn_nav_equipments = QPushButton("EQUIPMENTS", self.ui.header)
-        for btn in (self.btn_nav_components, self.btn_nav_equipments):
+        self.btn_nav_statistics = QPushButton("STATISTICS", self.ui.header)
+        for btn in (
+            self.btn_nav_components,
+            self.btn_nav_equipments,
+            self.btn_nav_statistics,
+        ):
             btn.setMinimumSize(124, 0)
             btn.setStyleSheet(styles.BTN_TEMPLATE_STYLE)
             header_layout.addWidget(btn)
 
         self.btn_nav_components.clicked.connect(self._show_components_page)
         self.btn_nav_equipments.clicked.connect(self._show_equipments_page)
+        self.btn_nav_statistics.clicked.connect(self._show_statistics_page)
         self._current_section = "components"
-        self._show_components_page()
+        # Defer _show_components_page() until inventory mode row exists.
 
     def _setup_calibration_alerts(self) -> None:
         """Check equipment calibration expiry on startup and once per day."""
@@ -265,6 +302,7 @@ class StockTrackerWindow(QMainWindow):
         self._calibration_alert_worker.start()
 
     def _on_calibration_alerts_finished(self, result) -> None:
+        self._refresh_calibration_badge()
         if result.sent_count > 0:
             SiemensMessage.information(
                 self,
@@ -295,6 +333,29 @@ class StockTrackerWindow(QMainWindow):
                 ),
             )
 
+    def _refresh_calibration_badge(self) -> None:
+        badge = getattr(self, "_calibration_badge", None)
+        if badge is None:
+            return
+        count = count_expiring_equipment(self.tracker)
+        if count <= 0:
+            badge.hide()
+            return
+        badge.setText(f"⚠ {count} calibration expiring")
+        badge.setToolTip(
+            "Equipment with calibration expiring within the configured alert window. "
+            "Open Equipments or Statistics for details."
+        )
+        badge.setStyleSheet(
+            "color: #FFB84D; font-size: 13px; font-weight: 600; padding: 0 14px;"
+        )
+        badge.show()
+
+    def _components_action_section(self) -> str:
+        if getattr(self, "_inventory_mode", "components") == "generic":
+            return "generic"
+        return "components"
+
     def _apply_action_bar_labels(self, section: str) -> None:
         labels = _ACTION_LABELS[section]
         u = self.ui
@@ -303,13 +364,101 @@ class StockTrackerWindow(QMainWindow):
         if hasattr(u, "btn_add_manual"):
             u.btn_add_manual.setText(labels["manual"])
             u.btn_add_manual.setToolTip(
-                "Add manual component" if section == "components" else "Add manual equipment"
+                "Add manual component"
+                if section == "components"
+                else "Add manual equipment"
+                if section == "equipments"
+                else "Add resistor or capacitor"
             )
         if hasattr(u, "btn_edit_component"):
             u.btn_edit_component.setText(labels["edit"])
             u.btn_edit_component.setToolTip(
-                "Edit component" if section == "components" else "Edit equipment"
+                "Edit component"
+                if section == "components"
+                else "Edit equipment"
+                if section == "equipments"
+                else "Edit passive item"
             )
+
+    def _set_nav_button_states(self, active: str) -> None:
+        self.btn_nav_components.setEnabled(active != "components")
+        self.btn_nav_equipments.setEnabled(active != "equipments")
+        self.btn_nav_statistics.setEnabled(active != "statistics")
+
+    def _set_inventory_chrome_visible(self, visible: bool) -> None:
+        self.ui.widget_actions.setVisible(visible)
+
+    def _setup_inventory_mode(self) -> None:
+        """Toggle Components vs Passive (R/C) inside the Components page."""
+        self._inventory_mode = "components"
+        self._massive_mode = ComponentsMassiveMode(self)
+        self._massive_mode.attach()
+
+        self._row_inventory_mode = QWidget()
+        row_layout = QHBoxLayout(self._row_inventory_mode)
+        row_layout.setContentsMargins(*styles.TEMPLATE_ROW_MARGINS)
+        row_layout.setSpacing(styles.TEMPLATE_ROW_SPACING)
+        mode_label = QLabel("Mode")
+        mode_label.setMinimumWidth(styles.TEMPLATE_LABEL_MIN_WIDTH)
+        self._inventory_mode_combo = QComboBox()
+        self._inventory_mode_combo.addItems(["Components", "Passive (R/C)"])
+        self._inventory_mode_combo.setMinimumWidth(styles.TEMPLATE_COMBO_MIN_SIZE[0])
+        row_layout.addWidget(mode_label)
+        row_layout.addWidget(self._inventory_mode_combo, 1)
+
+        grid = self.ui.gridLayout_left
+        for widget, new_row in (
+            (self.ui.row_search_entry, 2),
+            (self.ui.row_barcode_entry, 3),
+            (self.ui.row_quantity_entry, 4),
+            (self.ui.row_stock_buttons, 5),
+        ):
+            grid.removeWidget(widget)
+            grid.addWidget(widget, new_row, 0, 1, 2)
+        grid.removeItem(self.ui.verticalSpacer_left)
+        grid.addWidget(self._row_inventory_mode, 1, 0, 1, 2)
+        grid.addItem(self.ui.verticalSpacer_left, 6, 1, 1, 1)
+        self._inventory_mode_combo.currentIndexChanged.connect(
+            self._on_inventory_mode_changed
+        )
+
+    def _on_inventory_mode_changed(self, index: int) -> None:
+        self._inventory_mode = "generic" if index == 1 else "components"
+        self._massive_mode.set_active(self._inventory_mode == "generic")
+        self.ui.btn_scan.setVisible(self._inventory_mode == "components")
+        if self._current_section == "components":
+            self._apply_action_bar_labels(self._components_action_section())
+            self._reset_components_view_for_mode()
+        title = (
+            "Inventory — Components (Passive R/C)"
+            if self._inventory_mode == "generic"
+            else "Inventory — Components"
+        )
+        self.ui.tab1_title.setText(title)
+
+    def _reset_components_view_for_mode(self) -> None:
+        u = self.ui
+        u.search_entry.clear()
+        u.barcode_entry.clear()
+        u.quantity_entry.clear()
+        if self._inventory_mode == "generic":
+            self._massive_mode.clear_fields()
+            self._clear_catalog_links()
+            self._clear_component_image()
+            return
+        u.val_mouser.clear()
+        u.val_manufacturer.clear()
+        u.val_manufacturer_ref.clear()
+        u.val_description.clear()
+        u.val_stock.clear()
+        if hasattr(u, "val_location"):
+            u.val_location.clear()
+            u.val_location.setToolTip("")
+        self._components_selected_row = None
+        self._refresh_empty_detail_cursor()
+        self._clear_catalog_links()
+        self._clear_component_image()
+        self.set_status("")
 
     def _build_shared_user_row(self) -> QWidget:
         """User Name — shared bar above Components / Equipments pages."""
@@ -342,24 +491,35 @@ class StockTrackerWindow(QMainWindow):
     def _show_components_page(self) -> None:
         self._current_section = "components"
         self._page_stack.setCurrentIndex(0)
-        self.ui.tab1_title.setText("Inventory — Components")
-        self._apply_action_bar_labels("components")
-        self.btn_nav_components.setEnabled(False)
-        self.btn_nav_equipments.setEnabled(True)
-        self.set_status("")
+        self._row_inventory_mode.show()
+        self._set_inventory_chrome_visible(True)
+        self._apply_action_bar_labels(self._components_action_section())
+        self._set_nav_button_states("components")
+        self._on_inventory_mode_changed(self._inventory_mode_combo.currentIndex())
 
     def _show_equipments_page(self) -> None:
         self._current_section = "equipments"
         self._page_stack.setCurrentIndex(1)
+        self._row_inventory_mode.hide()
+        self._set_inventory_chrome_visible(True)
         self.ui.tab1_title.setText("Inventory — Equipments")
         self._apply_action_bar_labels("equipments")
-        self.btn_nav_components.setEnabled(True)
-        self.btn_nav_equipments.setEnabled(False)
+        self._set_nav_button_states("equipments")
         self.set_status("")
+
+    def _show_statistics_page(self) -> None:
+        self._current_section = "statistics"
+        self._page_stack.setCurrentIndex(2)
+        self._row_inventory_mode.hide()
+        self._set_inventory_chrome_visible(False)
+        self.ui.tab1_title.setText("Inventory — Statistics")
+        self._set_nav_button_states("statistics")
+        self._statistics_page.refresh()
+        self.set_status("Statistics loaded.")
 
     def _connect_signals(self):
         u = self.ui
-        u.btn_search.clicked.connect(self.search_component_manual)
+        u.btn_search.clicked.connect(self._on_search_clicked)
         u.btn_scan.clicked.connect(self.scan_component)
         u.btn_add_stock.clicked.connect(lambda: self.update_stock("IN"))
         u.btn_remove_stock.clicked.connect(lambda: self.update_stock("OUT"))
@@ -373,6 +533,20 @@ class StockTrackerWindow(QMainWindow):
         if hasattr(u, "btn_exit"):
             u.btn_exit.clicked.connect(self.close)
         u.barcode_entry.returnPressed.connect(self._on_barcode_scanned)
+
+    def _on_search_clicked(self) -> None:
+        if self._current_section != "components":
+            return
+        if self._inventory_mode == "generic":
+            self._massive_mode.search()
+            return
+        self.search_component_manual()
+
+    def _is_generic_mode(self) -> bool:
+        return (
+            self._current_section == "components"
+            and self._inventory_mode == "generic"
+        )
 
     @staticmethod
     def _is_ignorable_scan(text: str) -> bool:
@@ -408,6 +582,125 @@ class StockTrackerWindow(QMainWindow):
         self.btn_open_excel.clicked.connect(self.open_excel_file)
         actions_layout.insertWidget(actions_layout.indexOf(clear_btn), self.btn_open_excel)
 
+    def _detail_value_label_style(self) -> str:
+        sample = getattr(self.ui, "val_stock", None)
+        if sample is not None:
+            return sample.styleSheet()
+        return ""
+
+    def _detail_copy_button_style(self) -> str:
+        sample = getattr(self.ui, "btn_copy_val_stock", None)
+        if sample is not None:
+            return sample.styleSheet()
+        return styles.BTN_TEMPLATE_STYLE
+
+    def _setup_component_location_row(self) -> None:
+        """Location field for Components — inserted before catalog links row."""
+        container = self.ui.container_tab1_right
+        grid = self.ui.gridLayout_right
+        title_style = self.ui.title_val_stock.styleSheet()
+        label_width = styles.COMPONENT_DETAIL_LABEL_WIDTH
+
+        grid.removeWidget(self.ui.label_catalog_links)
+        grid.addWidget(self.ui.label_catalog_links, 7, 0, 1, 1)
+        grid.removeWidget(self.ui.row_catalog_links)
+        self.ui.layout_catalog_links.setContentsMargins(0, 6, 0, 0)
+        self.ui.row_catalog_links.setMinimumWidth(styles.COMPONENT_IMAGE_PREVIEW_WIDTH)
+        self.ui.row_catalog_links.setMaximumWidth(styles.COMPONENT_IMAGE_PREVIEW_WIDTH)
+        grid.addWidget(
+            self.ui.row_catalog_links,
+            7,
+            4,
+            1,
+            1,
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+        )
+        grid.removeItem(self.ui.verticalSpacer_right)
+        grid.addItem(self.ui.verticalSpacer_right, 8, 0, 1, 1)
+
+        self.ui.title_val_location = QLabel("Location", container)
+        self.ui.title_val_location.setObjectName("title_val_location")
+        self.ui.title_val_location.setMinimumWidth(label_width)
+        self.ui.title_val_location.setMaximumWidth(label_width)
+        self.ui.title_val_location.setStyleSheet(title_style)
+        grid.addWidget(self.ui.title_val_location, 6, 0, 1, 1)
+
+        self.ui.row_val_location = QWidget(container)
+        self.ui.row_val_location.setObjectName("row_val_location")
+        row_layout = QHBoxLayout(self.ui.row_val_location)
+        row_layout.setSpacing(6)
+        row_layout.setContentsMargins(0, 9, 9, 9)
+
+        value_style = self._detail_value_label_style()
+        self.ui.val_location = QLabel(self.ui.row_val_location)
+        self.ui.val_location.setObjectName("val_location")
+        self.ui.val_location.setStyleSheet(value_style)
+        self.ui.val_location.setToolTip("Click to set one or more shelves / drawers")
+        row_layout.addWidget(self.ui.val_location)
+
+        self.ui.btn_copy_val_location = QPushButton("Copy", self.ui.row_val_location)
+        self.ui.btn_copy_val_location.setObjectName("btn_copy_val_location")
+        self.ui.btn_copy_val_location.setMinimumSize(60, 0)
+        self.ui.btn_copy_val_location.setMaximumWidth(60)
+        self.ui.btn_copy_val_location.setStyleSheet(self._detail_copy_button_style())
+        row_layout.addWidget(self.ui.btn_copy_val_location)
+        grid.addWidget(self.ui.row_val_location, 6, 2, 1, 1)
+
+        self.ui.val_location.mousePressEvent = (  # type: ignore[method-assign]
+            lambda event: self._on_component_location_click(event)
+        )
+        self.ui.btn_copy_val_location.clicked.connect(
+            lambda: self._copy_to_clipboard(self.ui.val_location, "Location")
+        )
+
+        preview = getattr(self.ui, "component_image_preview", None)
+        if preview is not None and grid.indexOf(preview) >= 0:
+            grid.removeWidget(preview)
+            grid.addWidget(
+                preview,
+                1,
+                4,
+                6,
+                1,
+                Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+            )
+
+    def _on_component_location_click(self, _event) -> None:
+        if self._components_selected_row is None:
+            return
+        if not self.validate_user():
+            return
+        current_locations = self.tracker.parse_component_locations(
+            self.ui.val_location.text().strip()
+            if self.ui.val_location.text().strip() != "—"
+            else ""
+        )
+        if not current_locations and self._components_selected_row is not None:
+            data = self.tracker.row_to_dict(self._components_selected_row)
+            current_locations = list(data.get("locations") or [])
+
+        new_locations, accepted = pick_locations(
+            self,
+            self.tracker,
+            title="Component locations",
+            current=current_locations,
+        )
+        if not accepted:
+            return
+        ok, message = self.tracker.set_component_location(
+            self._components_selected_row,
+            new_locations,
+        )
+        if not ok:
+            SiemensMessage.warning(self, "Location", message)
+            self.set_status(message)
+            return
+        display = format_locations_display(new_locations)
+        tooltip = locations_tooltip(new_locations)
+        self.ui.val_location.setText(display)
+        self.ui.val_location.setToolTip(tooltip)
+        self.set_status(message)
+
     def _setup_component_image_preview(self) -> None:
         label = getattr(self.ui, "component_image_preview", None)
         if label is None:
@@ -425,7 +718,7 @@ class StockTrackerWindow(QMainWindow):
                 preview,
                 1,
                 4,
-                5,
+                6,
                 1,
                 Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
             )
@@ -433,11 +726,10 @@ class StockTrackerWindow(QMainWindow):
 
     def _setup_catalog_links(self) -> None:
         row = getattr(self.ui, "row_catalog_links", None)
-        if row is not None:
-            row.hide()
         btn_web = getattr(self.ui, "btn_open_product", None)
         btn_ds = getattr(self.ui, "btn_open_datasheet", None)
         if btn_web is not None:
+            btn_web.setText("WEB")
             btn_web.clicked.connect(
                 lambda: self._open_catalog_url(self._catalog_product_url, "product")
             )
@@ -449,6 +741,8 @@ class StockTrackerWindow(QMainWindow):
             btn_ds.clicked.connect(
                 lambda: self._open_catalog_url(self._catalog_datasheet_url, "datasheet")
             )
+        if row is not None:
+            row.show()
         self._clear_catalog_links()
 
     def _clear_catalog_links(self) -> None:
@@ -489,12 +783,12 @@ class StockTrackerWindow(QMainWindow):
         has_product = bool(self._catalog_product_url)
         has_datasheet = bool(self._catalog_datasheet_url)
         if row is not None:
-            row.setVisible(has_product or has_datasheet)
+            row.show()
         if btn_web is not None:
-            btn_web.setVisible(has_product)
+            btn_web.show()
             btn_web.setEnabled(has_product)
         if btn_ds is not None:
-            btn_ds.setVisible(has_datasheet)
+            btn_ds.show()
             btn_ds.setEnabled(has_datasheet)
 
     def _open_catalog_url(self, url: str, label: str) -> None:
@@ -694,6 +988,9 @@ class StockTrackerWindow(QMainWindow):
         u.val_manufacturer_ref.setText(manufacturer_ref)
         u.val_description.setText(self.tracker.part_description(part))
         u.val_stock.setText("0")
+        if hasattr(u, "val_location"):
+            u.val_location.setText("—")
+            u.val_location.setToolTip("")
         u.barcode_entry.setText(supplier_ref or manufacturer_ref or primary)
         self._refresh_empty_detail_cursor()
         self._set_catalog_links(
@@ -748,20 +1045,98 @@ class StockTrackerWindow(QMainWindow):
             return
         self.add_manual_component()
 
+    def _excel_focus_target(self) -> tuple[str, int, str] | None:
+        """Sheet name, Excel row, and column letter for the loaded item."""
+        if self._current_section == "equipments":
+            row = self._equipments_page._selected_row
+            if row is not None:
+                return SHEET_EQUIPMENTS, row[0].row, "B"
+            return None
+
+        if self._current_section != "components":
+            return None
+
+        if self._inventory_mode == "generic":
+            row = self._massive_mode._selected_row
+            if row is not None:
+                return SHEET_GENERIC, row[0].row, "C"
+            return self._excel_focus_generic_from_fields()
+
+        if self._components_selected_row is not None:
+            return SHEET_COMPONENTS, self._components_selected_row[0].row, "B"
+
+        code = self.ui.barcode_entry.text().strip()
+        mouser = self.ui.val_mouser.text().strip()
+        if not code and not mouser:
+            return None
+
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_components_sheet(workbook)
+        part = self.tracker.extract_part_number(code) if code else ""
+        row = self.tracker.find_component_any(
+            sheet,
+            part,
+            code,
+            mouser,
+            self.ui.val_manufacturer_ref.text().strip(),
+        )
+        if row is not None:
+            return SHEET_COMPONENTS, row[0].row, "B"
+        return None
+
+    def _excel_focus_generic_from_fields(self) -> tuple[str, int, str] | None:
+        """Resolve Generic row from loaded detail fields when selection exists in UI."""
+        labels = getattr(self._massive_mode, "_detail_labels", {})
+        if not labels:
+            return None
+
+        def _full_text(key: str) -> str:
+            widget = labels.get(key)
+            if widget is None:
+                return ""
+            return str(widget.toolTip() or widget.text() or "").strip().replace("—", "")
+
+        query = (
+            _full_text("name")
+            or _full_text("value")
+            or _full_text("supplier_reference")
+        )
+        if not query:
+            return None
+
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_massive_sheet(workbook)
+        matches = self.tracker.search_massive_all(sheet, query)
+        if len(matches) == 1:
+            self._massive_mode._selected_row = matches[0]
+            return SHEET_GENERIC, matches[0][0].row, "C"
+        return None
+
     def open_excel_file(self) -> None:
-        """Ensure all inventory sheets exist, then open stock.xlsx in Excel."""
+        """Open stock.xlsx; jump to the selected component/material cell."""
         if not self.tracker.ensure_workbook_sheets():
-            SiemensMessage.critical(
-                self,
-                "Excel file is open",
-                "Close stock.xlsx in Excel before updating sheets.",
-            )
-            return
-        try:
-            os.startfile(str(self.tracker.excel_file))
             self.set_status(
-                "Opened Excel (Components, Equipments, History)."
+                "Could not update Excel sheets (file may be open). "
+                "Opening anyway…"
             )
+        try:
+            focus = self._excel_focus_target()
+            if focus:
+                sheet_name, row_idx, column = focus
+                launch_excel(
+                    self.tracker.excel_file,
+                    sheet_name=sheet_name,
+                    row=row_idx,
+                    column=column,
+                )
+                self.set_status(
+                    f"Opened Excel — {sheet_name}, cell {column}{row_idx}."
+                )
+            else:
+                launch_excel(self.tracker.excel_file)
+                self.set_status(
+                    "Opened Excel. Load a component or material first to jump to its row."
+                )
         except Exception as exc:
             SiemensMessage.critical(
                 self,
@@ -834,8 +1209,8 @@ class StockTrackerWindow(QMainWindow):
         if isinstance(widget, QLineEdit):
             text = widget.text().strip()
         else:
-            text = widget.text().strip()
-        if not text:
+            text = widget.toolTip().strip() or widget.text().strip()
+        if not text or text == "—":
             self.set_status(f"Nothing to copy ({field_name}).")
             return
         QGuiApplication.clipboard().setText(text)
@@ -851,6 +1226,7 @@ class StockTrackerWindow(QMainWindow):
         return False
 
     def show_component(self, row, *, open_datasheet: bool = False) -> None:
+        self._components_selected_row = row
         data = self.tracker.row_to_dict(row)
         u = self.ui
         u.val_mouser.setText(str(data["mouser"]))
@@ -858,6 +1234,10 @@ class StockTrackerWindow(QMainWindow):
         u.val_manufacturer_ref.setText(str(data["manufacturer_ref"]))
         u.val_description.setText(str(data["description"]))
         u.val_stock.setText(str(data["stock"]))
+        locations = list(data.get("locations") or [])
+        if hasattr(u, "val_location"):
+            u.val_location.setText(format_locations_display(locations))
+            u.val_location.setToolTip(locations_tooltip(locations))
         self._refresh_empty_detail_cursor()
         refs = self._catalog_lookup_refs(data)
         self._refresh_catalog_links(refs, open_datasheet=open_datasheet)
@@ -872,11 +1252,17 @@ class StockTrackerWindow(QMainWindow):
         if self._current_section == "equipments":
             self.open_equipments_table(all_equipments=True)
             return
+        if self._is_generic_mode():
+            self._massive_mode.open_history_all()
+            return
         self.open_history(False)
 
     def open_history_filtered(self) -> None:
         if self._current_section == "equipments":
             self.open_equipments_table(all_equipments=False)
+            return
+        if self._is_generic_mode():
+            self._massive_mode.open_history_filtered()
             return
         self.open_history(True)
 
@@ -914,17 +1300,30 @@ class StockTrackerWindow(QMainWindow):
         if self._current_section == "equipments":
             self._equipments_page.add_equipment()
             return
+        if self._is_generic_mode():
+            self._massive_mode.add_item()
+            return
         self.add_manual_component()
 
     def edit_current_entry(self) -> None:
         if self._current_section == "equipments":
             self._equipments_page.edit_equipment()
             return
+        if self._is_generic_mode():
+            self._massive_mode.edit_item()
+            return
         self.edit_component()
 
     def clear_all_fields(self) -> None:
         if self._current_section == "equipments":
             self._equipments_page.clear_fields()
+            return
+        if self._is_generic_mode():
+            u = self.ui
+            u.search_entry.clear()
+            u.quantity_entry.clear()
+            self._massive_mode.clear_fields()
+            self.set_status("")
             return
 
         u = self.ui
@@ -936,6 +1335,10 @@ class StockTrackerWindow(QMainWindow):
         u.val_manufacturer_ref.clear()
         u.val_description.clear()
         u.val_stock.clear()
+        if hasattr(u, "val_location"):
+            u.val_location.clear()
+            u.val_location.setToolTip("")
+        self._components_selected_row = None
         self._refresh_empty_detail_cursor()
         self._clear_catalog_links()
         self._clear_component_image()
@@ -943,6 +1346,13 @@ class StockTrackerWindow(QMainWindow):
 
     def scan_component(self) -> None:
         if not self.validate_user():
+            return
+        if self._is_generic_mode():
+            SiemensMessage.warning(
+                self,
+                "Passive mode",
+                "SCAN is for catalog components. Use SEARCH for resistors/capacitors.",
+            )
             return
 
         code = self.ui.barcode_entry.text().strip()
@@ -1128,6 +1538,9 @@ class StockTrackerWindow(QMainWindow):
     def update_stock(self, movement: str) -> None:
         if not self.validate_user():
             return
+        if self._is_generic_mode():
+            self._massive_mode.update_stock(movement)
+            return
 
         code = self.ui.barcode_entry.text().strip()
         quantity_text = self.ui.quantity_entry.text().strip()
@@ -1234,6 +1647,7 @@ class StockTrackerWindow(QMainWindow):
             manufacturer_reference=payload["manufacturer_reference"],
             description=payload["description"],
             initial_stock=payload["initial_stock"],
+            location=payload.get("location", ""),
         )
 
         if not ok:
@@ -1296,6 +1710,7 @@ class StockTrackerWindow(QMainWindow):
             manufacturer=payload["manufacturer"],
             manufacturer_reference=payload["manufacturer_reference"],
             description=payload["description"],
+            location=payload.get("location", ""),
         )
         if not ok:
             SiemensMessage.critical(self, "Error", msg)

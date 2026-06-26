@@ -35,7 +35,8 @@ Runtime behaviour (catalog image, empty-field click → Add Manual) is in `stock
 Runtime behaviour (images, list visibility, drag & drop) is in `equipments_page.py`, not in the `.ui` alone.
 
 Full guide (PT): [EQUIPMENTS-LEIA-ME.txt](EQUIPMENTS-LEIA-ME.txt)  
-User guide (EN): [docs/user/QT_DESIGNER.md](../../../docs/user/QT_DESIGNER.md)
+User guide (EN): [docs/user/QT_DESIGNER.md](../../../docs/user/QT_DESIGNER.md)  
+Documentation index: [docs/designer/README.md](../../../docs/designer/README.md)
 
 ## Regenerate from Python (template-aligned)
 

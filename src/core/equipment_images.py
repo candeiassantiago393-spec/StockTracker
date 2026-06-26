@@ -30,6 +30,16 @@ class EquipmentImages:
             equipment_id, filename, equipment_name=equipment_name
         )
 
+    def list_images(
+        self,
+        equipment_id: str | int,
+        *,
+        equipment_name: str = "",
+    ) -> list[str]:
+        return self._storage.list_equipment_images(
+            equipment_id, equipment_name=equipment_name
+        )
+
     def add_image(
         self,
         source: Path,

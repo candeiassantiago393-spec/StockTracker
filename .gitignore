@@ -40,7 +40,12 @@ data/catalog_links/*
 
 # Relatorios temporarios
 tools/_reorg_out.txt
+tools/_tmp_*.png
 src/gui/_reorganize_report.txt
+
+# Settings and alert state (local runtime)
+data/app_settings.json
+data/calibration_alerts_sent.json
 
 # Cursor / screenshots locais
 assets/

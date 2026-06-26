@@ -161,6 +161,35 @@ QLabel:hover {
 
 STOCK_VALUE_STYLE = VALUE_FIELD_STYLE
 
+MODE_DETAIL_VALUE_WIDTH = 100
+MODE_DETAIL_VALUE_HEIGHT = 30
+
+
+def apply_mode_detail_value_label(label) -> None:
+    """Compact read-only field — matches standard Components detail bars."""
+    from PySide6.QtWidgets import QSizePolicy
+
+    label.setStyleSheet(VALUE_FIELD_STYLE)
+    label.setFixedSize(MODE_DETAIL_VALUE_WIDTH, MODE_DETAIL_VALUE_HEIGHT)
+    label.setWordWrap(False)
+    label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+
+def set_mode_detail_text(label, text: str) -> None:
+    """Single-line value; elide overflow and show full text in tooltip."""
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QFontMetrics
+
+    raw = str(text or "").strip() or "—"
+    metrics = QFontMetrics(label.font())
+    elided = metrics.elidedText(
+        raw,
+        Qt.TextElideMode.ElideRight,
+        max(label.width() - 8, 40),
+    )
+    label.setText(elided)
+    label.setToolTip("" if raw == "—" else raw)
+
 # Wider read-only fields (equipments description, etc.)
 EQUIPMENT_VALUE_FIELD_STYLE = """
 QLabel {

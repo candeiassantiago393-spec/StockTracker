@@ -5,7 +5,7 @@
 Stock Tracker — business layer (Excel inventory + distributor APIs).
 
 No GUI code in this module. The PySide6 layer in `src/gui/` uses `StockTracker`.
-See `docs/PROJETO_STOCKTRACKER.md` for data model and SCAN flow.
+See `docs/especificacao/PROJETO_STOCKTRACKER.md` for data model and SCAN flow.
 """
 
 ###############################################################################
@@ -14,11 +14,12 @@ See `docs/PROJETO_STOCKTRACKER.md` for data model and SCAN flow.
 import re
 import sys
 import threading
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
 from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font
 
 from .suppliers import search_part, supplier_label
 from .suppliers.base import SupplierId
@@ -40,10 +41,14 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from config.credentials import load_secrets
 
+from .app_settings import get_low_stock_threshold
+
 DATA_DIR = PROJECT_ROOT / "data"
 EXCEL_FILE = DATA_DIR / "stock.xlsx"
 
 SHEET_COMPONENTS = "Components"
+SHEET_GENERIC = "Generic"
+SHEET_MASSIVE_LEGACY = "Massive"  # legacy Excel sheet name (auto-renamed)
 SHEET_HISTORY = "History"
 SHEET_EQUIPMENTS = "Equipments"
 SHEET_MATERIALS_LEGACY = "Materials"  # legacy Excel sheet name (migration only)
@@ -64,7 +69,33 @@ EQ_COL_LOANED_TO = 12
 EQ_COL_LOAN_PLACE = 13
 EQ_COL_LOAN_SINCE = 14
 
+EQUIPMENT_IMAGE_SEPARATOR = ";"
+
 SHEET_EQUIPMENT_LOANS = "EquipmentLoans"
+
+COMP_COL_STOCK = 7
+COMP_COL_LOCATION = 8
+
+COMPONENT_LOCATION_SEPARATOR = ";"
+
+_LOW_STOCK_FONT = Font(color="FF0000", bold=True)
+_NORMAL_STOCK_FONT = Font(color="000000", bold=False)
+
+# Generic sheet columns (resistors, capacitors — high-volume passives)
+MASSIVE_COL_ID = 1
+MASSIVE_COL_TYPE = 2
+MASSIVE_COL_VALUE = 3
+MASSIVE_COL_TOLERANCE = 4
+MASSIVE_COL_PACKAGE = 5
+MASSIVE_COL_NAME = 6
+MASSIVE_COL_STOCK = 7
+MASSIVE_COL_SUPPLIER_REF = 8
+MASSIVE_COL_DIELECTRIC = 9
+MASSIVE_COL_VOLTAGE = 10
+MASSIVE_COL_NOTES = 11
+MASSIVE_COL_LOCATION = 12
+
+_MASSIVE_TYPES = frozenset({"R", "C"})
 
 _CATALOG_LOOKUP_LOCK = threading.Lock()
 _MIN_PARTIAL_REF_LEN = 4  # avoid "X" matching "RMH05-DK-XX" via substring
@@ -122,7 +153,39 @@ class StockTracker:
             sheet.append([
                 "ID", "Supplier Reference", "Manufacturer",
                 "Manufacturer Reference", "Value", "Description", "Stock",
+                "Location",
             ])
+        self._ensure_column_header(sheet, COMP_COL_LOCATION, "Location")
+        return sheet
+
+    def get_massive_sheet(self, workbook):
+        """Generic inventory sheet (resistors / capacitors)."""
+        if (
+            SHEET_GENERIC not in workbook.sheetnames
+            and SHEET_MASSIVE_LEGACY in workbook.sheetnames
+        ):
+            workbook[SHEET_MASSIVE_LEGACY].title = SHEET_GENERIC
+        if SHEET_GENERIC not in workbook.sheetnames:
+            sheet = workbook.create_sheet(SHEET_GENERIC)
+        else:
+            sheet = workbook[SHEET_GENERIC]
+
+        if sheet.max_row == 1 and sheet["A1"].value is None:
+            sheet.append([
+                "ID",
+                "Type",
+                "Value",
+                "Tolerance",
+                "Package",
+                "Name",
+                "Stock",
+                "Supplier Reference",
+                "Dielectric",
+                "Voltage",
+                "Notes",
+                "Location",
+            ])
+        self._ensure_column_header(sheet, MASSIVE_COL_LOCATION, "Location")
         return sheet
 
     def get_history_sheet(self, workbook):
@@ -138,10 +201,52 @@ class StockTracker:
             ])
         return history
 
+    @staticmethod
+    def _stock_cell_int(value) -> int | None:
+        if value is None or str(value).strip() == "":
+            return 0
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _apply_low_stock_formatting(self, workbook) -> None:
+        """Highlight Stock cells in red when at or below the configured threshold."""
+        threshold = self.low_stock_threshold
+        if SHEET_COMPONENTS in workbook.sheetnames:
+            sheet = workbook[SHEET_COMPONENTS]
+            for row_idx in range(2, sheet.max_row + 1):
+                if self.row_is_empty(
+                    tuple(sheet.iter_rows(min_row=row_idx, max_row=row_idx))[0]
+                ):
+                    continue
+                cell = sheet.cell(row=row_idx, column=COMP_COL_STOCK)
+                stock = self._stock_cell_int(cell.value)
+                cell.font = (
+                    _LOW_STOCK_FONT
+                    if stock is not None and stock <= threshold
+                    else _NORMAL_STOCK_FONT
+                )
+
+        if SHEET_GENERIC in workbook.sheetnames:
+            sheet = workbook[SHEET_GENERIC]
+            for row_idx in range(2, sheet.max_row + 1):
+                row = tuple(sheet.iter_rows(min_row=row_idx, max_row=row_idx))[0]
+                if self.row_is_empty(row) or self._massive_row_is_header(row):
+                    continue
+                cell = sheet.cell(row=row_idx, column=MASSIVE_COL_STOCK)
+                stock = self._stock_cell_int(cell.value)
+                cell.font = (
+                    _LOW_STOCK_FONT
+                    if stock is not None and stock <= threshold
+                    else _NORMAL_STOCK_FONT
+                )
+
     def save_workbook(self, workbook) -> bool:
         try:
             from .excel_backups import backup_excel_file
 
+            self._apply_low_stock_formatting(workbook)
             backup_excel_file(self.excel_file)
             workbook.save(self.excel_file)
             return True
@@ -153,6 +258,7 @@ class StockTracker:
         """Create Components, Equipments and History sheets if missing, then save."""
         workbook = self.get_workbook()
         self.get_components_sheet(workbook)
+        self.get_massive_sheet(workbook)
         self.get_history_sheet(workbook)
         self.get_equipments_sheet(workbook)
         self.get_equipment_loans_sheet(workbook)
@@ -162,7 +268,13 @@ class StockTracker:
 
     @staticmethod
     def _order_workbook_sheets(workbook) -> None:
-        order = (SHEET_COMPONENTS, SHEET_EQUIPMENTS, SHEET_EQUIPMENT_LOANS, SHEET_HISTORY)
+        order = (
+            SHEET_COMPONENTS,
+            SHEET_GENERIC,
+            SHEET_EQUIPMENTS,
+            SHEET_EQUIPMENT_LOANS,
+            SHEET_HISTORY,
+        )
         for target_idx, name in enumerate(order):
             if name not in workbook.sheetnames:
                 continue
@@ -178,6 +290,12 @@ class StockTracker:
         sheet = workbook["Sheet"]
         if sheet.max_row <= 1 and not sheet["A1"].value:
             workbook.remove(sheet)
+
+    @staticmethod
+    def _ensure_column_header(sheet, column: int, header: str) -> None:
+        current = str(sheet.cell(row=1, column=column).value or "").strip()
+        if not current:
+            sheet.cell(row=1, column=column, value=header)
 
     # ------------------------------------------------------------------
     # Search / barcode
@@ -352,12 +470,17 @@ class StockTracker:
         return items
 
     def row_to_dict(self, row) -> dict:
+        location = ""
+        if len(row) >= COMP_COL_LOCATION:
+            location = str(row[COMP_COL_LOCATION - 1].value or "").strip()
         return {
             "mouser": row[1].value or "",
             "manufacturer": row[2].value or "",
             "manufacturer_ref": row[3].value or "",
             "description": row[5].value or "",
             "stock": row[6].value if row[6].value is not None else 0,
+            "location": location,
+            "locations": self.parse_component_locations(location),
         }
 
     def component_exists(
@@ -393,6 +516,7 @@ class StockTracker:
         manufacturer_ref: str = "",
         description: str = "",
         stock: int = 0,
+        location: str = "",
     ) -> None:
         sheet.append([
             self.next_component_id(sheet),
@@ -402,6 +526,7 @@ class StockTracker:
             "",
             description,
             stock,
+            str(location or "").strip(),
         ])
 
     def _find_by_manufacturer_pair(
@@ -429,11 +554,17 @@ class StockTracker:
         manufacturer_reference: str = "",
         description: str = "",
         initial_stock: int = 0,
+        location: str = "",
     ) -> tuple[bool, str]:
         supplier_reference = str(supplier_reference).strip()
         manufacturer = str(manufacturer).strip()
         manufacturer_reference = str(manufacturer_reference).strip()
         description = str(description).strip()
+        location = str(location).strip()
+        if location:
+            location = self.format_component_locations(
+                self.parse_component_locations(location)
+            )
 
         if initial_stock < 0:
             return False, "Initial stock cannot be negative."
@@ -463,6 +594,7 @@ class StockTracker:
             manufacturer_ref=manufacturer_reference,
             description=description,
             stock=initial_stock,
+            location=location,
         )
 
         if initial_stock > 0:
@@ -481,11 +613,17 @@ class StockTracker:
         manufacturer: str = "",
         manufacturer_reference: str = "",
         description: str = "",
+        location: str = "",
     ) -> tuple[bool, str]:
         supplier_reference = str(supplier_reference).strip()
         manufacturer = str(manufacturer).strip()
         manufacturer_reference = str(manufacturer_reference).strip()
         description = str(description).strip()
+        location = str(location).strip()
+        if location:
+            location = self.format_component_locations(
+                self.parse_component_locations(location)
+            )
 
         if not supplier_reference and not (manufacturer and manufacturer_reference):
             return (
@@ -521,11 +659,642 @@ class StockTracker:
         row[2].value = manufacturer
         row[3].value = manufacturer_reference
         row[5].value = description
+        sheet.cell(row=target_row, column=COMP_COL_LOCATION, value=location)
 
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
 
         return True, "Component updated successfully."
+
+    @staticmethod
+    def parse_component_locations(value) -> list[str]:
+        text = str(value or "").strip()
+        if not text:
+            return []
+        if COMPONENT_LOCATION_SEPARATOR in text:
+            return [
+                part.strip()
+                for part in text.split(COMPONENT_LOCATION_SEPARATOR)
+                if part.strip()
+            ]
+        return [text]
+
+    @staticmethod
+    def format_component_locations(locations: list[str]) -> str:
+        names: list[str] = []
+        seen: set[str] = set()
+        for name in locations:
+            clean = str(name or "").strip()
+            if not clean:
+                continue
+            key = clean.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            names.append(clean)
+        return COMPONENT_LOCATION_SEPARATOR.join(names)
+
+    def set_component_location(
+        self, row, location: str | list[str]
+    ) -> tuple[bool, str]:
+        if isinstance(location, list):
+            value = self.format_component_locations(location)
+        else:
+            value = self.format_component_locations(
+                self.parse_component_locations(location)
+            )
+        workbook = self.get_workbook()
+        sheet = self.get_components_sheet(workbook)
+        sheet.cell(row=row[0].row, column=COMP_COL_LOCATION, value=value)
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        count = len(self.parse_component_locations(value))
+        if count == 0:
+            return True, "Location cleared."
+        if count == 1:
+            return True, "Location updated."
+        return True, f"{count} locations updated."
+
+    # ------------------------------------------------------------------
+    # Generic (resistors / capacitors — one row per spec)
+    # ------------------------------------------------------------------
+    @staticmethod
+    def normalize_massive_type(text) -> str:
+        value = str(text or "").strip().upper()
+        if value in ("RESISTOR", "RES", "R"):
+            return "R"
+        if value in ("CAPACITOR", "CAP", "C"):
+            return "C"
+        return value
+
+    @staticmethod
+    def build_massive_name(
+        part_type: str,
+        value: str,
+        tolerance: str,
+        package: str,
+        *,
+        dielectric: str = "",
+        voltage: str = "",
+    ) -> str:
+        kind = "Resistor" if part_type == "R" else "Capacitor" if part_type == "C" else "Part"
+        parts = [str(value or "").strip(), str(tolerance or "").strip(), str(package or "").strip()]
+        if part_type == "C":
+            for extra in (str(dielectric or "").strip(), str(voltage or "").strip()):
+                if extra:
+                    parts.append(extra)
+        label = " ".join(part for part in parts if part)
+        return f"{kind} {label}".strip()
+
+    @staticmethod
+    def massive_identity_key(
+        part_type: str,
+        value: str,
+        tolerance: str,
+        package: str,
+        dielectric: str = "",
+    ) -> str:
+        parts = (
+            StockTracker.normalize_massive_type(part_type),
+            StockTracker.normalize_ref(value),
+            StockTracker.normalize_ref(tolerance),
+            StockTracker.normalize_ref(package),
+        )
+        if StockTracker.normalize_massive_type(part_type) == "C":
+            parts = (*parts, StockTracker.normalize_ref(dielectric))
+        return "|".join(parts)
+
+    def _massive_row_is_header(self, row) -> bool:
+        return str(row[0].value or "").strip().upper() == "ID"
+
+    def massive_row_to_dict(self, row) -> dict:
+        try:
+            stock = int(row[6].value or 0)
+        except (TypeError, ValueError):
+            stock = 0
+        return {
+            "id": row[0].value or "",
+            "part_type": self.normalize_massive_type(row[1].value),
+            "value": str(row[2].value or "").strip(),
+            "tolerance": str(row[3].value or "").strip(),
+            "package": str(row[4].value or "").strip(),
+            "name": str(row[5].value or "").strip(),
+            "stock": stock,
+            "supplier_reference": str(row[7].value or "").strip(),
+            "dielectric": str(row[8].value or "").strip(),
+            "voltage": str(row[9].value or "").strip(),
+            "notes": str(row[10].value or "").strip(),
+            "location": (
+                str(row[MASSIVE_COL_LOCATION - 1].value or "").strip()
+                if len(row) >= MASSIVE_COL_LOCATION
+                else ""
+            ),
+        }
+
+    def next_massive_id(self, sheet) -> int:
+        max_id = 0
+        for row in sheet.iter_rows(min_row=2, min_col=1, max_col=1):
+            try:
+                max_id = max(max_id, int(row[0].value or 0))
+            except (TypeError, ValueError):
+                pass
+        return max_id + 1
+
+    def find_massive_by_identity(
+        self,
+        sheet,
+        part_type: str,
+        value: str,
+        tolerance: str,
+        package: str,
+        dielectric: str = "",
+    ):
+        target = self.massive_identity_key(
+            part_type, value, tolerance, package, dielectric=dielectric
+        )
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            data = self.massive_row_to_dict(row)
+            key = self.massive_identity_key(
+                data["part_type"],
+                data["value"],
+                data["tolerance"],
+                data["package"],
+                dielectric=data["dielectric"],
+            )
+            if key == target:
+                return row
+        return None
+
+    def search_massive_all(self, sheet, query: str) -> list:
+        """All Generic rows matching value, name, package, tolerance or supplier ref."""
+        results = []
+        q = self.normalize_ref(query)
+        if not q:
+            return results
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            data = self.massive_row_to_dict(row)
+            haystack = " ".join(
+                (
+                    data["part_type"],
+                    data["value"],
+                    data["tolerance"],
+                    data["package"],
+                    data["name"],
+                    data["supplier_reference"],
+                    data["dielectric"],
+                    data["voltage"],
+                    data["notes"],
+                    data["location"],
+                )
+            )
+            if q in self.normalize_ref(haystack):
+                results.append(row)
+        return results
+
+    def get_massive_rows(self, workbook, *, query: str = "") -> list:
+        sheet = self.get_massive_sheet(workbook)
+        matches = None
+        q = str(query or "").strip()
+        if q:
+            matches = set(id(row) for row in self.search_massive_all(sheet, q))
+        rows: list[tuple] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            if matches is not None and id(row) not in matches:
+                continue
+            data = self.massive_row_to_dict(row)
+            rows.append((
+                data["id"],
+                data["part_type"],
+                data["value"],
+                data["tolerance"],
+                data["package"],
+                data["name"],
+                data["stock"],
+            ))
+        return list(reversed(rows[-20:]))
+
+    def add_massive_item(
+        self,
+        user: str,
+        part_type: str,
+        value: str,
+        tolerance: str,
+        package: str,
+        *,
+        name: str = "",
+        initial_stock: int = 0,
+        supplier_reference: str = "",
+        dielectric: str = "",
+        voltage: str = "",
+        notes: str = "",
+        location: str = "",
+    ) -> tuple[bool, str]:
+        part_type = self.normalize_massive_type(part_type)
+        value = str(value).strip()
+        tolerance = str(tolerance).strip()
+        package = str(package).strip()
+        supplier_reference = str(supplier_reference).strip()
+        dielectric = str(dielectric).strip()
+        voltage = str(voltage).strip()
+        notes = str(notes).strip()
+        location = str(location).strip()
+        name = str(name).strip()
+
+        if part_type not in _MASSIVE_TYPES:
+            return False, "Type must be R (resistor) or C (capacitor)."
+        if not value:
+            return False, "Value is required (e.g. 10k, 100nF)."
+        if not package:
+            return False, "Package is required (e.g. 0603, 0805)."
+        if initial_stock < 0:
+            return False, "Initial stock cannot be negative."
+
+        if not name:
+            name = self.build_massive_name(
+                part_type,
+                value,
+                tolerance,
+                package,
+                dielectric=dielectric,
+                voltage=voltage,
+            )
+
+        workbook = self.get_workbook()
+        sheet = self.get_massive_sheet(workbook)
+        history = self.get_history_sheet(workbook)
+
+        if self.find_massive_by_identity(
+            sheet, part_type, value, tolerance, package, dielectric=dielectric
+        ):
+            return False, "A passive item with this spec already exists."
+
+        sheet.append([
+            self.next_massive_id(sheet),
+            part_type,
+            value,
+            tolerance,
+            package,
+            name,
+            initial_stock,
+            supplier_reference,
+            dielectric,
+            voltage,
+            notes,
+            location,
+        ])
+
+        if initial_stock > 0:
+            self.add_history(history, user, name, "IN", initial_stock, initial_stock)
+
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Passive item added successfully."
+
+    def update_massive_item(
+        self,
+        row,
+        part_type: str,
+        value: str,
+        tolerance: str,
+        package: str,
+        *,
+        name: str = "",
+        supplier_reference: str = "",
+        dielectric: str = "",
+        voltage: str = "",
+        notes: str = "",
+        location: str = "",
+    ) -> tuple[bool, str]:
+        part_type = self.normalize_massive_type(part_type)
+        value = str(value).strip()
+        tolerance = str(tolerance).strip()
+        package = str(package).strip()
+        supplier_reference = str(supplier_reference).strip()
+        dielectric = str(dielectric).strip()
+        voltage = str(voltage).strip()
+        notes = str(notes).strip()
+        location = str(location).strip()
+        name = str(name).strip()
+
+        if part_type not in _MASSIVE_TYPES:
+            return False, "Type must be R (resistor) or C (capacitor)."
+        if not value or not package:
+            return False, "Value and Package are required."
+
+        if not name:
+            name = self.build_massive_name(
+                part_type,
+                value,
+                tolerance,
+                package,
+                dielectric=dielectric,
+                voltage=voltage,
+            )
+
+        workbook = self.get_workbook()
+        sheet = self.get_massive_sheet(workbook)
+        target_row = row[0].row
+
+        duplicate = self.find_massive_by_identity(
+            sheet, part_type, value, tolerance, package, dielectric=dielectric
+        )
+        if duplicate is not None and duplicate[0].row != target_row:
+            return False, "Another passive item already uses this spec."
+
+        sheet.cell(row=target_row, column=MASSIVE_COL_TYPE, value=part_type)
+        sheet.cell(row=target_row, column=MASSIVE_COL_VALUE, value=value)
+        sheet.cell(row=target_row, column=MASSIVE_COL_TOLERANCE, value=tolerance)
+        sheet.cell(row=target_row, column=MASSIVE_COL_PACKAGE, value=package)
+        sheet.cell(row=target_row, column=MASSIVE_COL_NAME, value=name)
+        sheet.cell(row=target_row, column=MASSIVE_COL_SUPPLIER_REF, value=supplier_reference)
+        sheet.cell(row=target_row, column=MASSIVE_COL_DIELECTRIC, value=dielectric)
+        sheet.cell(row=target_row, column=MASSIVE_COL_VOLTAGE, value=voltage)
+        sheet.cell(row=target_row, column=MASSIVE_COL_NOTES, value=notes)
+        sheet.cell(row=target_row, column=MASSIVE_COL_LOCATION, value=location)
+
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Passive item updated successfully."
+
+    def update_massive_stock(
+        self,
+        user: str,
+        row,
+        quantity: int,
+        movement: str,
+    ) -> tuple[bool, str]:
+        if quantity <= 0:
+            return False, "Quantity must be greater than 0."
+
+        workbook = self.get_workbook()
+        sheet = self.get_massive_sheet(workbook)
+        history = self.get_history_sheet(workbook)
+        row_idx = row[0].row
+
+        fresh_row = None
+        for candidate in sheet.iter_rows(min_row=row_idx, max_row=row_idx):
+            if not self.row_is_empty(candidate) and not self._massive_row_is_header(candidate):
+                fresh_row = candidate
+                break
+        if fresh_row is None:
+            return False, "Passive item not found."
+
+        data = self.massive_row_to_dict(fresh_row)
+        current = int(data["stock"])
+        if movement == "IN":
+            new_stock = current + quantity
+        elif movement == "OUT":
+            if current < quantity:
+                return False, "Insufficient stock."
+            new_stock = current - quantity
+        else:
+            return False, "Invalid movement."
+
+        sheet.cell(row=row_idx, column=MASSIVE_COL_STOCK, value=new_stock)
+        history_ref = data["name"] or data["value"] or f"GENERIC-{data['id']}"
+        self.add_history(history, user, history_ref, movement, quantity, new_stock)
+
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Stock updated and history saved."
+
+    def get_known_locations(self, *, limit: int = 50) -> list[str]:
+        """Distinct locations already used, most frequent first."""
+        from collections import Counter
+
+        workbook = self.get_workbook()
+        counts: Counter[str] = Counter()
+
+        components = self.get_components_sheet(workbook)
+        for row in components.iter_rows(min_row=2, max_row=components.max_row):
+            if self.row_is_empty(row):
+                continue
+            if len(row) >= COMP_COL_LOCATION:
+                loc = str(row[COMP_COL_LOCATION - 1].value or "").strip()
+                for part in self.parse_component_locations(loc):
+                    counts[part] += 1
+
+        generic = self.get_massive_sheet(workbook)
+        for row in generic.iter_rows(min_row=2, max_row=generic.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            if len(row) >= MASSIVE_COL_LOCATION:
+                loc = str(row[MASSIVE_COL_LOCATION - 1].value or "").strip()
+                if loc:
+                    counts[loc] += 1
+
+        equipments = self.get_equipments_sheet(workbook)
+        for row in equipments.iter_rows(min_row=2, max_row=equipments.max_row):
+            if self.row_is_empty(row):
+                continue
+            loc = self._equipment_cell_str(
+                equipments, row[0].row, EQ_COL_LOCATION
+            ).strip()
+            if loc:
+                counts[loc] += 1
+
+        return [loc for loc, _ in counts.most_common(limit)]
+
+    # ------------------------------------------------------------------
+    # Statistics
+    # ------------------------------------------------------------------
+    LOW_STOCK_THRESHOLD = 10  # legacy default; use get_low_stock_threshold()
+
+    @property
+    def low_stock_threshold(self) -> int:
+        return get_low_stock_threshold()
+
+    def get_weekly_movement_stats(self, weeks: int = 8) -> list[dict]:
+        """IN/OUT totals grouped by ISO week (most recent last)."""
+        from collections import defaultdict
+
+        workbook = self.get_workbook()
+        history = self.get_history_sheet(workbook)
+        buckets: dict[str, dict[str, int]] = defaultdict(lambda: {"in": 0, "out": 0})
+
+        for row in history.iter_rows(min_row=2, values_only=True):
+            if not row or len(row) < 5:
+                continue
+            date_text = str(row[0] or "").strip()
+            movement = str(row[3] or "").strip().upper()
+            try:
+                qty = int(row[4] or 0)
+            except (TypeError, ValueError):
+                continue
+            if movement not in {"IN", "OUT"} or qty <= 0:
+                continue
+            try:
+                dt = datetime.strptime(date_text[:10], "%Y-%m-%d")
+            except ValueError:
+                continue
+            iso = dt.isocalendar()
+            label = f"{iso.year}-W{iso.week:02d}"
+            key = "in" if movement == "IN" else "out"
+            buckets[label][key] += qty
+
+        labels = sorted(buckets.keys())
+        if weeks > 0:
+            labels = labels[-weeks:]
+        return [
+            {"label": label, "in": buckets[label]["in"], "out": buckets[label]["out"]}
+            for label in labels
+        ]
+
+    @staticmethod
+    def _expiry_sort_key(expiry_str: str) -> tuple[int, date]:
+        text = str(expiry_str or "").strip()
+        if not text:
+            return (1, date.max)
+        normalized = StockTracker.normalize_date(text)
+        try:
+            return (0, datetime.strptime(normalized, "%Y-%m-%d").date())
+        except ValueError:
+            return (1, date.max)
+
+    def get_equipment_expiration_stats(self) -> list[dict]:
+        """Equipments sorted by calibration expiration (soonest first)."""
+        workbook = self.get_workbook()
+        sheet = self.get_equipments_sheet(workbook)
+        today = date.today()
+        items: list[dict] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            data = self.equipment_row_to_dict(row)
+            sort_key = self._expiry_sort_key(data.get("calibration_expiration", ""))
+            days_left = None
+            if sort_key[0] == 0:
+                days_left = (sort_key[1] - today).days
+            items.append({**data, "_sort": sort_key, "days_left": days_left})
+        items.sort(key=lambda item: item["_sort"])
+        for item in items:
+            item.pop("_sort", None)
+        return items
+
+    def get_low_stock_components(self, threshold: int | None = None) -> list[dict]:
+        """Components at or below stock threshold, lowest stock first."""
+        limit = self.low_stock_threshold if threshold is None else threshold
+        workbook = self.get_workbook()
+        sheet = self.get_components_sheet(workbook)
+        items: list[dict] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            data = self.row_to_dict(row)
+            try:
+                stock = int(data.get("stock") or 0)
+            except (TypeError, ValueError):
+                stock = 0
+            if stock > limit:
+                continue
+            label = (
+                str(data.get("description") or "").strip()
+                or str(data.get("mouser") or "").strip()
+                or str(data.get("manufacturer_ref") or "").strip()
+            )
+            items.append({**data, "stock": stock, "label": label})
+        items.sort(key=lambda item: (item["stock"], item["label"].lower()))
+        return items
+
+    def get_low_stock_massive(self, threshold: int | None = None) -> list[dict]:
+        """Generic items at or below stock threshold, lowest stock first."""
+        limit = self.low_stock_threshold if threshold is None else threshold
+        workbook = self.get_workbook()
+        sheet = self.get_massive_sheet(workbook)
+        items: list[dict] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            data = self.massive_row_to_dict(row)
+            if int(data.get("stock") or 0) > limit:
+                continue
+            items.append(data)
+        items.sort(
+            key=lambda item: (
+                int(item.get("stock") or 0),
+                str(item.get("name") or "").lower(),
+            )
+        )
+        return items
+
+    def get_loaned_equipments(self) -> list[dict]:
+        """Equipments currently marked as on loan."""
+        workbook = self.get_workbook()
+        sheet = self.get_equipments_sheet(workbook)
+        items: list[dict] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            data = self.equipment_row_to_dict(row)
+            if data.get("loaned"):
+                items.append(data)
+        items.sort(
+            key=lambda item: str(item.get("loan_since") or "").lower(),
+            reverse=True,
+        )
+        return items
+
+    def get_inventory_distribution(self) -> list[dict]:
+        """Counts and stock totals per inventory category (for charts)."""
+        workbook = self.get_workbook()
+        components_sheet = self.get_components_sheet(workbook)
+        massive_sheet = self.get_massive_sheet(workbook)
+        equipments_sheet = self.get_equipments_sheet(workbook)
+
+        components_count = 0
+        components_stock = 0
+        for row in components_sheet.iter_rows(min_row=2, max_row=components_sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            components_count += 1
+            try:
+                components_stock += int(row[6].value or 0)
+            except (TypeError, ValueError):
+                pass
+
+        massive_count = 0
+        massive_stock = 0
+        for row in massive_sheet.iter_rows(min_row=2, max_row=massive_sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            massive_count += 1
+            try:
+                massive_stock += int(row[6].value or 0)
+            except (TypeError, ValueError):
+                pass
+
+        equipments_count = 0
+        for row in equipments_sheet.iter_rows(min_row=2, max_row=equipments_sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            equipments_count += 1
+
+        return [
+            {
+                "key": "components",
+                "label": "Components",
+                "count": components_count,
+                "stock": components_stock,
+            },
+            {
+                "key": "generic",
+                "label": "Passive (R/C)",
+                "count": massive_count,
+                "stock": massive_stock,
+            },
+            {
+                "key": "equipments",
+                "label": "Equipments",
+                "count": equipments_count,
+                "stock": equipments_count,
+            },
+        ]
 
     # ------------------------------------------------------------------
     # Distribuidores (Mouser, TME, ...)
@@ -1096,6 +1865,7 @@ class StockTracker:
             "calibration_expiration": self.normalize_date(calibration_expiration),
             "datasheet": datasheet,
             "image": image,
+            "images": self.parse_equipment_images(image),
             **loan_fields,
         }
 
@@ -1244,26 +2014,78 @@ class StockTracker:
         label = filename.strip() or "(none)"
         return True, f"Datasheet linked: {label}"
 
-    def link_equipment_image(self, row, filename: str) -> tuple[bool, str]:
-        """Associate an equipment-image filename with an equipment row."""
+    @staticmethod
+    def parse_equipment_images(value) -> list[str]:
+        text = str(value or "").strip()
+        if not text:
+            return []
+        if EQUIPMENT_IMAGE_SEPARATOR in text:
+            return [
+                part.strip()
+                for part in text.split(EQUIPMENT_IMAGE_SEPARATOR)
+                if part.strip()
+            ]
+        return [text]
+
+    @staticmethod
+    def format_equipment_images(filenames: list[str]) -> str:
+        names: list[str] = []
+        seen: set[str] = set()
+        for name in filenames:
+            clean = str(name or "").strip()
+            if not clean or clean in seen:
+                continue
+            seen.add(clean)
+            names.append(clean)
+        return EQUIPMENT_IMAGE_SEPARATOR.join(names)
+
+    def set_equipment_images(self, row, filenames: list[str]) -> tuple[bool, str]:
         workbook = self.get_workbook()
         sheet = self.get_equipments_sheet(workbook)
         row_idx = row[0].row
-        sheet.cell(row=row_idx, column=EQ_COL_IMAGE, value=str(filename).strip())
+        sheet.cell(
+            row=row_idx,
+            column=EQ_COL_IMAGE,
+            value=self.format_equipment_images(filenames),
+        )
         if not self.save_workbook(workbook):
             return False, "Close stock.xlsx in Excel before saving."
-        label = filename.strip() or "(none)"
-        return True, f"Image linked: {label}"
+        count = len(self.parse_equipment_images(sheet.cell(row=row_idx, column=EQ_COL_IMAGE).value))
+        if count == 0:
+            return True, "Equipment images cleared."
+        if count == 1:
+            return True, "Equipment image linked."
+        return True, f"{count} equipment images linked."
+
+    def append_equipment_image(self, row, filename: str) -> tuple[bool, str]:
+        name = str(filename or "").strip()
+        if not name:
+            return False, "Image filename is required."
+        current = self.parse_equipment_images(
+            self.equipment_row_to_dict(row).get("image", "")
+        )
+        if name in current:
+            return self.set_equipment_images(row, current)
+        current.append(name)
+        return self.set_equipment_images(row, current)
+
+    def remove_equipment_image(self, row, filename: str) -> tuple[bool, str]:
+        name = str(filename or "").strip()
+        current = self.parse_equipment_images(
+            self.equipment_row_to_dict(row).get("image", "")
+        )
+        if name not in current:
+            return True, "Image removed."
+        updated = [item for item in current if item != name]
+        return self.set_equipment_images(row, updated)
+
+    def link_equipment_image(self, row, filename: str) -> tuple[bool, str]:
+        """Associate one equipment image (appends to the linked list)."""
+        return self.append_equipment_image(row, filename)
 
     def unlink_equipment_image(self, row) -> tuple[bool, str]:
-        """Remove the image filename from an equipment row."""
-        workbook = self.get_workbook()
-        sheet = self.get_equipments_sheet(workbook)
-        row_idx = row[0].row
-        sheet.cell(row=row_idx, column=EQ_COL_IMAGE, value="")
-        if not self.save_workbook(workbook):
-            return False, "Close stock.xlsx in Excel before saving."
-        return True, "Image removed."
+        """Remove all linked equipment images from the row."""
+        return self.set_equipment_images(row, [])
 
     def set_equipment_location(
         self, row, location: str, *, user: str = ""

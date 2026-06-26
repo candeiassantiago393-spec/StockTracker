@@ -123,7 +123,7 @@ Permissões (lógicas):
 | Editar equipamento | EDIT | `update_equipment` |
 | Tabelas histórico | Last 20 / Eq. hist. | `get_equipment_rows`, `EquipmentsTableDialog` |
 
-Layout: `src/gui/designer/gui_equipments.ui` — ver [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md).
+Layout: `src/gui/designer/gui_equipments.ui` — ver [GUIA_RAPIDO_PT.md](../guias/GUIA_RAPIDO_PT.md).
 
 ## Regras de utilizador (GUI)
 
@@ -165,7 +165,7 @@ Entregável formal: `word/StockTracker_Documentacao_Projeto.docx` (regenerar com
 - `tools\ORGANIZAR-DESKTOP.bat` — sincronizar Designer e cópia no Ambiente de Trabalho;
 - SCAN multi-distribuidor, diagnósticos DigiKey, OPEN EXCEL com criação de folhas.
 
-Guia rápido: [GUIA_RAPIDO_PT.md](GUIA_RAPIDO_PT.md).
+Guia rápido: [GUIA_RAPIDO_PT.md](../guias/GUIA_RAPIDO_PT.md).
 
 # TODO
 

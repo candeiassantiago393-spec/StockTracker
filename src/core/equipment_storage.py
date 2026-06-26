@@ -14,12 +14,30 @@ from .stock import DATA_DIR
 EQUIPMENTS_DIR = DATA_DIR / "equipments"
 _README_NAME = "README.txt"
 _IMAGE_BASENAME = "image"
+_IMAGE_STEM_PATTERN = re.compile(r"^image(?:_(\d+))?$", re.IGNORECASE)
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif"}
 _INVALID_FOLDER_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 
 
 def is_image_file(path: Path | str) -> bool:
     return Path(path).suffix.lower() in _IMAGE_SUFFIXES
+
+
+def is_equipment_image_name(name: str) -> bool:
+    path = Path(str(name or "").strip())
+    if not path.name or not is_image_file(path):
+        return False
+    return _IMAGE_STEM_PATTERN.match(path.stem) is not None
+
+
+def equipment_image_sort_key(name: str) -> tuple[int, int | str]:
+    stem = Path(name).stem.lower()
+    match = _IMAGE_STEM_PATTERN.match(stem)
+    if match is None:
+        return (2, name.lower())
+    if match.group(1) is None:
+        return (0, 0)
+    return (1, int(match.group(1)))
 
 
 def slugify_equipment_name(name: str) -> str:
@@ -158,9 +176,37 @@ class EquipmentStorage:
     @staticmethod
     def _is_reserved_name(name: str) -> bool:
         lowered = name.lower()
-        return lowered == _README_NAME.lower() or lowered.startswith(
-            f"{_IMAGE_BASENAME}."
-        )
+        if lowered == _README_NAME.lower():
+            return True
+        return is_equipment_image_name(name)
+
+    def list_equipment_images(
+        self,
+        equipment_id: str | int,
+        *,
+        equipment_name: str = "",
+    ) -> list[str]:
+        folder = self.equipment_dir(equipment_id, equipment_name)
+        if not folder.is_dir():
+            return []
+        names = [
+            path.name
+            for path in folder.iterdir()
+            if path.is_file() and is_equipment_image_name(path.name)
+        ]
+        return sorted(names, key=equipment_image_sort_key)
+
+    def _next_image_filename(self, folder: Path, suffix: str) -> str:
+        ext = suffix.lower() if suffix else ".jpg"
+        first = f"{_IMAGE_BASENAME}{ext}"
+        if not (folder / first).exists():
+            return first
+        index = 2
+        while True:
+            candidate = f"{_IMAGE_BASENAME}_{index}{ext}"
+            if not (folder / candidate).exists():
+                return candidate
+            index += 1
 
     def resolve_datasheet(
         self,
@@ -255,14 +301,8 @@ class EquipmentStorage:
             return False, "File is not a supported image (PNG, JPG, WEBP, BMP, GIF)."
 
         folder = self.ensure_equipment_dir(equipment_id, equipment_name)
-        for existing in folder.iterdir():
-            if existing.is_file() and existing.stem.lower() == _IMAGE_BASENAME:
-                try:
-                    existing.unlink()
-                except OSError:
-                    pass
-
-        target = folder / f"{_IMAGE_BASENAME}{source.suffix.lower()}"
+        target_name = self._next_image_filename(folder, source.suffix.lower())
+        target = folder / target_name
         try:
             shutil.copy2(source, target)
         except OSError as exc:

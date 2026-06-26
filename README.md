@@ -4,7 +4,7 @@
 
 Stock management using a local Excel database, PySide6 GUI, and optional distributor API integration (Mouser, DigiKey, TME, RS, and extensible suppliers).
 
-> Full documentation: [`docs/README.md`](docs/README.md) — specification: [EN](docs/PROJETO_STOCKTRACKER.md) · [PT](docs/PROJETO_STOCKTRACKER_PT.md)
+> Full documentation: [`docs/README.md`](docs/README.md) — specification: [EN](docs/especificacao/PROJETO_STOCKTRACKER.md) · [PT](docs/especificacao/PROJETO_STOCKTRACKER_PT.md)
 
 ---
 
@@ -111,7 +111,7 @@ StockTracker/
 | [docs/user/SUPPLIERS.md](docs/user/SUPPLIERS.md) | Supplier APIs |
 | [docs/user/QT_DESIGNER.md](docs/user/QT_DESIGNER.md) | Qt Designer workflow |
 | [docs/fluxogramas/README.md](docs/fluxogramas/README.md) | Flowcharts (Mermaid) |
-| [docs/GUIA_RAPIDO_PT.md](docs/GUIA_RAPIDO_PT.md) | Quick guide (Portuguese) |
+| [docs/guias/GUIA_RAPIDO_PT.md](docs/guias/GUIA_RAPIDO_PT.md) | Quick guide (Portuguese) |
 | [docs/user/WORKSPACE.md](docs/user/WORKSPACE.md) | Desktop copies and Designer packages |
 | [docs/user/DIGIKEY_SETUP.md](docs/user/DIGIKEY_SETUP.md) | DigiKey sandbox setup |
 | [docs/user/GITHUB.md](docs/user/GITHUB.md) | Publishing to GitHub |

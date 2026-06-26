@@ -1,6 +1,6 @@
 # Guia rápido — Stock Tracker (PT)
 
-Documentação operacional em português. Especificação completa: [PROJETO_STOCKTRACKER_PT.md](PROJETO_STOCKTRACKER_PT.md).
+Documentação operacional em português. Especificação completa: [PROJETO_STOCKTRACKER_PT.md](../especificacao/PROJETO_STOCKTRACKER_PT.md).
 
 ---
 

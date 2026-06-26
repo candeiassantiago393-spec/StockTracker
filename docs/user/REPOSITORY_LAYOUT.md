@@ -12,7 +12,11 @@
 | `data/` | Local Excel database (`stock.xlsx`) |
 | `config/` | Local credentials (`secrets.py`, not in Git) |
 | `docs/` | Project documentation |
+| `docs/especificacao/` | Product specification (EN + PT) |
+| `docs/guias/` | Portuguese quick guides |
+| `docs/designer/` | Qt Designer documentation index |
 | `docs/fluxogramas/` | Flowcharts (Mermaid) per app area |
+| `docs/roadmap/` | Suggested improvements |
 | `tools/` | Maintenance scripts (UI export, sync, doc generation) |
 | `scripts/` | Standalone test utilities |
 

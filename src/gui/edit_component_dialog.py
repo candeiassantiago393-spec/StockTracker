@@ -1,7 +1,8 @@
-"""Edit component — Qt Designer gui_popup_edit.ui."""
-from PySide6.QtWidgets import QDialog
+"""Edit component — Qt Designer gui_popup_edit.ui + location field."""
+from PySide6.QtWidgets import QDialog, QFormLayout
 
 from .designer.popups.components.gui_popup_edit import Ui_PopupEdit
+from .location_combo import LocationMultiEditor
 from .message_dialog import SiemensMessage
 
 
@@ -17,6 +18,20 @@ class EditComponentDialog(QDialog):
         )
         self.ui.description_field.setText(str(component_data.get("description", "")))
         self.ui.label_current_stock.setText(str(component_data.get("stock", 0)))
+
+        form = self.ui.body_form.findChild(QFormLayout, "form_edit")
+        if form is None:
+            form = self.ui.body_form.layout()
+        tracker = getattr(parent, "tracker", None)
+        self._tracker = tracker
+        self.location_field = LocationMultiEditor(
+            tracker,
+            current=str(component_data.get("location", "")),
+            parent=self,
+        )
+        if isinstance(form, QFormLayout):
+            form.addRow("Location", self.location_field)
+
         self.ui.btn_ok.clicked.connect(self._validate_and_accept)
         self.ui.btn_cancel.clicked.connect(self.reject)
 
@@ -35,9 +50,15 @@ class EditComponentDialog(QDialog):
         self.accept()
 
     def payload(self) -> dict:
+        locations = self.location_field.locations()
+        if self._tracker is not None:
+            location = self._tracker.format_component_locations(locations)
+        else:
+            location = ";".join(locations)
         return {
             "supplier_reference": self.ui.supplier_reference.text().strip(),
             "manufacturer": self.ui.manufacturer.text().strip(),
             "manufacturer_reference": self.ui.manufacturer_reference.text().strip(),
             "description": self.ui.description_field.text().strip(),
+            "location": location,
         }
