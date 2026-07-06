@@ -37,15 +37,8 @@ if not exist "config\secrets.py" (
     echo Criado config\secrets.py - edite com as chaves API.
 )
 
-if not exist "data\stock.xlsx" (
-    echo Nota: data\stock.xlsx sera criado no primeiro arranque da app.
-)
-
 echo.
-echo Instalacao concluida.
-echo Proximos passos:
-echo   1. Editar config\secrets.py
-echo   2. Executar run.bat
-echo   3. python tools\verificar_entrega.py  (opcional)
+echo Instalacao concluida. Execute run.bat
+echo Manual: docs\guias\MANUAL_UTILIZADOR.md
 echo.
 pause

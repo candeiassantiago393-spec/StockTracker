@@ -1,117 +1,54 @@
 # Documentation — Stock Tracker
 
-## Delivery (Siemens internship)
+## Manual do utilizador (PT)
 
-| Document | Description |
-|----------|-------------|
-| **[entrega/README.md](entrega/README.md)** | Delivery package index |
-| [entrega/CHECKLIST_ENTREGA.md](entrega/CHECKLIST_ENTREGA.md) | Pre-delivery checklist |
-| [entrega/PACOTE_ENTREGA.md](entrega/PACOTE_ENTREGA.md) | What to hand over |
-| [../word/StockTracker_Documentacao_Projeto.docx](../word/StockTracker_Documentacao_Projeto.docx) | Formal Word document |
+**[guias/MANUAL_UTILIZADOR.md](guias/MANUAL_UTILIZADOR.md)** — instalação, uso diário, páginas da app, atalhos, problemas comuns.
 
-Install: `INSTALAR.bat` · Verify: `python tools\verificar_entrega.py`
+Arranque: `INSTALAR.bat` → `run.bat`
 
 ---
 
-## Quick start
-
-| Audience | Document |
-|----------|----------|
-| **Portuguese (operators / GUI)** | [guias/GUIA_RAPIDO_PT.md](guias/GUIA_RAPIDO_PT.md) |
-| **English (commands)** | [user/COMMANDS.md](user/COMMANDS.md) |
-| **Run the app** | `INSTALAR.bat` then `run.bat` or `python -m src.main` |
-
----
-
-## Specification (`docs/especificacao/`)
-
-| Document | Content |
-|----------|---------|
-| [especificacao/PROJETO_STOCKTRACKER.md](especificacao/PROJETO_STOCKTRACKER.md) | Product specification (English, Siemens-style) |
-| [especificacao/PROJETO_STOCKTRACKER_PT.md](especificacao/PROJETO_STOCKTRACKER_PT.md) | Same specification in Portuguese |
-
----
-
-## User guides (`docs/user/`)
-
-| Document | Content |
-|----------|---------|
-| [user/COMMANDS.md](user/COMMANDS.md) | Install, run, Designer sync, troubleshooting |
-| [user/REPOSITORY_LAYOUT.md](user/REPOSITORY_LAYOUT.md) | Repository structure and key files |
-| [user/ARCHITECTURE.md](user/ARCHITECTURE.md) | Architecture and data flows |
-| [user/WORKSPACE.md](user/WORKSPACE.md) | Desktop folders and Qt Designer packages |
-| [user/QT_DESIGNER.md](user/QT_DESIGNER.md) | Qt Designer — Components + Equipments |
-| [user/SUPPLIERS.md](user/SUPPLIERS.md) | Supplier APIs and credentials |
-| [user/DIGIKEY_SETUP.md](user/DIGIKEY_SETUP.md) | DigiKey sandbox setup |
-| [user/GITHUB.md](user/GITHUB.md) | GitHub publishing |
-| [user/IDE_SETUP.md](user/IDE_SETUP.md) | VS Code / Cursor setup |
-
----
-
-## Qt Designer (`docs/designer/`)
-
-| Document | Content |
-|----------|---------|
-| [designer/README.md](designer/README.md) | **Índice** — pacotes, estrutura, comandos |
-| [../src/gui/designer/README.md](../src/gui/designer/README.md) | Canonical `.ui` workflow |
-| [../StockTracker-Designer/LEIA-ME.txt](../StockTracker-Designer/LEIA-ME.txt) | Pacote Designer (PT) |
-
----
-
-## Fluxogramas (`docs/fluxogramas/`)
+## Especificação técnica
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [fluxogramas/README.md](fluxogramas/README.md) | Índice (diagramas Mermaid) |
-| [fluxogramas/03-components.md](fluxogramas/03-components.md) | Fluxos Components |
-| [fluxogramas/04-equipments.md](fluxogramas/04-equipments.md) | Fluxos Equipments |
-| [fluxogramas/08-qt-designer.md](fluxogramas/08-qt-designer.md) | Workflow Qt Designer |
+| [especificacao/PROJETO_STOCKTRACKER_PT.md](especificacao/PROJETO_STOCKTRACKER_PT.md) | Especificação em português |
+| [especificacao/PROJETO_STOCKTRACKER.md](especificacao/PROJETO_STOCKTRACKER.md) | Especificação em inglês |
 
 ---
 
-## Layout (`docs/layout/`)
+## Documentação técnica (`docs/user/`)
 
-| Document | Content |
-|----------|---------|
-| [layout/EQUIPMENTS_CAIXA_IMAGEM.md](layout/EQUIPMENTS_CAIXA_IMAGEM.md) | Equipments image box reference |
-
----
-
-## GUI module (Portuguese)
-
-| Document | Content |
-|----------|---------|
-| [../src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md) | GUI file map |
-| [../src/gui/designer/EQUIPMENTS-LEIA-ME.txt](../src/gui/designer/EQUIPMENTS-LEIA-ME.txt) | Equipments in Qt Designer (PT) |
-
----
-
-## Templates (`docs/modelos/`)
-
-Reference layouts for documentation style: [modelos/README.md](modelos/README.md).
+| Documento | Conteúdo |
+|-----------|----------|
+| [user/COMMANDS.md](user/COMMANDS.md) | Comandos, instalação, troubleshooting (EN) |
+| [user/ARCHITECTURE.md](user/ARCHITECTURE.md) | Arquitectura |
+| [user/REPOSITORY_LAYOUT.md](user/REPOSITORY_LAYOUT.md) | Estrutura do repositório |
+| [user/QT_DESIGNER.md](user/QT_DESIGNER.md) | Qt Designer |
+| [user/SUPPLIERS.md](user/SUPPLIERS.md) | APIs dos distribuidores |
+| [user/DIGIKEY_SETUP.md](user/DIGIKEY_SETUP.md) | Configuração DigiKey |
+| [user/WORKSPACE.md](user/WORKSPACE.md) | Pastas no Ambiente de Trabalho |
+| [user/GITHUB.md](user/GITHUB.md) | GitHub |
+| [user/IDE_SETUP.md](user/IDE_SETUP.md) | VS Code / Cursor |
 
 ---
 
-## Roadmap (`docs/roadmap/`)
+## Fluxogramas
 
-| Document | Content |
-|----------|---------|
-| [roadmap/MELHORIAS_SUGERIDAS.md](roadmap/MELHORIAS_SUGERIDAS.md) | Ideias de evolução |
+[fluxogramas/README.md](fluxogramas/README.md) — diagramas dos fluxos (Components, Equipments, scan, Excel).
 
 ---
 
-## Tools (`tools/`)
+## Código e ferramentas
 
-| Script | Purpose |
-|--------|---------|
-| `tools/ORGANIZAR-DESKTOP.bat` | Sync Designer + Desktop project |
-| `generate_all_designer_uis.py` | Regenerate all `.ui` files |
-| `export-ui.bat` | Export `.ui` → `.py` |
-
-Full list: [../tools/README.md](../tools/README.md).
+| Recurso | Local |
+|---------|--------|
+| Mapa da GUI | [../src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md) |
+| Scripts de manutenção | [../tools/README.md](../tools/README.md) |
+| Dados Excel | [../data/README.md](../data/README.md) |
 
 ---
 
-## Formal Word document
+## Documento Word
 
-Optional: [`../word/`](../word/) — regenerate with `python tools/build_project_docx.py` (requires `python-docx`).
+[`../word/StockTracker_Documentacao_Projeto.docx`](../word/StockTracker_Documentacao_Projeto.docx) — regenerar com `python tools/build_project_docx.py`.

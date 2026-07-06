@@ -31,7 +31,7 @@ Raiz: `C:\Users\z005027j\Downloads\StockTracker\StockTracker`
 - Não colocar lógica de negócio na GUI
 - Não executar módulos `gui/` isoladamente (imports relativos)
 - Diffs minimos; estilo existente
-- Documentação EN em `docs/user/`; guia PT em `docs/guias/GUIA_RAPIDO_PT.md`; Qt Designer em `docs/designer/`
+- Documentação EN em `docs/user/`; manual PT em `docs/guias/MANUAL_UTILIZADOR.md`; Qt Designer em `docs/designer/`
 
 ## Não confundir
 

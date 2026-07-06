@@ -241,26 +241,23 @@ def _add_evolution_section(doc: Document) -> None:
         "Nao misturar com este repositorio (StockTracker em Downloads).",
     )
 
-    _heading(doc, "2.9 Fase 5 — Versao de entrega do estagio (v2.1)", 2)
+    _heading(doc, "2.9 Versao 2.1 — funcionalidades adicionais", 2)
     _para(
         doc,
-        "Iteracao final do estagio Siemens: passivos em massa, estatisticas, "
-        "relatorios PDF, pesquisa global e emprestimos de equipamentos.",
+        "Passivos em massa, estatisticas, relatorios PDF, pesquisa global "
+        "e emprestimos de equipamentos.",
         bold=True,
     )
     _bullet(
         doc,
         [
             "Folha Excel Generic — resistores e condensadores (modo Passive, Ctrl+Shift+M).",
-            "Pagina Statistics (Ctrl+3) — stock baixo, calibracoes, localizacoes, export PDF.",
-            "Pesquisa global Ctrl+G — Components + Passive + Equipments.",
-            "Empréstimos de equipamentos — folha EquipmentLoans + dialogo dedicado.",
-            "Alertas de calibracao por email (configuravel).",
-            "Localizacao opcional ao adicionar stock; multi-location nos componentes.",
-            "Package automatico no dialogo Passive a partir da Supplier Ref (catalogo).",
-            "Last 20 com selecao e abertura do item (Components, Passive, Equipments).",
-            "INSTALAR.bat e tools/verificar_entrega.py para entrega ao receptor.",
-            "Pacote docs/entrega/ — checklist e documentacao de entrega Siemens.",
+            "Pagina Statistics (Ctrl+3) — stock baixo, calibracoes, export PDF.",
+            "Pesquisa global Ctrl+G.",
+            "Emprestimos de equipamentos (folha EquipmentLoans).",
+            "Alertas de calibracao por email.",
+            "Localizacao nos componentes e passivos; Package automatico no Passive.",
+            "INSTALAR.bat e manual em docs/guias/MANUAL_UTILIZADOR.md.",
         ],
     )
 

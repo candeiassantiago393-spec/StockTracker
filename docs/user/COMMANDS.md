@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 After editing `.ui` on Desktop, copy files to `src\gui\designer\` then run `export-ui.bat`.
 
-See [QT_DESIGNER.md](QT_DESIGNER.md) and [../guias/GUIA_RAPIDO_PT.md](../guias/GUIA_RAPIDO_PT.md).
+See [QT_DESIGNER.md](QT_DESIGNER.md) and [../guias/MANUAL_UTILIZADOR.md](../guias/MANUAL_UTILIZADOR.md).
 
 ---
 

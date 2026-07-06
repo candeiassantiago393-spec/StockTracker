@@ -2,9 +2,9 @@
 
 Aplicação desktop para gestão de inventário de componentes eletrónicos.
 
-Versão documentada: **2.1** (entrega estágio Siemens, 2026)
+Versão **2.1**
 
-[PROJETO_STOCKTRACKER.md](PROJETO_STOCKTRACKER.md) (inglês) · [Pacote de entrega](../entrega/PACOTE_ENTREGA.md)
+[PROJETO_STOCKTRACKER.md](PROJETO_STOCKTRACKER.md) (inglês) · [Manual do utilizador](../guias/MANUAL_UTILIZADOR.md)
 
 # Especificações
 
@@ -36,7 +36,6 @@ A comunicação externa usa **APIs REST HTTPS** nos módulos de distribuidores e
 | Python         | 3.10+ |
 | Plataforma     | Windows 10/11 |
 | Ficheiro de dados | `data/stock.xlsx` (fechar o Excel antes de gravar) |
-| Verificação entrega | `python tools\verificar_entrega.py` |
 
 ## Ordem SCAN multi-fornecedor
 
@@ -214,17 +213,9 @@ A documentação ao nível de módulo segue o template Siemens (secções numera
 | 1.x    | Excel + GUI focada em Mouser |
 | 0.x    | Consola / protótipo (`src/test_terminal.py`) |
 
-Entregável formal: `word/StockTracker_Documentacao_Projeto.docx` (regenerar com `python tools/build_project_docx.py`).
+Entregável Word: `word/StockTracker_Documentacao_Projeto.docx` (regenerar com `python tools/build_project_docx.py`).
 
-## Documentação de entrega
-
-| Documento | Conteúdo |
-|:----------|:---------|
-| [docs/entrega/](../entrega/README.md) | Índice do pacote de entrega |
-| [CHECKLIST_ENTREGA.md](../entrega/CHECKLIST_ENTREGA.md) | Verificação antes de entregar |
-| [GUIA_RAPIDO_PT.md](../guias/GUIA_RAPIDO_PT.md) | Guia operacional |
-
-# TODO / continuidade
+Manual de utilização: [MANUAL_UTILIZADOR.md](../guias/MANUAL_UTILIZADOR.md)
 
 - Chaves DigiKey produção / resolução 403 sandbox — ver `docs/user/DIGIKEY_SETUP.md`;
 - Integração Robert Mauser quando houver detalhes da API;
