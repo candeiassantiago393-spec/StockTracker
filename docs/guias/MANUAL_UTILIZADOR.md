@@ -82,6 +82,10 @@ Resumo do inventário: stock baixo, calibrações a expirar, estatísticas por l
 
 Backups automáticos em `data\backups\` (últimos 20). Mais detalhe em [data/README.md](../../data/README.md).
 
+### Armário físico (Stock 1/2/3 e boxes)
+
+A organização do armário SMD do laboratório está registada na coluna **Location** do Excel. Para ver o mapa completo (que peça está em cada gaveta ou box), abrir o **backup mais recente** em `data\backups\`. Descrição: [ARMARIO_LABORATORIO.md](ARMARIO_LABORATORIO.md).
+
 ---
 
 ## Atalhos úteis

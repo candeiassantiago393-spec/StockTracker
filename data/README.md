@@ -80,6 +80,13 @@ Before each save, the app copies `stock.xlsx` to
 
 To restore: close Excel, then copy a backup file over `data/stock.xlsx`.
 
+### Lab cabinet (Stock 1 / 2 / 3 and boxes)
+
+Physical drawer and box labels are stored in the Excel **Location** column (`Components` and `Generic`).  
+For the full mapping, open the **newest file** in `data/backups/` (sorted by date in the filename).
+
+See [docs/guias/ARMARIO_LABORATORIO.md](../docs/guias/ARMARIO_LABORATORIO.md) (Portuguese).
+
 ## After cloning from GitHub
 
 `stock.xlsx` is **not** in the repository (see root `.gitignore`). Either:

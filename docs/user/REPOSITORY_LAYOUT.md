@@ -16,7 +16,7 @@
 | `docs/guias/` | Portuguese quick guides |
 | `docs/designer/` | Qt Designer documentation index |
 | `docs/fluxogramas/` | Flowcharts (Mermaid) per app area |
-| `docs/roadmap/` | Suggested improvements |
+| `docs/roadmap/` | Melhorias pensadas (`MELHORIAS_PENSADAS.md`) |
 | `tools/` | Maintenance scripts (UI export, sync, doc generation) |
 | `scripts/` | Standalone test utilities |
 

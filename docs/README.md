@@ -4,7 +4,15 @@
 
 **[guias/MANUAL_UTILIZADOR.md](guias/MANUAL_UTILIZADOR.md)** — instalação, uso diário, páginas da app, atalhos, problemas comuns.
 
+**[guias/ARMARIO_LABORATORIO.md](guias/ARMARIO_LABORATORIO.md)** — armário SMD (Stock 1/2/3, boxes); consultar no backup Excel mais recente.
+
 Arranque: `INSTALAR.bat` → `run.bat`
+
+---
+
+## Melhorias pensadas
+
+[roadmap/MELHORIAS_PENSADAS.md](roadmap/MELHORIAS_PENSADAS.md) — ideias para evolução futura do projeto.
 
 ---
 

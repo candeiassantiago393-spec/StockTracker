@@ -1,7 +1,6 @@
-# Melhorias e adições sugeridas — Stock Tracker
+# Melhorias pensadas — Stock Tracker
 
-Documento de referência com ideias para evolução do projeto.  
-Gerado a partir da análise do estado atual da app (Components, Equipments, Excel, APIs, Qt Designer).
+Notas sobre o que se pode fazer a seguir no projeto. Algumas ideias já foram implementadas (marcadas no texto); outras ficam para mais tarde.
 
 ---
 
