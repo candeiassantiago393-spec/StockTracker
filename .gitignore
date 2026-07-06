@@ -14,12 +14,13 @@ build/
 Thumbs.db
 .DS_Store
 
-# Credenciais e dados locais
-config/secrets.py
+# Credenciais — secrets.py vai para repo PRIVADO do lab (ver config/README.md).
+# Em repo publico, manter esta linha descomentada:
+# config/secrets.py
 .env
 
-# Excel de trabalho (opcional — remover linha se quiseres versionar inventario)
-data/stock.xlsx
+# Excel de inventario — versionado no repo privado do lab
+# data/stock.xlsx
 ~$*.xlsx
 
 # Pastas por equipamento (datasheet + imagem)
