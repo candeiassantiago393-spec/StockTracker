@@ -1,6 +1,6 @@
 # Armário SMD do laboratório
 
-O armário físico do lab está organizado em gavetas **Stock 1**, **Stock 2**, **Stock 3** e em **boxes** com etiquetas. Essa organização está reflectida na coluna **Location** do Excel (`Components` e `Generic`).
+O armário físico do lab está organizado em **Stock 1**, **Stock 2**, **Stock 3** e em **boxes** com etiquetas. Essa organização está reflectida na coluna **Location** do Excel (`Components` e `Generic`).
 
 ## Onde consultar
 
@@ -22,17 +22,19 @@ Na aplicação: página **Statistics** mostra contagens por localização; **Ctr
 
 Nomes usados na coluna Location — correspondem ao armário físico:
 
-| Localização no Excel | O que é no lab |
-|----------------------|----------------|
-| `smd stock 1` | Gaveta / zona **Stock 1** — maior volume de componentes SMD |
-| `smd stock 2` | Gaveta / zona **Stock 2** |
-| `SMD STOCK 3` | Gaveta / zona **Stock 3** |
-| `SMD STOCK BOX 1` | Box etiquetada **Stock Box 1** |
-| `SMD STOCK BOX 2` | Box etiquetada **Stock Box 2** |
-| `SMD CABINET` | Armário SMD (zona geral) |
-| `CERAMIC CHIP CAPACITORS 0603` | Box de condensadores cerâmicos 0603 |
-| `ELECTROLYTIC CAPACITORES` | Box de condensadores electrolíticos SMD |
-| `RESISTORES 0805/1206` | Box de resistores 0805 e 1206 |
+
+| Localização no Excel           | O que é no lab                                              |
+| ------------------------------ | ----------------------------------------------------------- |
+| `smd stock 1`                  | Gaveta / zona **Stock 1** — maior volume de componentes SMD |
+| `smd stock 2`                  | Gaveta / zona **Stock 2**                                   |
+| `SMD STOCK 3`                  | Gaveta / zona **Stock 3**                                   |
+| `SMD STOCK BOX 1`              | Box etiquetada **Stock Box 1**                              |
+| `SMD STOCK BOX 2`              | Box etiquetada **Stock Box 2**                              |
+| `SMD CABINET`                  | Armário SMD (zona geral)                                    |
+| `CERAMIC CHIP CAPACITORS 0603` | Box de condensadores cerâmicos 0603                         |
+| `ELECTROLYTIC CAPACITORES`     | Box de condensadores electrolíticos SMD                     |
+| `RESISTORES 0805/1206`         | Box de resistores 0805 e 1206                               |
+
 
 Algumas localizações antigas (`SMD STOCK BOX 3`, `4`, `5`) foram renomeadas no Excel para os nomes descritivos acima (electrolíticos, cerâmicos, resistores).
 
