@@ -1107,6 +1107,8 @@ class EquipmentsPage(QWidget):
 
         self.ui.btn_search.clicked.connect(self.search_equipment)
 
+        self.ui.search_entry.returnPressed.connect(self.search_equipment)
+
         self.ui.supplier_ref_entry.returnPressed.connect(self.lookup_supplier_ref)
 
         self.ui.btn_scan_supplier_ref.clicked.connect(self.scan_supplier_ref)

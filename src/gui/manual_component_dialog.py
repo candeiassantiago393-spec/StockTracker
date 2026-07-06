@@ -1,9 +1,16 @@
 """Add manual component — Qt Designer gui_popup_manual.ui + location."""
-from PySide6.QtWidgets import QDialog, QFormLayout
+from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit
 
 from .designer.popups.components.gui_popup_manual import Ui_PopupManual
 from .location_combo import LocationMultiEditor
 from .message_dialog import SiemensMessage
+
+
+def _widen_text_field(field: QLineEdit) -> None:
+    """Allow long references (any letters, digits, symbols) — not only Mouser-style."""
+    sheet = (field.styleSheet() or "").replace("max-width: 100px", "")
+    field.setStyleSheet(sheet)
+    field.setMinimumWidth(320)
 
 
 class ManualComponentDialog(QDialog):
@@ -11,6 +18,19 @@ class ManualComponentDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_PopupManual()
         self.ui.setupUi(self)
+
+        self.ui.description.setText(
+            "Supplier Reference accepts any text (Mouser, DigiKey, internal code, etc.). "
+            "Alternatively, leave it empty and fill both Manufacturer and Manufacturer Reference."
+        )
+
+        for field in (
+            self.ui.supplier_reference,
+            self.ui.manufacturer,
+            self.ui.manufacturer_reference,
+            self.ui.description_field,
+        ):
+            _widen_text_field(field)
 
         form = self.ui.body_form.findChild(QFormLayout, "form_manual")
         if form is None:
@@ -33,7 +53,8 @@ class ManualComponentDialog(QDialog):
             SiemensMessage.warning(
                 self,
                 "Missing identity",
-                "Provide Supplier Reference OR both Manufacturer and Manufacturer Reference.",
+                "Enter a Supplier Reference (any text) OR both Manufacturer and "
+                "Manufacturer Reference.",
             )
             return
         self.accept()

@@ -24,6 +24,11 @@ from PySide6.QtWidgets import (
 from src.core.calibration_alerts import count_expiring_equipment, run_calibration_alert_check
 from src.core.component_images import fetch_catalog_pixmap
 from src.core.excel_open import launch_excel
+from src.core.passive_transfer import (
+    analyze_for_catalog_part,
+    analyze_for_passive,
+    passive_dialog_initial,
+)
 from src.core.stock import (
     SHEET_COMPONENTS,
     SHEET_EQUIPMENTS,
@@ -46,15 +51,21 @@ from .location_combo import (
 )
 from .manual_component_dialog import ManualComponentDialog
 from .search_results_dialog import SearchResultsDialog
+from .inventory_search_dialog import InventorySearchDialog, InventorySearchHit
+from .global_search_dialog import GlobalSearchDialog, GlobalSearchHit
+from .optional_location_dialog import OptionalLocationDialog
 from .equipments_page import EquipmentsPage
 from .equipments_table_dialog import EquipmentsTableDialog
+from .components_table_dialog import ComponentsTableDialog
 from .components_massive_mode import ComponentsMassiveMode
+from .massive_dialog import MassiveDialog
 from .statistics_page import StatisticsPage
 from .user_name_dialog import UserNameDialog
 
 from . import styles
+from .keyboard_shortcuts import setup_keyboard_shortcuts
 
-_MAX_IGNORABLE_SCAN_LEN = 4
+_MAX_IGNORABLE_SCAN_LEN = 3  # ignore label noise ≤3 chars; 4+ are valid refs
 _CATALOG_URL_DEBOUNCE_SEC = 1.5
 
 _ACTION_LABELS = {
@@ -213,9 +224,10 @@ class StockTrackerWindow(QMainWindow):
         self._components_selected_row = None
         self._setup_calibration_alerts()
         self._setup_page_navigation()
-        self._setup_inventory_mode()
         self._setup_autocompletes()
+        self._setup_inventory_mode()
         self._refresh_calibration_badge()
+        setup_keyboard_shortcuts(self)
         self._show_components_page()
         self.ui.user_entry.setFocus()
 
@@ -425,10 +437,10 @@ class StockTrackerWindow(QMainWindow):
     def _on_inventory_mode_changed(self, index: int) -> None:
         self._inventory_mode = "generic" if index == 1 else "components"
         self._massive_mode.set_active(self._inventory_mode == "generic")
-        self.ui.btn_scan.setVisible(self._inventory_mode == "components")
         if self._current_section == "components":
             self._apply_action_bar_labels(self._components_action_section())
             self._reset_components_view_for_mode()
+        self._refresh_search_completer_for_mode()
         title = (
             "Inventory — Components (Passive R/C)"
             if self._inventory_mode == "generic"
@@ -533,6 +545,7 @@ class StockTrackerWindow(QMainWindow):
         if hasattr(u, "btn_exit"):
             u.btn_exit.clicked.connect(self.close)
         u.barcode_entry.returnPressed.connect(self._on_barcode_scanned)
+        u.search_entry.returnPressed.connect(self._on_search_clicked)
 
     def _on_search_clicked(self) -> None:
         if self._current_section != "components":
@@ -544,13 +557,13 @@ class StockTrackerWindow(QMainWindow):
 
     def _is_generic_mode(self) -> bool:
         return (
-            self._current_section == "components"
-            and self._inventory_mode == "generic"
+            getattr(self, "_current_section", "components") == "components"
+            and getattr(self, "_inventory_mode", "components") == "generic"
         )
 
     @staticmethod
     def _is_ignorable_scan(text: str) -> bool:
-        """True for Mouser label noise (item #, qty, country) — 4 chars or less."""
+        """True for Mouser label noise (item #, qty, country) — 3 chars or less."""
         code = str(text or "").strip()
         return bool(code) and len(code) <= _MAX_IGNORABLE_SCAN_LEN
 
@@ -711,18 +724,60 @@ class StockTrackerWindow(QMainWindow):
         w = styles.COMPONENT_IMAGE_PREVIEW_WIDTH
         preview.setFixedSize(w, h)
         preview.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
         grid = self.ui.gridLayout_right
-        if grid.indexOf(preview) >= 0:
-            grid.removeWidget(preview)
-            grid.addWidget(
-                preview,
-                1,
-                4,
-                6,
-                1,
-                Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
-            )
+        for widget in (preview, label):
+            if grid.indexOf(widget) >= 0:
+                grid.removeWidget(widget)
+
+        column = QWidget(self.ui.container_tab1_right)
+        column.setObjectName("catalog_image_column")
+        column_layout = QVBoxLayout(column)
+        column_layout.setContentsMargins(0, 0, 0, 0)
+        column_layout.setSpacing(6)
+
+        self._global_search_hint = QLabel("Ctrl+G — Open global search", column)
+        self._global_search_hint.setObjectName("global_search_hint")
+        self._global_search_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._global_search_hint.setWordWrap(True)
+        self._global_search_hint.setFixedWidth(w)
+        self._global_search_hint.setStyleSheet(
+            "color: #00CCCC; font-size: 11px; font-weight: 600; padding: 2px 4px;"
+        )
+        self._global_search_hint.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._global_search_hint.setToolTip(
+            "Search Components, Passive (R/C) and Equipments at once (Ctrl+G)"
+        )
+        self._global_search_hint.mousePressEvent = self._on_global_search_hint_clicked
+
+        column_layout.addWidget(
+            self._global_search_hint,
+            0,
+            Qt.AlignmentFlag.AlignHCenter,
+        )
+        column_layout.addWidget(
+            preview,
+            0,
+            Qt.AlignmentFlag.AlignHCenter,
+        )
+        column_layout.addStretch()
+
+        self.ui.catalog_image_column = column
+        grid.addWidget(
+            column,
+            1,
+            4,
+            6,
+            1,
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+        )
         preview.clear_image()
+
+    def _on_global_search_hint_clicked(self, event) -> None:
+        from PySide6.QtGui import QMouseEvent
+
+        if isinstance(event, QMouseEvent) and event.button() == Qt.MouseButton.LeftButton:
+            self.open_global_search()
 
     def _setup_catalog_links(self) -> None:
         row = getattr(self.ui, "row_catalog_links", None)
@@ -776,12 +831,23 @@ class StockTrackerWindow(QMainWindow):
         ):
             self._open_catalog_url(self._catalog_datasheet_url, "datasheet")
 
+    def _set_catalog_chrome_visible(self, visible: bool) -> None:
+        for name in ("label_catalog_links", "row_catalog_links"):
+            widget = getattr(self.ui, name, None)
+            if widget is not None:
+                widget.setVisible(visible)
+
     def _update_catalog_links_ui(self) -> None:
+        if self._is_generic_mode():
+            self._set_catalog_chrome_visible(False)
+            return
+
         row = getattr(self.ui, "row_catalog_links", None)
         btn_web = getattr(self.ui, "btn_open_product", None)
         btn_ds = getattr(self.ui, "btn_open_datasheet", None)
         has_product = bool(self._catalog_product_url)
         has_datasheet = bool(self._catalog_datasheet_url)
+        self._set_catalog_chrome_visible(True)
         if row is not None:
             row.show()
         if btn_web is not None:
@@ -1146,42 +1212,61 @@ class StockTrackerWindow(QMainWindow):
 
     def _make_completer(
         self, terms: list[str], filter_mode: Qt.MatchFlag
-    ) -> QCompleter:
-        completer = QCompleter(QStringListModel(terms), self)
+    ) -> tuple[QCompleter, QStringListModel]:
+        model = QStringListModel(terms, self)
+        completer = QCompleter(model, self)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         completer.setFilterMode(filter_mode)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         completer.setMaxVisibleItems(12)
-        return completer
+        return completer, model
 
     def _setup_autocompletes(self) -> None:
         """Excel suggestions for search and barcode/supplier reference fields."""
         workbook = self.tracker.get_workbook()
         sheet = self.tracker.get_components_sheet(workbook)
 
-        self._search_completer = self._make_completer(
+        self._search_completer, self._search_completer_model = self._make_completer(
             self.tracker.excel_autocomplete_terms(sheet),
             Qt.MatchFlag.MatchContains,
         )
         self.ui.search_entry.setCompleter(self._search_completer)
 
-        self._barcode_completer = self._make_completer(
+        self._barcode_completer, self._barcode_completer_model = self._make_completer(
             self.tracker.excel_autocomplete_supplier_refs(sheet),
             Qt.MatchFlag.MatchStartsWith,
         )
         self.ui.barcode_entry.setCompleter(self._barcode_completer)
 
-    def _refresh_autocompletes(self) -> None:
+    def _refresh_search_completer_for_mode(self) -> None:
+        model = getattr(self, "_search_completer_model", None)
+        if model is None:
+            return
         workbook = self.tracker.get_workbook()
-        sheet = self.tracker.get_components_sheet(workbook)
-        if hasattr(self, "_search_completer"):
-            self._search_completer.model().setStringList(
-                self.tracker.excel_autocomplete_terms(sheet)
-            )
-        if hasattr(self, "_barcode_completer"):
-            self._barcode_completer.model().setStringList(
-                self.tracker.excel_autocomplete_supplier_refs(sheet)
-            )
+        if self._inventory_mode == "generic":
+            sheet = self.tracker.get_massive_sheet(workbook)
+            terms = self.tracker.excel_autocomplete_passive_values(sheet)
+        else:
+            sheet = self.tracker.get_components_sheet(workbook)
+            terms = self.tracker.excel_autocomplete_terms(sheet)
+        model.setStringList(terms)
+        self._refresh_barcode_completer_for_mode()
+
+    def _refresh_barcode_completer_for_mode(self) -> None:
+        barcode_model = getattr(self, "_barcode_completer_model", None)
+        if barcode_model is None:
+            return
+        workbook = self.tracker.get_workbook()
+        if self._inventory_mode == "generic":
+            sheet = self.tracker.get_massive_sheet(workbook)
+            refs = self.tracker.excel_autocomplete_massive_supplier_refs(sheet)
+        else:
+            sheet = self.tracker.get_components_sheet(workbook)
+            refs = self.tracker.excel_autocomplete_supplier_refs(sheet)
+        barcode_model.setStringList(refs)
+
+    def _refresh_autocompletes(self) -> None:
+        self._refresh_search_completer_for_mode()
 
     def set_status(self, text: str) -> None:
         self.ui.status_label.setText(text)
@@ -1255,7 +1340,7 @@ class StockTrackerWindow(QMainWindow):
         if self._is_generic_mode():
             self._massive_mode.open_history_all()
             return
-        self.open_history(False)
+        self.open_components_last_twenty()
 
     def open_history_filtered(self) -> None:
         if self._current_section == "equipments":
@@ -1286,15 +1371,73 @@ class StockTrackerWindow(QMainWindow):
                 )
                 return
 
-        rows = self.tracker.get_equipment_rows(
+        rows = self.tracker.get_equipment_recent_rows(
             workbook,
             equipment_only=not all_equipments,
             supplier_reference=supplier_reference,
             description=description,
         )
+        if not rows:
+            SiemensMessage.information(
+                self,
+                "Equipments",
+                "No equipment entries to show.",
+            )
+            return
+
         title = "Last 20 equipments" if all_equipments else "Equipment history"
-        dialog = EquipmentsTableDialog(rows, self, title=title)
-        dialog.exec()
+        dialog = EquipmentsTableDialog(
+            rows,
+            self.tracker.equipment_row_to_dict,
+            self,
+            title=title,
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            self.set_status("List closed.")
+            return
+
+        row = dialog.selected_row()
+        if row is None:
+            return
+
+        self._equipments_page.show_equipment(row, open_datasheet=True)
+        data = self.tracker.equipment_row_to_dict(row)
+        ref = str(data.get("supplier_reference") or "").strip()
+        if ref:
+            self._equipments_page.ui.supplier_ref_entry.setText(ref)
+        self.set_status("Equipment opened from list.")
+
+    def open_components_last_twenty(self) -> None:
+        if not self.validate_user():
+            return
+
+        workbook = self.tracker.get_workbook()
+        rows = self.tracker.get_component_recent_rows(workbook, limit=20)
+        if not rows:
+            SiemensMessage.information(
+                self,
+                "Components",
+                "No components in inventory yet.",
+            )
+            return
+
+        dialog = ComponentsTableDialog(
+            rows,
+            self.tracker.row_to_dict,
+            self,
+            title="Components — last 20",
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            self.set_status("List closed.")
+            return
+
+        row = dialog.selected_row()
+        if row is None:
+            return
+
+        self.show_component(row)
+        self.ui.barcode_entry.setText(str(row[1].value or ""))
+        self.set_status("Component opened from list.")
 
     def add_manual_entry(self) -> None:
         if self._current_section == "equipments":
@@ -1321,6 +1464,7 @@ class StockTrackerWindow(QMainWindow):
         if self._is_generic_mode():
             u = self.ui
             u.search_entry.clear()
+            u.barcode_entry.clear()
             u.quantity_entry.clear()
             self._massive_mode.clear_fields()
             self.set_status("")
@@ -1348,11 +1492,7 @@ class StockTrackerWindow(QMainWindow):
         if not self.validate_user():
             return
         if self._is_generic_mode():
-            SiemensMessage.warning(
-                self,
-                "Passive mode",
-                "SCAN is for catalog components. Use SEARCH for resistors/capacitors.",
-            )
+            self._massive_mode.scan_supplier_ref()
             return
 
         code = self.ui.barcode_entry.text().strip()
@@ -1420,12 +1560,26 @@ class StockTrackerWindow(QMainWindow):
                 )
                 return
 
+        route = self._try_route_passive(
+            user=self.ui.user_entry.text().strip(),
+            catalog_part=part,
+            initial_stock=0,
+            location="",
+            prompt_if_incomplete=True,
+        )
+        if route == "done":
+            return
+
+        description = self.tracker.part_description(part)
+        manufacturer = self.tracker.part_manufacturer(part)
+        manufacturer_ref = self.tracker.part_manufacturer_reference(part)
+
         self.tracker.add_component_row(
             sheet,
             mouser_ref=supplier_reference,
-            manufacturer=self.tracker.part_manufacturer(part),
+            manufacturer=manufacturer,
             manufacturer_ref=manufacturer_ref,
-            description=self.tracker.part_description(part),
+            description=description,
             stock=0,
         )
 
@@ -1492,6 +1646,109 @@ class StockTrackerWindow(QMainWindow):
             )
         return part, found_supplier
 
+    def _apply_inventory_search_hit(self, hit: InventorySearchHit) -> None:
+        if hit.kind == "passive":
+            data = self.tracker.massive_row_to_dict(hit.row)
+            self._inventory_mode_combo.setCurrentIndex(1)
+            self._massive_mode.show_item(hit.row)
+            value = str(data.get("value") or "").strip()
+            if value:
+                self.ui.search_entry.setText(value)
+            self.set_status("Passive item loaded from search.")
+            return
+
+        row = hit.row
+        self.ui.barcode_entry.setText(str(row[1].value or ""))
+        self.show_component(row, open_datasheet=True)
+        self.set_status("Component found by search.")
+
+    def _maybe_prompt_location_on_stock_in(self, *, kind: str, row) -> None:
+        """Optional location popup when adding stock to an item without location."""
+        if kind == "component":
+            data = self.tracker.row_to_dict(row)
+            if data.get("locations"):
+                return
+            save = self.tracker.set_component_location
+        else:
+            data = self.tracker.massive_row_to_dict(row)
+            if str(data.get("location") or "").strip():
+                return
+            save = self.tracker.set_massive_location
+
+        location = OptionalLocationDialog.ask(self, self.tracker)
+        if not location:
+            return
+
+        ok, message = save(row, location)
+        if not ok:
+            SiemensMessage.warning(self, "Location", message)
+            self.set_status(message)
+            return
+
+        self.set_status(message)
+        if kind == "passive":
+            self._massive_mode.show_item(row)
+        else:
+            self.show_component(row)
+
+    def collect_global_search_hits(self, query: str) -> list[GlobalSearchHit]:
+        workbook = self.tracker.get_workbook()
+        hits: list[GlobalSearchHit] = []
+
+        components = self.tracker.get_components_sheet(workbook)
+        for row in self.tracker.search_in_excel_all(components, query):
+            hits.append(GlobalSearchHit("component", row))
+
+        generic = self.tracker.get_massive_sheet(workbook)
+        for row in self.tracker.search_massive_all(generic, query):
+            hits.append(GlobalSearchHit("passive", row))
+
+        equipments = self.tracker.get_equipments_sheet(workbook)
+        for row in self.tracker.search_equipments_all(equipments, query):
+            hits.append(GlobalSearchHit("equipment", row))
+
+        return hits
+
+    def apply_global_search_hit(self, hit: GlobalSearchHit) -> None:
+        if hit.kind == "equipment":
+            self._show_equipments_page()
+            self._equipments_page.show_equipment(hit.row, open_datasheet=True)
+            data = self.tracker.equipment_row_to_dict(hit.row)
+            ref = str(data.get("supplier_reference") or "").strip()
+            if ref:
+                self._equipments_page.ui.supplier_ref_entry.setText(ref)
+            self.set_status("Equipment opened from global search.")
+            return
+
+        self._show_components_page()
+        if hit.kind == "passive":
+            self._inventory_mode_combo.setCurrentIndex(1)
+            self._massive_mode.show_item(hit.row)
+            data = self.tracker.massive_row_to_dict(hit.row)
+            value = str(data.get("value") or "").strip()
+            if value:
+                self.ui.search_entry.setText(value)
+            ref = str(data.get("supplier_reference") or "").strip()
+            if ref:
+                self.ui.barcode_entry.setText(ref)
+            self.set_status("Passive item opened from global search.")
+            return
+
+        self._inventory_mode_combo.setCurrentIndex(0)
+        self.show_component(hit.row)
+        self.ui.barcode_entry.setText(str(hit.row[1].value or ""))
+        self.set_status("Component opened from global search.")
+
+    def open_global_search(self) -> None:
+        dialog = GlobalSearchDialog(self.tracker, self, parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            self.set_status("Global search closed.")
+            return
+        hit = dialog.selected_hit()
+        if hit is None:
+            return
+        self.apply_global_search_hit(hit)
+
     def search_component_manual(self) -> None:
         if not self.validate_user():
             return
@@ -1503,37 +1760,38 @@ class StockTrackerWindow(QMainWindow):
 
         workbook = self.tracker.get_workbook()
         sheet = self.tracker.get_components_sheet(workbook)
-        matches = self.tracker.search_in_excel_all(sheet, query)
+        massive_sheet = self.tracker.get_massive_sheet(workbook)
+        comp_matches = self.tracker.search_in_excel_all(sheet, query)
+        passive_matches = self.tracker.search_massive_all(massive_sheet, query)
 
-        if not matches:
+        hits = [InventorySearchHit("component", row) for row in comp_matches]
+        hits.extend(InventorySearchHit("passive", row) for row in passive_matches)
+
+        if not hits:
             if len(query) >= 5:
                 part, _found_supplier = self._lookup_distributor_catalogs(query)
                 if part is not None:
                     self._display_catalog_part(part, [query])
                     self.set_status("Catalog preview — not in Excel.")
                     return
-            SiemensMessage.information(self, "Not found", "No component found.")
+            SiemensMessage.information(self, "Not found", "No component or passive found.")
             return
 
-        row = matches[0]
-        if len(matches) > 1:
-            dialog = SearchResultsDialog(
-                matches, self.tracker.row_to_dict, parent=self
-            )
-            if dialog.exec() != QDialog.DialogCode.Accepted:
-                self.set_status("Search cancelled.")
-                return
-            row = dialog.selected_row()
-            if row is None:
-                return
+        if len(hits) == 1:
+            self._apply_inventory_search_hit(hits[0])
+            return
 
-        self.ui.barcode_entry.setText(str(row[1].value or ""))
-        self.show_component(row, open_datasheet=True)
-        count = len(matches)
-        if count > 1:
-            self.set_status(f"Selected 1 of {count} matches from Excel.")
-        else:
-            self.set_status("Component found by search.")
+        dialog = InventorySearchDialog(hits, self.tracker, parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            self.set_status("Search cancelled.")
+            return
+        hit = dialog.selected_hit()
+        if hit is None:
+            return
+
+        self._apply_inventory_search_hit(hit)
+        count = len(hits)
+        self.set_status(f"Selected 1 of {count} matches from Excel.")
 
     def update_stock(self, movement: str) -> None:
         if not self.validate_user():
@@ -1574,6 +1832,9 @@ class StockTrackerWindow(QMainWindow):
         if row is None:
             SiemensMessage.critical(self, "Error", "Component not found.")
             return
+
+        if movement == "IN":
+            self._maybe_prompt_location_on_stock_in(kind="component", row=row)
 
         current_stock = int(row[6].value or 0)
 
@@ -1626,8 +1887,215 @@ class StockTrackerWindow(QMainWindow):
             component_only=component_only,
             mouser_ref=mouser_ref,
         )
-        dialog = HistoryDialog(rows, self)
-        dialog.exec()
+        if not rows:
+            SiemensMessage.information(
+                self,
+                "History",
+                "No history entries to show.",
+            )
+            return
+
+        title = "Component history" if component_only else "Last 20 movements"
+        dialog = HistoryDialog(rows, self, title=title)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            self.set_status("History closed.")
+            return
+
+        entry = dialog.selected_row()
+        if entry is None:
+            return
+
+        supplier_ref = str(entry[2] or "").strip()
+        if not supplier_ref:
+            SiemensMessage.warning(
+                self,
+                "History",
+                "Selected entry has no supplier reference.",
+            )
+            return
+
+        sheet = self.tracker.get_components_sheet(workbook)
+        row = self.tracker.find_component_any(sheet, supplier_ref)
+        if row is None:
+            SiemensMessage.warning(
+                self,
+                "History",
+                f"No component found for “{supplier_ref}”.",
+            )
+            self.set_status("Component not found for history entry.")
+            return
+
+        self.show_component(row)
+        self.ui.barcode_entry.setText(str(row[1].value or supplier_ref))
+        self.set_status("Component opened from history.")
+
+    def _activate_passive_mode(self) -> None:
+        if self._inventory_mode_combo.currentIndex() != 1:
+            self._inventory_mode_combo.setCurrentIndex(1)
+
+    def _show_passive_row(self, row) -> None:
+        self._activate_passive_mode()
+        self._massive_mode.show_item(row)
+        data = self.tracker.massive_row_to_dict(row)
+        hint = data.get("value") or data.get("name") or ""
+        if hint:
+            self.ui.search_entry.setText(hint)
+        ref = str(data.get("supplier_reference") or "").strip()
+        if ref:
+            self.ui.barcode_entry.setText(ref)
+
+    def _add_passive_from_candidate(
+        self,
+        user: str,
+        candidate,
+        *,
+        initial_stock: int = 0,
+        location: str = "",
+    ) -> tuple[bool, str]:
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_massive_sheet(workbook)
+        existing = self.tracker.find_massive_by_identity(
+            sheet,
+            candidate.part_type,
+            candidate.value,
+            candidate.tolerance,
+            candidate.package,
+            dielectric=candidate.dielectric,
+        )
+        if existing:
+            self._show_passive_row(existing)
+            return True, "Resistor/capacitor already in Passive (Generic) inventory."
+
+        ok, message = self.tracker.add_massive_item(
+            user,
+            candidate.part_type,
+            candidate.value,
+            candidate.tolerance,
+            candidate.package,
+            initial_stock=initial_stock,
+            supplier_reference=candidate.supplier_reference,
+            dielectric=candidate.dielectric,
+            voltage=candidate.voltage,
+            notes=candidate.notes,
+            location=location,
+        )
+        if not ok:
+            return False, message
+
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_massive_sheet(workbook)
+        row = self.tracker.find_massive_by_identity(
+            sheet,
+            candidate.part_type,
+            candidate.value,
+            candidate.tolerance,
+            candidate.package,
+            dielectric=candidate.dielectric,
+        )
+        if row:
+            self._show_passive_row(row)
+        self._refresh_autocompletes()
+        return True, f"{message} (Generic sheet)"
+
+    def _try_route_passive(
+        self,
+        *,
+        user: str,
+        description: str = "",
+        manufacturer: str = "",
+        manufacturer_reference: str = "",
+        supplier_reference: str = "",
+        category: str = "",
+        extra_text: str = "",
+        catalog_part: dict | None = None,
+        initial_stock: int = 0,
+        location: str = "",
+        prompt_if_incomplete: bool = True,
+    ) -> str | None:
+        """
+        Route R/C to Generic sheet.
+        Returns None (not passive), 'done' (handled), or 'cancelled' (dialog dismissed).
+        """
+        if catalog_part is not None:
+            candidate = analyze_for_catalog_part(catalog_part)
+        else:
+            candidate = analyze_for_passive(
+                description=description,
+                manufacturer=manufacturer,
+                manufacturer_reference=manufacturer_reference,
+                supplier_reference=supplier_reference,
+                category=category,
+                extra_text=extra_text,
+            )
+        if candidate is None:
+            return None
+
+        if candidate.auto_ready:
+            ok, message = self._add_passive_from_candidate(
+                user,
+                candidate,
+                initial_stock=initial_stock,
+                location=location,
+            )
+            if ok:
+                self.set_status(message)
+                SiemensMessage.information(self, "Passive", message)
+            else:
+                SiemensMessage.warning(self, "Passive", message)
+                self.set_status(message)
+            return "done"
+
+        if not prompt_if_incomplete:
+            return None
+
+        dialog = MassiveDialog(
+            self,
+            initial=passive_dialog_initial(
+                candidate,
+                initial_stock=initial_stock,
+                location=location,
+            ),
+            title="Add Passive (R/C detected)",
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return "cancelled"
+
+        payload = dialog.payload()
+        ok, message = self.tracker.add_massive_item(
+            user,
+            payload["part_type"],
+            payload["value"],
+            payload["tolerance"],
+            payload["package"],
+            name=payload.get("name", ""),
+            initial_stock=int(payload.get("initial_stock", 0) or 0),
+            supplier_reference=payload.get("supplier_reference", ""),
+            dielectric=payload.get("dielectric", ""),
+            voltage=payload.get("voltage", ""),
+            notes=payload.get("notes", ""),
+            location=payload.get("location", ""),
+        )
+        if not ok:
+            SiemensMessage.warning(self, "Passive", message)
+            self.set_status(message)
+            return "done"
+
+        workbook = self.tracker.get_workbook()
+        sheet = self.tracker.get_massive_sheet(workbook)
+        row = self.tracker.find_massive_by_identity(
+            sheet,
+            payload["part_type"],
+            payload["value"],
+            payload["tolerance"],
+            payload["package"],
+            dielectric=payload.get("dielectric", ""),
+        )
+        if row:
+            self._show_passive_row(row)
+        self._refresh_autocompletes()
+        self.set_status(message)
+        SiemensMessage.information(self, "Passive", f"{message} (Generic sheet)")
+        return "done"
 
     def add_manual_component(self) -> None:
         if not self.validate_user():
@@ -1640,6 +2108,22 @@ class StockTrackerWindow(QMainWindow):
 
         payload = dialog.payload()
         user = self.ui.user_entry.text().strip()
+
+        route = self._try_route_passive(
+            user=user,
+            description=payload["description"],
+            manufacturer=payload["manufacturer"],
+            manufacturer_reference=payload["manufacturer_reference"],
+            supplier_reference=payload["supplier_reference"],
+            initial_stock=payload["initial_stock"],
+            location=payload.get("location", ""),
+            prompt_if_incomplete=True,
+        )
+        if route == "done":
+            return
+        if route == "cancelled":
+            self.set_status("Passive add cancelled — saving as standard component.")
+
         ok, message = self.tracker.add_manual_component(
             user=user,
             supplier_reference=payload["supplier_reference"],
@@ -1657,12 +2141,17 @@ class StockTrackerWindow(QMainWindow):
 
         workbook = self.tracker.get_workbook()
         sheet = self.tracker.get_components_sheet(workbook)
-        row = self.tracker.find_component_any(
-            sheet,
-            payload["supplier_reference"],
-            payload["manufacturer_reference"],
-            payload["manufacturer"],
-        )
+        row = None
+        if payload["supplier_reference"]:
+            row = self.tracker.find_component_by_supplier_ref(
+                sheet, payload["supplier_reference"]
+            )
+        if row is None:
+            row = self.tracker.find_component_any(
+                sheet,
+                payload["manufacturer_reference"],
+                payload["manufacturer"],
+            )
         if row:
             self.show_component(row)
             self.ui.barcode_entry.setText(str(row[1].value or ""))

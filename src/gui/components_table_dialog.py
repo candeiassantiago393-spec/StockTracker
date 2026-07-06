@@ -1,28 +1,27 @@
-"""Selectable table of equipments from Excel."""
+"""Selectable table of Components inventory rows."""
 from PySide6.QtWidgets import QDialog, QTableWidget
 
-from .designer.popups.equipments.gui_popup_history import Ui_PopupEquipmentHistory as Ui_PopupHistory
+from .designer.popups.components.gui_popup_history import Ui_PopupHistory
 from .siemens_template.popup_shell import fill_readonly_table
 
 COLUMNS = (
     "ID",
-    "Supplier Reference",
-    "Serial Number",
-    "Name",
+    "Supplier Ref",
+    "Manufacturer",
+    "Mfr Ref",
     "Description",
-    "Calibration Date",
-    "Calibration Expiration",
+    "Stock",
 )
 
 
-class EquipmentsTableDialog(QDialog):
+class ComponentsTableDialog(QDialog):
     def __init__(
         self,
         excel_rows: list,
         row_to_dict,
         parent=None,
         *,
-        title: str = "Equipments",
+        title: str = "Components",
     ):
         super().__init__(parent)
         self._rows = excel_rows
@@ -39,23 +38,21 @@ class EquipmentsTableDialog(QDialog):
         )
         self.ui.table_history.doubleClicked.connect(self._accept_selection)
 
-        table_rows = [row_to_dict(row) for row in excel_rows]
-
-        def values(data):
+        def values(row):
+            data = row_to_dict(row)
             return (
-                data["id"],
-                data["supplier_reference"],
-                data["serial_number"],
-                data["name"],
+                row[0].value or "",
+                data["mouser"],
+                data["manufacturer"],
+                data["manufacturer_ref"],
                 data["description"],
-                data["calibration_date"],
-                data["calibration_expiration"],
+                data["stock"],
             )
 
         fill_readonly_table(
             self.ui.table_history,
             COLUMNS,
-            table_rows,
+            excel_rows,
             row_values=values,
         )
 

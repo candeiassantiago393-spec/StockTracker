@@ -107,6 +107,31 @@ Mapa da GUI: [src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md)
 
 ---
 
+## Atalhos de teclado
+
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+1` / `Ctrl+2` / `Ctrl+3` | COMPONENTS / EQUIPMENTS / STATISTICS |
+| `Ctrl+F` | Foco na pesquisa |
+| `F6` | Foco no código de barras (Components) ou ref. fornecedor (Equipments) |
+| `F2` | Foco na quantidade |
+| `F4` | Foco no utilizador |
+| `Enter` | Scan (código de barras) ou pesquisa (campo pesquisa) |
+| `Ctrl+Enter` | Pesquisar |
+| `F5` | SCAN |
+| `Ctrl+I` / `Ctrl+U` | Stock IN / OUT |
+| `Ctrl+N` | ADD MANUAL |
+| `Ctrl+E` | EDIT |
+| `Ctrl+H` | Histórico do item |
+| `Ctrl+Shift+H` | Last 20 |
+| `Ctrl+Shift+E` | OPEN EXCEL |
+| `Ctrl+Shift+M` | Alternar Components / Passive (R/C) |
+| `Esc` | CLEAR (quando o foco não está num campo de texto) |
+
+Os botões mostram o atalho no tooltip ao passar o rato.
+
+---
+
 ## Documentação em inglês
 
 Índice: [docs/README.md](README.md) — COMMANDS, ARCHITECTURE, QT_DESIGNER, WORKSPACE, etc.

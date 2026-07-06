@@ -1,8 +1,9 @@
 """Edit component — Qt Designer gui_popup_edit.ui + location field."""
-from PySide6.QtWidgets import QDialog, QFormLayout
+from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit
 
 from .designer.popups.components.gui_popup_edit import Ui_PopupEdit
 from .location_combo import LocationMultiEditor
+from .manual_component_dialog import _widen_text_field
 from .message_dialog import SiemensMessage
 
 
@@ -18,6 +19,14 @@ class EditComponentDialog(QDialog):
         )
         self.ui.description_field.setText(str(component_data.get("description", "")))
         self.ui.label_current_stock.setText(str(component_data.get("stock", 0)))
+
+        for field in (
+            self.ui.supplier_reference,
+            self.ui.manufacturer,
+            self.ui.manufacturer_reference,
+            self.ui.description_field,
+        ):
+            _widen_text_field(field)
 
         form = self.ui.body_form.findChild(QFormLayout, "form_edit")
         if form is None:
@@ -44,7 +53,8 @@ class EditComponentDialog(QDialog):
             SiemensMessage.warning(
                 self,
                 "Missing identity",
-                "Provide Supplier Reference OR both Manufacturer and Manufacturer Reference.",
+                "Enter a Supplier Reference (any text) OR both Manufacturer and "
+                "Manufacturer Reference.",
             )
             return
         self.accept()

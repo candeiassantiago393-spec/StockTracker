@@ -5,6 +5,7 @@
 | Ficheiro | Papel |
 |----------|-------|
 | `stock_tracker_window.py` | Janela principal (Components + navegacao Equipments) |
+| `keyboard_shortcuts.py` | Atalhos de teclado globais da janela principal |
 | `catalog_image_preview.py` | Preview interativo da imagem de catalogo (zoom estilo Mouser) |
 | `equipments_page.py` | Pagina Equipments (logica; layout em `designer/gui_equipments.ui`; imagem, lista `doc_results_list` oculta ate SEARCH) |
 | `designer/gui_stocktracker.ui` | Layout Components (Qt Designer) |

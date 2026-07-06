@@ -1,5 +1,8 @@
 """Add / edit Massive inventory item (resistor or capacitor)."""
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QDialog,
     QFormLayout,
@@ -10,6 +13,8 @@ from PySide6.QtWidgets import (
     QSpinBox,
     QVBoxLayout,
 )
+
+from src.core.passive_transfer import enrich_passive_from_reference
 
 from . import styles
 from .location_combo import build_location_combo
@@ -110,6 +115,11 @@ class MassiveDialog(QDialog):
         form.addRow("Location", self.location)
         root.addLayout(form)
 
+        self._tracker = tracker
+        self.supplier_reference.editingFinished.connect(self._autofill_from_supplier_ref)
+        if self.supplier_reference.text().strip() and not self.package.currentText().strip():
+            QTimer.singleShot(0, self._autofill_from_supplier_ref)
+
         buttons = QHBoxLayout()
         buttons.addStretch()
         btn_ok = QPushButton("OK")
@@ -135,6 +145,51 @@ class MassiveDialog(QDialog):
     def _on_value_changed(self, text: str) -> None:
         if self._value_implies_capacitor(text):
             self.part_type.setCurrentIndex(1)
+
+    def _autofill_from_supplier_ref(self) -> None:
+        ref = self.supplier_reference.text().strip()
+        if len(ref) < 3:
+            return
+
+        app = QApplication.instance()
+        if app is not None:
+            app.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+        try:
+            fields = enrich_passive_from_reference(
+                ref,
+                notes=self.notes.text().strip(),
+                tracker=self._tracker,
+            )
+        finally:
+            if app is not None:
+                app.restoreOverrideCursor()
+        if fields:
+            self._apply_autofill(fields)
+
+    def _apply_autofill(self, fields: dict[str, str]) -> None:
+        part_type = str(fields.get("part_type", "")).strip().upper()
+        if part_type in {"R", "C"}:
+            self.part_type.setCurrentIndex(1 if part_type == "C" else 0)
+
+        for widget, key in (
+            (self.value, "value"),
+            (self.tolerance, "tolerance"),
+            (self.dielectric, "dielectric"),
+            (self.voltage, "voltage"),
+            (self.notes, "notes"),
+        ):
+            if widget.text().strip():
+                continue
+            value = str(fields.get(key, "") or "").strip()
+            if value:
+                widget.setText(value)
+
+        if not self.package.currentText().strip():
+            package = str(fields.get("package", "") or "").strip()
+            if package:
+                if self.package.findText(package) < 0:
+                    self.package.addItem(package)
+                self.package.setCurrentText(package)
 
     def _validate_and_accept(self) -> None:
         if not self.value.text().strip():

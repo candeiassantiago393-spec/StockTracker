@@ -291,7 +291,8 @@ def main() -> None:
                 class_name="PopupManual",
                 title="Add Manual Component",
                 subtitle=(
-                    "Supplier Reference is optional when both Manufacturer and "
+                    "Supplier Reference accepts any text (Mouser, DigiKey, internal code, etc.). "
+                    "Alternatively, leave it empty and fill both Manufacturer and "
                     "Manufacturer Reference are provided."
                 ),
                 width=641,

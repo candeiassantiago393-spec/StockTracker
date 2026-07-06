@@ -383,6 +383,18 @@ class StockTracker:
                 return row
         return None
 
+    def find_component_by_supplier_ref(self, sheet, supplier_reference: str):
+        """Exact match on supplier reference column (column B) — for manual add/edit."""
+        ref_n = self.normalize_ref(supplier_reference)
+        if not ref_n:
+            return None
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            if self.normalize_ref(row[1].value) == ref_n:
+                return row
+        return None
+
     def search_in_excel_all(self, sheet, query: str) -> list:
         """All rows matching query (Mouser ref, manufacturer, mfr ref, description)."""
         results = []
@@ -499,6 +511,18 @@ class StockTracker:
             ]
         return list(reversed(rows[-20:]))
 
+    def get_component_recent_rows(self, workbook, *, limit: int = 20) -> list:
+        """Last N Components sheet rows (newest last in Excel → reversed)."""
+        sheet = self.get_components_sheet(workbook)
+        rows: list = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            rows.append(row)
+        if limit > 0:
+            rows = rows[-limit:]
+        return list(reversed(rows))
+
     def next_component_id(self, sheet) -> int:
         max_id = 0
         for row in sheet.iter_rows(min_row=2, min_col=1, max_col=1):
@@ -579,7 +603,7 @@ class StockTracker:
         history = self.get_history_sheet(workbook)
 
         if supplier_reference:
-            if self.find_component_any(sheet, supplier_reference):
+            if self.find_component_by_supplier_ref(sheet, supplier_reference):
                 return False, "A component with this supplier reference already exists."
         elif self._find_by_manufacturer_pair(sheet, manufacturer, manufacturer_reference):
             return (
@@ -589,7 +613,7 @@ class StockTracker:
 
         self.add_component_row(
             sheet,
-            mouser_ref=supplier_reference,
+            mouser_ref=str(supplier_reference),
             manufacturer=manufacturer,
             manufacturer_ref=manufacturer_reference,
             description=description,
@@ -655,7 +679,7 @@ class StockTracker:
                     "Another component already uses this Manufacturer + Manufacturer Reference.",
                 )
 
-        row[1].value = supplier_reference
+        row[1].value = str(supplier_reference)
         row[2].value = manufacturer
         row[3].value = manufacturer_reference
         row[5].value = description
@@ -827,6 +851,125 @@ class StockTracker:
                 return row
         return None
 
+    def find_massive_by_supplier_ref(self, sheet, supplier_reference: str):
+        """Exact match on supplier reference column — for scan/barcode."""
+        ref_n = self.normalize_ref(supplier_reference)
+        if not ref_n:
+            return None
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            data = self.massive_row_to_dict(row)
+            if self.normalize_ref(data["supplier_reference"]) == ref_n:
+                return row
+        return None
+
+    def find_massive(self, sheet, part_number: str):
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            data = self.massive_row_to_dict(row)
+            if self.refs_match(part_number, data["supplier_reference"]):
+                return row
+        return None
+
+    def find_massive_any(self, sheet, *queries: str):
+        seen: set[str] = set()
+        for query in queries:
+            key = self.normalize_ref(query)
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            row = self.find_massive_by_supplier_ref(sheet, query)
+            if row:
+                return row
+        for query in queries:
+            key = self.normalize_ref(query)
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            row = self.find_massive(sheet, query)
+            if row:
+                return row
+        return None
+
+    @staticmethod
+    def normalize_passive_value_token(text: str) -> str:
+        value = (
+            str(text or "")
+            .strip()
+            .upper()
+            .replace("µ", "U")
+            .replace("Ω", "OHM")
+            .replace(" ", "")
+        )
+        if value.endswith("OHMS"):
+            value = value[:-1]
+        return value
+
+    def passive_value_matches(self, query: str, stored_value: str) -> bool:
+        """Match resistance/capacitance values (10k, 4K7, 100nF, 0, …)."""
+        q = self.normalize_passive_value_token(query)
+        stored = str(stored_value or "").strip()
+        if not q or not stored:
+            return False
+        v = self.normalize_passive_value_token(stored)
+        if q == v:
+            return True
+        if len(q) >= 2 and (q in v or v in q):
+            return True
+        if not q.endswith("F") and v.startswith(q) and "F" in v:
+            return True
+        return self.normalize_ref(q) in self.normalize_ref(stored)
+
+    def search_massive_by_value(self, sheet, query: str) -> list:
+        """Generic rows whose Value column matches the query (R/C value search)."""
+        results = []
+        q = str(query or "").strip()
+        if not q:
+            return results
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            data = self.massive_row_to_dict(row)
+            if self.passive_value_matches(q, data["value"]):
+                results.append(row)
+        return results
+
+    def excel_autocomplete_passive_values(self, sheet) -> list[str]:
+        """Distinct passive values for search autocomplete."""
+        seen: set[str] = set()
+        values: list[str] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            text = str(self.massive_row_to_dict(row).get("value") or "").strip()
+            if len(text) < 1:
+                continue
+            key = self.normalize_passive_value_token(text)
+            if key in seen:
+                continue
+            seen.add(key)
+            values.append(text)
+        return sorted(values, key=lambda item: self.normalize_passive_value_token(item))
+
+    def excel_autocomplete_massive_supplier_refs(self, sheet) -> list[str]:
+        """Supplier references on Generic sheet for barcode/scan autocomplete."""
+        seen: set[str] = set()
+        refs: list[str] = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            text = str(self.massive_row_to_dict(row).get("supplier_reference") or "").strip()
+            if len(text) < 1:
+                continue
+            key = text.upper()
+            if key in seen:
+                continue
+            seen.add(key)
+            refs.append(text)
+        return sorted(refs, key=lambda x: x.upper())
+
     def search_massive_all(self, sheet, query: str) -> list:
         """All Generic rows matching value, name, package, tolerance or supplier ref."""
         results = []
@@ -878,6 +1021,18 @@ class StockTracker:
                 data["stock"],
             ))
         return list(reversed(rows[-20:]))
+
+    def get_massive_recent_rows(self, workbook, *, limit: int = 20) -> list:
+        """Last N Generic sheet rows (newest last in Excel → reversed)."""
+        sheet = self.get_massive_sheet(workbook)
+        rows: list = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            rows.append(row)
+        if limit > 0:
+            rows = rows[-limit:]
+        return list(reversed(rows))
 
     def add_massive_item(
         self,
@@ -1223,6 +1378,69 @@ class StockTracker:
         )
         return items
 
+    def get_items_without_location(self) -> list[dict]:
+        """Inventory rows with stock > 0 and no Location (Components + Generic)."""
+        workbook = self.get_workbook()
+        items: list[dict] = []
+
+        components = self.get_components_sheet(workbook)
+        for row in components.iter_rows(min_row=2, max_row=components.max_row):
+            if self.row_is_empty(row):
+                continue
+            stock = self._stock_cell_int(row[6].value)
+            if stock is None or stock <= 0:
+                continue
+            data = self.row_to_dict(row)
+            if data.get("locations"):
+                continue
+            items.append(
+                {
+                    "sheet": "Components",
+                    "id": row[0].value,
+                    "reference": str(data.get("mouser") or ""),
+                    "description": str(data.get("description") or ""),
+                    "stock": stock,
+                }
+            )
+
+        generic = self.get_massive_sheet(workbook)
+        for row in generic.iter_rows(min_row=2, max_row=generic.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            stock = self._stock_cell_int(row[6].value)
+            if stock is None or stock <= 0:
+                continue
+            data = self.massive_row_to_dict(row)
+            if str(data.get("location") or "").strip():
+                continue
+            ref = str(data.get("supplier_reference") or data.get("value") or "")
+            desc = (
+                f"{data.get('part_type', '')} {data.get('value', '')} "
+                f"{data.get('tolerance', '')} {data.get('package', '')} — "
+                f"{data.get('name', '')}"
+            ).strip()
+            items.append(
+                {
+                    "sheet": "Generic",
+                    "id": data.get("id"),
+                    "reference": ref,
+                    "description": desc,
+                    "stock": stock,
+                }
+            )
+
+        items.sort(key=lambda item: (item["sheet"], str(item.get("reference") or "").lower()))
+        return items
+
+    def set_massive_location(self, row, location: str) -> tuple[bool, str]:
+        location = str(location or "").strip()
+        workbook = self.get_workbook()
+        sheet = self.get_massive_sheet(workbook)
+        sheet.cell(row=row[0].row, column=MASSIVE_COL_LOCATION, value=location)
+        if not self.save_workbook(workbook):
+            return False, "Close stock.xlsx in Excel before saving."
+        return True, "Location updated."
+
     def get_loaned_equipments(self) -> list[dict]:
         """Equipments currently marked as on loan."""
         workbook = self.get_workbook()
@@ -1237,6 +1455,114 @@ class StockTracker:
         items.sort(
             key=lambda item: str(item.get("loan_since") or "").lower(),
             reverse=True,
+        )
+        return items
+
+    UNASSIGNED_LOCATION = "(no location)"
+
+    def get_location_statistics(self, threshold: int | None = None) -> list[dict]:
+        """Per-location counts: components, passive, equipments, low stock, stock units."""
+        from collections import defaultdict
+
+        limit = self.low_stock_threshold if threshold is None else threshold
+        workbook = self.get_workbook()
+
+        buckets: dict[str, dict[str, int]] = defaultdict(
+            lambda: {
+                "components": 0,
+                "passive": 0,
+                "equipments": 0,
+                "low_stock": 0,
+                "stock_units": 0,
+            }
+        )
+
+        def _touch(location: str) -> str:
+            text = str(location or "").strip()
+            return text or self.UNASSIGNED_LOCATION
+
+        def _record(
+            location: str,
+            *,
+            components: int = 0,
+            passive: int = 0,
+            equipments: int = 0,
+            stock: int = 0,
+            is_low: bool = False,
+        ) -> None:
+            key = _touch(location)
+            bucket = buckets[key]
+            bucket["components"] += components
+            bucket["passive"] += passive
+            bucket["equipments"] += equipments
+            if stock:
+                bucket["stock_units"] += stock
+            if is_low:
+                bucket["low_stock"] += 1
+
+        components_sheet = self.get_components_sheet(workbook)
+        for row in components_sheet.iter_rows(min_row=2, max_row=components_sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            data = self.row_to_dict(row)
+            try:
+                stock = int(data.get("stock") or 0)
+            except (TypeError, ValueError):
+                stock = 0
+            is_low = stock <= limit
+            locations = data.get("locations") or self.parse_component_locations(
+                data.get("location", "")
+            )
+            if not locations:
+                _record("", components=1, stock=stock, is_low=is_low)
+                continue
+            for loc in locations:
+                _record(loc, components=1, stock=stock, is_low=is_low)
+
+        massive_sheet = self.get_massive_sheet(workbook)
+        for row in massive_sheet.iter_rows(min_row=2, max_row=massive_sheet.max_row):
+            if self.row_is_empty(row) or self._massive_row_is_header(row):
+                continue
+            data = self.massive_row_to_dict(row)
+            try:
+                stock = int(data.get("stock") or 0)
+            except (TypeError, ValueError):
+                stock = 0
+            is_low = stock <= limit
+            loc = str(data.get("location") or "").strip()
+            _record(loc, passive=1, stock=stock, is_low=is_low)
+
+        equipments_sheet = self.get_equipments_sheet(workbook)
+        for row in equipments_sheet.iter_rows(min_row=2, max_row=equipments_sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            data = self.equipment_row_to_dict(row)
+            loc = str(data.get("location") or "").strip()
+            _record(loc, equipments=1)
+
+        items: list[dict] = []
+        for location, counts in buckets.items():
+            total_items = (
+                counts["components"] + counts["passive"] + counts["equipments"]
+            )
+            items.append(
+                {
+                    "location": location,
+                    "components": counts["components"],
+                    "passive": counts["passive"],
+                    "equipments": counts["equipments"],
+                    "low_stock": counts["low_stock"],
+                    "stock_units": counts["stock_units"],
+                    "total_items": total_items,
+                }
+            )
+
+        items.sort(
+            key=lambda item: (
+                item["location"] == self.UNASSIGNED_LOCATION,
+                -item["total_items"],
+                item["location"].lower(),
+            )
         )
         return items
 
@@ -2179,6 +2505,36 @@ class StockTracker:
             return False, "Close stock.xlsx in Excel before saving."
         label = home_location or "home"
         return True, f"Equipment returned to {label}."
+
+    def get_equipment_recent_rows(
+        self,
+        workbook,
+        *,
+        limit: int = 20,
+        equipment_only: bool = False,
+        supplier_reference: str = "",
+        description: str = "",
+    ) -> list:
+        """Last N equipment sheet rows (newest last in Excel → reversed)."""
+        sheet = self.get_equipments_sheet(workbook)
+        ref_filter = self.normalize_ref(supplier_reference) if equipment_only else ""
+        desc_filter = self.normalize_ref(description) if equipment_only else ""
+        rows: list = []
+        for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
+            if self.row_is_empty(row):
+                continue
+            if equipment_only and (ref_filter or desc_filter):
+                row_ref = self.normalize_ref(row[1].value)
+                row_name = self.normalize_ref(row[3].value)
+                row_desc = self.normalize_ref(row[4].value)
+                if ref_filter and row_ref != ref_filter:
+                    continue
+                if desc_filter and desc_filter not in row_name and desc_filter not in row_desc:
+                    continue
+            rows.append(row)
+        if limit > 0:
+            rows = rows[-limit:]
+        return list(reversed(rows))
 
     def get_equipment_rows(
         self,

@@ -1,4 +1,7 @@
 """Inventory statistics — expiration, low stock, charts, and settings."""
+from datetime import datetime
+from pathlib import Path
+
 from PySide6.QtCharts import (
     QBarCategoryAxis,
     QBarSeries,
@@ -11,6 +14,7 @@ from PySide6.QtCharts import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -27,6 +31,8 @@ from src.core.app_settings import get_low_stock_threshold, set_low_stock_thresho
 from src.core.stock import StockTracker
 
 from .location_combo import format_locations_display
+from .inventory_report_pdf import export_inventory_report_pdf
+from .message_dialog import SiemensMessage
 from . import styles
 
 _CHART_COLORS = (
@@ -90,6 +96,13 @@ class StatisticsPage(QWidget):
         self.btn_refresh.setStyleSheet(styles.BTN_TEMPLATE_STYLE)
         self.btn_refresh.clicked.connect(self.refresh)
         header.addWidget(self.btn_refresh)
+
+        self.btn_export_pdf = QPushButton("EXPORT PDF")
+        self.btn_export_pdf.setMinimumWidth(124)
+        self.btn_export_pdf.setStyleSheet(styles.BTN_TEMPLATE_STYLE)
+        self.btn_export_pdf.setToolTip("Export inventory report (PDF)")
+        self.btn_export_pdf.clicked.connect(self._export_pdf)
+        header.addWidget(self.btn_export_pdf)
         root.addLayout(header)
 
         body = QHBoxLayout()
@@ -108,6 +121,13 @@ class StatisticsPage(QWidget):
         self._summary_label.setWordWrap(True)
         self._summary_label.setStyleSheet("color: #B3B3BE; font-size: 13px;")
         lists_layout.addWidget(self._summary_label)
+
+        self._locations_title = QLabel()
+        self._locations_table = self._make_table(
+            ("Location", "Components", "Passive", "Equipments", "Low stock", "Stock units")
+        )
+        lists_layout.addWidget(self._locations_title)
+        lists_layout.addWidget(self._locations_table)
 
         self._equipments_title = QLabel()
         self._equipments_table = self._make_table(
@@ -169,6 +189,15 @@ class StatisticsPage(QWidget):
         self._movement_chart_view.setMinimumHeight(200)
         charts_layout.addWidget(self._movement_chart_view, 1)
 
+        loc_title = QLabel("Items per location")
+        loc_title.setStyleSheet("font-size: 18px; font-weight: 600; color: #00CCCC;")
+        charts_layout.addWidget(loc_title)
+
+        self._location_chart_view = QChartView()
+        self._location_chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self._location_chart_view.setMinimumHeight(180)
+        charts_layout.addWidget(self._location_chart_view, 1)
+
         body.addWidget(charts_wrap, 2)
         root.addLayout(body, 1)
 
@@ -215,12 +244,30 @@ class StatisticsPage(QWidget):
         loaned = self.tracker.get_loaned_equipments()
         low_components = self.tracker.get_low_stock_components(threshold)
         low_massive = self.tracker.get_low_stock_massive(threshold)
+        location_stats = self.tracker.get_location_statistics(threshold)
         distribution = self.tracker.get_inventory_distribution()
         movements = self.tracker.get_weekly_movement_stats(weeks=8)
 
         self._summary_label.setText(
             f"Low stock threshold: ≤ {threshold} units. "
-            f"Equipment sorted by calibration expiration (soonest first)."
+            f"Equipment sorted by calibration expiration (soonest first). "
+            f"Locations include multi-tag components (each location counted separately)."
+        )
+
+        self._locations_title.setText(f"Storage locations ({len(location_stats)})")
+        self._fill_table(
+            self._locations_table,
+            [
+                (
+                    item.get("location") or "—",
+                    item.get("components", 0),
+                    item.get("passive", 0),
+                    item.get("equipments", 0),
+                    item.get("low_stock", 0),
+                    item.get("stock_units", 0),
+                )
+                for item in location_stats
+            ],
         )
 
         self._equipments_title.setText(
@@ -292,7 +339,38 @@ class StatisticsPage(QWidget):
 
         self._update_pie_chart(distribution)
         self._update_movement_chart(movements)
+        self._update_location_chart(location_stats)
         self.main.set_status("Statistics refreshed.")
+
+    def _export_pdf(self) -> None:
+        default_name = f"inventory_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        reports_dir = Path(__file__).resolve().parents[2] / "data" / "reports"
+        reports_dir.mkdir(parents=True, exist_ok=True)
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export inventory report",
+            str(reports_dir / default_name),
+            "PDF files (*.pdf)",
+        )
+        if not path:
+            self.main.set_status("Export cancelled.")
+            return
+        try:
+            saved = export_inventory_report_pdf(self.tracker, Path(path))
+        except OSError as exc:
+            SiemensMessage.warning(self, "Export failed", str(exc))
+            self.main.set_status("Report export failed.")
+            return
+        from PySide6.QtCore import QUrl
+        from PySide6.QtGui import QDesktopServices
+
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(saved.parent)))
+        self.main.set_status(f"Report exported to {saved}")
+        SiemensMessage.information(
+            self,
+            "Export",
+            f"Report saved:\n{saved}\n\nThe folder was opened in File Explorer.",
+        )
 
     def _update_pie_chart(self, distribution: list[dict]) -> None:
         series = QPieSeries()
@@ -386,3 +464,64 @@ class StatisticsPage(QWidget):
         chart.legend().setVisible(True)
         chart.legend().setAlignment(Qt.AlignmentFlag.AlignBottom)
         self._movement_chart_view.setChart(chart)
+
+    def _update_location_chart(self, location_stats: list[dict]) -> None:
+        chart = QChart()
+        chart.setTheme(QChart.ChartTheme.ChartThemeDark)
+        chart.setBackgroundVisible(False)
+        chart.setPlotAreaBackgroundVisible(False)
+        chart.setTitle("Tagged items per location")
+        chart.setTitleBrush(QColor("#00CCCC"))
+
+        ranked = [
+            item
+            for item in location_stats
+            if int(item.get("total_items") or 0) > 0
+            and item.get("location") != StockTracker.UNASSIGNED_LOCATION
+        ]
+        ranked.sort(key=lambda item: int(item.get("total_items") or 0), reverse=True)
+        ranked = ranked[:10]
+
+        if not ranked:
+            chart.setTitle("No locations in use yet")
+            self._location_chart_view.setChart(chart)
+            return
+
+        set_components = QBarSet("Components")
+        set_passive = QBarSet("Passive")
+        set_equipments = QBarSet("Equipments")
+        set_components.setColor(QColor("#00CCCC"))
+        set_passive.setColor(QColor("#5B8DEF"))
+        set_equipments.setColor(QColor("#FFB84D"))
+        categories: list[str] = []
+
+        for item in ranked:
+            categories.append(str(item.get("location") or "—"))
+            set_components.append(int(item.get("components") or 0))
+            set_passive.append(int(item.get("passive") or 0))
+            set_equipments.append(int(item.get("equipments") or 0))
+
+        series = QBarSeries()
+        series.append(set_components)
+        series.append(set_passive)
+        series.append(set_equipments)
+        chart.addSeries(series)
+
+        axis_x = QBarCategoryAxis()
+        axis_x.append(categories)
+        axis_x.setLabelsColor(QColor("#FFFFFF"))
+        chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
+        series.attachAxis(axis_x)
+
+        axis_y = QValueAxis()
+        axis_y.setLabelsColor(QColor("#FFFFFF"))
+        max_val = max(
+            [int(item.get("total_items") or 0) for item in ranked] + [1]
+        )
+        axis_y.setRange(0, max_val)
+        chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
+        series.attachAxis(axis_y)
+
+        chart.legend().setVisible(True)
+        chart.legend().setAlignment(Qt.AlignmentFlag.AlignBottom)
+        self._location_chart_view.setChart(chart)

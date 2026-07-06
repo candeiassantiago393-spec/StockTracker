@@ -22,6 +22,9 @@ TEMPLATE_FIELD_WIDTH = 100
 TEMPLATE_COMBO_MIN_SIZE = (172, 30)
 TEMPLATE_ROW_SPACING = 6
 TEMPLATE_ROW_MARGINS = (0, 9, 9, 9)  # left, top, right, bottom
+PASSIVE_ROW_MARGINS = (0, 3, 8, 3)
+PASSIVE_DETAIL_LABEL_WIDTH = 108
+PASSIVE_DETAIL_ROW_SPACING = 2
 # Main body grids — match footer bar (left/right 16px).
 TEMPLATE_PAGE_MARGINS = (16, 0, 16, 0)
 
@@ -163,6 +166,63 @@ STOCK_VALUE_STYLE = VALUE_FIELD_STYLE
 
 MODE_DETAIL_VALUE_WIDTH = 100
 MODE_DETAIL_VALUE_HEIGHT = 30
+
+PASSIVE_DETAIL_VALUE_STYLE = """
+QLabel {
+    min-height: 28px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLabel:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+"""
+
+EXPANDING_LINE_EDIT_STYLE = """
+QLineEdit {
+    min-width: 120px;
+    min-height: 18px;
+    max-height: 18px;
+    padding: 5px;
+    padding-bottom: 7px;
+    margin-top: 0px;
+    border-radius: 2px;
+    border: 1px solid #B3B3BE;
+    background-color: #00183B;
+    color: #FFFFFF;
+}
+QLineEdit:hover {
+    background-color: #001F39;
+    border: 1px solid #00FFB9;
+}
+"""
+
+
+def apply_expanding_line_edit(field) -> None:
+    """Widen operation inputs to use available column width (Passive mode)."""
+    from PySide6.QtWidgets import QSizePolicy
+
+    field.setStyleSheet(EXPANDING_LINE_EDIT_STYLE)
+    field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+    field.setMinimumWidth(120)
+    field.setMaximumWidth(16777215)
+
+
+def apply_passive_detail_value_label(label) -> None:
+    """Read-only detail value that stretches across the column."""
+    from PySide6.QtWidgets import QSizePolicy
+
+    label.setStyleSheet(PASSIVE_DETAIL_VALUE_STYLE)
+    label.setMinimumHeight(28)
+    label.setMaximumHeight(28)
+    label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+    label.setWordWrap(False)
 
 
 def apply_mode_detail_value_label(label) -> None:
