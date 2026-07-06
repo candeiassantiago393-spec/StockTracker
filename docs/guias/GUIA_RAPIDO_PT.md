@@ -1,13 +1,31 @@
 # Guia rápido — Stock Tracker (PT)
 
-Documentação operacional em português. Especificação completa: [PROJETO_STOCKTRACKER_PT.md](../especificacao/PROJETO_STOCKTRACKER_PT.md).
+Documentação operacional em português.
+
+| Documento | Conteúdo |
+|-----------|----------|
+| Especificação | [PROJETO_STOCKTRACKER_PT.md](../especificacao/PROJETO_STOCKTRACKER_PT.md) |
+| Entrega Siemens | [docs/entrega/](../entrega/README.md) |
+
+---
+
+## Primeira instalação
+
+```powershell
+cd Downloads\StockTracker\StockTracker
+.\INSTALAR.bat
+copy config\secrets.example.py config\secrets.py
+# Editar config\secrets.py com as chaves API
+.\run.bat
+```
+
+Verificar: `python tools\verificar_entrega.py`
 
 ---
 
 ## Arrancar a aplicação
 
 ```powershell
-cd Downloads\StockTracker\StockTracker
 .\.venv\Scripts\Activate.ps1
 python -m src.main
 ```
@@ -16,14 +34,18 @@ Ou duplo-clique em `run.bat`.
 
 ---
 
-## Duas páginas na GUI
+## Páginas na GUI
 
-| Página | Botão no header | Excel |
-|--------|-----------------|-------|
-| **Components** | COMPONENTS | Folha `Components` + movimentos em `History` |
-| **Equipments** | EQUIPMENTS | Folha `Equipments` (equipamentos calibrados) |
+| Página | Atalho | Excel |
+|--------|--------|-------|
+| **Components** | `Ctrl+1` | Folha `Components` |
+| **Passive (R/C)** | `Ctrl+Shift+M` (dentro de Components) | Folha `Generic` |
+| **Equipments** | `Ctrl+2` | Folha `Equipments` |
+| **Statistics** | `Ctrl+3` | Relatórios (export PDF) |
 
-Barra inferior partilhada: Last 20, histórico, ADD MANUAL, EDIT, OPEN EXCEL, CLEAR, Exit.
+Barra inferior: Last 20, histórico, ADD MANUAL, EDIT, OPEN EXCEL, CLEAR, Exit.
+
+**Pesquisa global** (`Ctrl+G`): procura em Components, Passive e Equipments.
 
 ---
 
@@ -31,11 +53,24 @@ Barra inferior partilhada: Last 20, histórico, ADD MANUAL, EDIT, OPEN EXCEL, CL
 
 | Folha | Conteúdo |
 |-------|----------|
-| `Components` | Peças e stock |
-| `Equipments` | Supplier Reference, Serial Number, Description, datas de calibração, Datasheet, Image |
+| `Components` | Componentes activos |
+| `Generic` | Passivos R/C (resistores, condensadores) |
+| `Equipments` | Equipamentos calibrados |
+| `EquipmentLoans` | Empréstimos de equipamentos |
 | `History` | Movimentos IN/OUT |
 
-Fechar o Excel antes de gravar. Ver [data/README.md](../data/README.md).
+Fechar o Excel antes de gravar. Ver [data/README.md](../../data/README.md).
+
+Relatórios PDF: `data/reports/` (Statistics → EXPORT PDF).
+
+---
+
+## Modo Passive (R/C)
+
+1. Na página Components, pressione `Ctrl+Shift+M` ou use o botão de modo.
+2. Scan ou pesquisa por referência de fornecedor / valor (`10k`, `100nF`, …).
+3. Ao adicionar passivo, o campo **Package** pode preencher-se automaticamente pela **Supplier Ref** (catálogo ou Excel).
+4. Localização opcional após ADD STOCK.
 
 ---
 
@@ -49,27 +84,11 @@ Fechar o Excel antes de gravar. Ver [data/README.md](../data/README.md).
 | `StockTracker-Designer/` | Pacote no repo para editar no Designer |
 | `Desktop\StockTracker-Designer` | Cópia no Ambiente de Trabalho |
 
-### Ficheiros principais
-
-| Ficheiro | Página |
-|----------|--------|
-| `gui_stocktracker.ui` | Components (DESIGNER.bat opção **1**) |
-| `gui_equipments.ui` | Equipments (DESIGNER.bat opção **2**) |
-| `popups/components/gui_popup_*.ui` | Diálogos Components (opções **3–6**) |
-| `popups/equipments/gui_popup_*.ui` | Diálogos Equipments (opções **7–9**) |
-| `popups/shared/gui_popup_*.ui` | Confirm + template (opções **10–11**) |
-
-Guia Equipments (layout Qt Designer + objectNames): `src/gui/designer/EQUIPMENTS-LEIA-ME.txt`
-
 ### Organizar tudo (repo + Desktop)
-
-Na raiz do projeto:
 
 ```text
 tools\ORGANIZAR-DESKTOP.bat
 ```
-
-Regenera `.ui`, exporta `.py`, sincroniza Designer e copia o projeto para `Desktop\StockTracker-Projeto`.
 
 ### Depois de editar um `.ui`
 
@@ -79,16 +98,11 @@ Regenera `.ui`, exporta `.py`, sincroniza Designer e copia o projeto para `Deskt
 
 ---
 
-## Components — imagem de catalogo
+## Components — imagem de catálogo
 
-Ao pesquisar ou selecionar um componente, a app obtém a imagem do distribuidor (Mouser, etc.) em alta resolução (`/lrg/`). A area `component_image_preview` suporta:
+Preview interativo com lupa, zoom (roda do rato) e cache local.
 
-- Lupa ao mover o rato
-- Zoom com a roda do rato
-- Arrastar com zoom ativo
-- Duplo-clique para repor
-
-Logica: `src/core/component_images.py` + `src/gui/catalog_image_preview.py`
+Lógica: `src/core/component_images.py` + `src/gui/catalog_image_preview.py`
 
 ---
 
@@ -98,12 +112,13 @@ Logica: `src/core/component_images.py` + `src/gui/catalog_image_preview.py`
 |--------|------------------|
 | Entrada | `src/main.py` |
 | Lógica | `src/core/stock.py` |
-| GUI Components | `src/gui/stock_tracker_window.py` + `designer/gui_stocktracker.ui` |
-| GUI Equipments | `src/gui/equipments_page.py` + `designer/gui_equipments.ui` |
-| Estilos template | `src/gui/styles.py`, `tools/gui_ui_builder.py` |
+| Passivos R/C | `src/core/passive_transfer.py` |
+| GUI principal | `src/gui/stock_tracker_window.py` |
+| Equipments | `src/gui/equipments_page.py` |
+| Statistics | `src/gui/statistics_page.py` |
 | Credenciais | `config/secrets.py` (não commitar) |
 
-Mapa da GUI: [src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md)
+Mapa da GUI: [src/gui/ESTRUTURA.md](../../src/gui/ESTRUTURA.md)
 
 ---
 
@@ -112,11 +127,12 @@ Mapa da GUI: [src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md)
 | Atalho | Ação |
 |--------|------|
 | `Ctrl+1` / `Ctrl+2` / `Ctrl+3` | COMPONENTS / EQUIPMENTS / STATISTICS |
+| `Ctrl+G` | Pesquisa global |
 | `Ctrl+F` | Foco na pesquisa |
-| `F6` | Foco no código de barras (Components) ou ref. fornecedor (Equipments) |
+| `F6` | Foco no código de barras / ref. fornecedor |
 | `F2` | Foco na quantidade |
 | `F4` | Foco no utilizador |
-| `Enter` | Scan (código de barras) ou pesquisa (campo pesquisa) |
+| `Enter` | Scan ou pesquisa (conforme o campo) |
 | `Ctrl+Enter` | Pesquisar |
 | `F5` | SCAN |
 | `Ctrl+I` / `Ctrl+U` | Stock IN / OUT |
@@ -126,12 +142,12 @@ Mapa da GUI: [src/gui/ESTRUTURA.md](../src/gui/ESTRUTURA.md)
 | `Ctrl+Shift+H` | Last 20 |
 | `Ctrl+Shift+E` | OPEN EXCEL |
 | `Ctrl+Shift+M` | Alternar Components / Passive (R/C) |
-| `Esc` | CLEAR (quando o foco não está num campo de texto) |
+| `Esc` | CLEAR (fora de campos de texto) |
 
-Os botões mostram o atalho no tooltip ao passar o rato.
+Os botões mostram o atalho no tooltip.
 
 ---
 
-## Documentação em inglês
+## Documentação completa
 
-Índice: [docs/README.md](README.md) — COMMANDS, ARCHITECTURE, QT_DESIGNER, WORKSPACE, etc.
+Índice: [docs/README.md](../README.md)

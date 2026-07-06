@@ -6,11 +6,19 @@ Place your inventory file here: **`stock.xlsx`**
 
 | Sheet | Purpose |
 |-------|---------|
-| `Components` | Parts and stock levels |
+| `Components` | Active parts and stock levels |
+| `Generic` | Passive R/C inventory (resistors, capacitors) |
 | `History` | Stock movements (IN/OUT) |
 | `Equipments` | Calibrated equipments (supplier ref, serial, **Name**, description, dates, **Datasheet**, **Image**) |
+| `EquipmentLoans` | Equipment loan records |
 
 The app creates headers automatically if the file is missing or empty.
+
+## Generated reports
+
+Folder: **`reports/`** (inside `data/`)
+
+PDF inventory exports from the **Statistics** page are saved here. Not versioned in Git — see `reports/README.txt`.
 
 ## Equipment files (per equipment)
 

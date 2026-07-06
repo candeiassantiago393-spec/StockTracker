@@ -42,6 +42,10 @@ data/catalog_links/*
 tools/_reorg_out.txt
 tools/_tmp_*.png
 src/gui/_reorganize_report.txt
+data/reports/*
+!data/reports/README.txt
+data/*.bak
+data/missing_locations_report.csv
 
 # Settings and alert state (local runtime)
 data/app_settings.json

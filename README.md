@@ -4,21 +4,23 @@
 
 Stock management using a local Excel database, PySide6 GUI, and optional distributor API integration (Mouser, DigiKey, TME, RS, and extensible suppliers).
 
+> **Delivery package (Siemens):** [`docs/entrega/README.md`](docs/entrega/README.md)  
 > Full documentation: [`docs/README.md`](docs/README.md) — specification: [EN](docs/especificacao/PROJETO_STOCKTRACKER.md) · [PT](docs/especificacao/PROJETO_STOCKTRACKER_PT.md)
 
 ---
 
 ## Features
 
-- Excel inventory (`Components`, `Equipments`, and `History` sheets)
-- GUI: **Components** (search, barcode/scan, stock IN/OUT) and **Equipments** (calibrated items)
-- Header navigation COMPONENTS / EQUIPMENTS with shared action bar
-- Multi-match Excel search with selection dialog
+- Excel inventory (`Components`, `Generic`, `Equipments`, `EquipmentLoans`, `History`)
+- GUI: **Components**, **Passive (R/C)**, **Equipments**, **Statistics**
+- Header navigation with shared action bar and keyboard shortcuts
+- Multi-match Excel search with selection dialog; **global search** (`Ctrl+G`)
 - Autocomplete from Excel (search and barcode fields)
-- Mouser API: catalog lookup and import
-- **Component catalog image** (Mouser `/lrg/` resolution) with hover magnifier, wheel zoom, and **bounded local cache** (`data/component_image_cache/`)
-- **Equipment images** — drag & drop or Add/Delete, stored in `data/equipments/{id}/`
-- **Multi-distributor SCAN**: queries configured APIs in order until a match is found
+- **Passive mode** — high-volume resistors/capacitors on `Generic` sheet; scan + auto package from supplier ref
+- Mouser API: catalog lookup, import, and **component catalog image** with zoom/cache
+- **Equipment** management — calibration dates, per-equipment folders, **loans**, email alerts
+- **Statistics** page — low stock, expiring calibrations, location stats, **PDF export**
+- Multi-distributor SCAN: queries configured APIs in order until a match is found
 - Modular suppliers under `src/core/suppliers/`
 - Optional terminal test menu: `python -m src.test_terminal`
 - Clear separation: business logic in `core/`, UI in `gui/`
@@ -39,9 +41,7 @@ Stock management using a local Excel database, PySide6 GUI, and optional distrib
 ```powershell
 git clone https://github.com/candeiassantiago393-spec/StockTracker.git
 cd StockTracker
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\INSTALAR.bat
 copy config\secrets.example.py config\secrets.py
 ```
 
@@ -50,10 +50,12 @@ copy config\secrets.example.py config\secrets.py
 3. Run:
 
 ```powershell
-python -m src.main
+.\run.bat
 ```
 
-Or double-click `run.bat`.
+Or: `python -m src.main`
+
+Verify install: `python tools\verificar_entrega.py`
 
 ---
 
@@ -105,7 +107,10 @@ StockTracker/
 
 | Document | Content |
 |----------|---------|
+| [docs/entrega/README.md](docs/entrega/README.md) | **Delivery package** (Siemens internship) |
 | [docs/README.md](docs/README.md) | Documentation index |
+| [docs/guias/GUIA_RAPIDO_PT.md](docs/guias/GUIA_RAPIDO_PT.md) | Quick guide (Portuguese) |
+| [word/StockTracker_Documentacao_Projeto.docx](word/StockTracker_Documentacao_Projeto.docx) | Formal Word document |
 | [docs/user/COMMANDS.md](docs/user/COMMANDS.md) | Install, run, troubleshooting |
 | [docs/user/ARCHITECTURE.md](docs/user/ARCHITECTURE.md) | Architecture and flows |
 | [docs/user/SUPPLIERS.md](docs/user/SUPPLIERS.md) | Supplier APIs |

@@ -1,12 +1,25 @@
 # Documentation — Stock Tracker
 
+## Delivery (Siemens internship)
+
+| Document | Description |
+|----------|-------------|
+| **[entrega/README.md](entrega/README.md)** | Delivery package index |
+| [entrega/CHECKLIST_ENTREGA.md](entrega/CHECKLIST_ENTREGA.md) | Pre-delivery checklist |
+| [entrega/PACOTE_ENTREGA.md](entrega/PACOTE_ENTREGA.md) | What to hand over |
+| [../word/StockTracker_Documentacao_Projeto.docx](../word/StockTracker_Documentacao_Projeto.docx) | Formal Word document |
+
+Install: `INSTALAR.bat` · Verify: `python tools\verificar_entrega.py`
+
+---
+
 ## Quick start
 
 | Audience | Document |
 |----------|----------|
 | **Portuguese (operators / GUI)** | [guias/GUIA_RAPIDO_PT.md](guias/GUIA_RAPIDO_PT.md) |
 | **English (commands)** | [user/COMMANDS.md](user/COMMANDS.md) |
-| **Run the app** | `python -m src.main` or `run.bat` |
+| **Run the app** | `INSTALAR.bat` then `run.bat` or `python -m src.main` |
 
 ---
 

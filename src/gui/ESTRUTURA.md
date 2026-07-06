@@ -4,55 +4,50 @@
 
 | Ficheiro | Papel |
 |----------|-------|
-| `stock_tracker_window.py` | Janela principal (Components + navegacao Equipments) |
-| `keyboard_shortcuts.py` | Atalhos de teclado globais da janela principal |
-| `catalog_image_preview.py` | Preview interativo da imagem de catalogo (zoom estilo Mouser) |
-| `equipments_page.py` | Pagina Equipments (logica; layout em `designer/gui_equipments.ui`; imagem, lista `doc_results_list` oculta ate SEARCH) |
+| `stock_tracker_window.py` | Janela principal (Components, Equipments, Statistics) |
+| `keyboard_shortcuts.py` | Atalhos globais (Ctrl+1/2/3, Ctrl+G, …) |
+| `components_massive_mode.py` | Modo Passive (R/C) embarcado em Components |
+| `statistics_page.py` | Pagina Statistics + export PDF |
+| `catalog_image_preview.py` | Preview interativo da imagem de catalogo |
+| `equipments_page.py` | Pagina Equipments (emprestimos, calibracao) |
+| `global_search_dialog.py` | Pesquisa global Ctrl+G |
+| `optional_location_dialog.py` | Localizacao opcional no stock IN |
+| `inventory_report_pdf.py` | Exportacao PDF de inventario |
 | `designer/gui_stocktracker.ui` | Layout Components (Qt Designer) |
 | `designer/gui_equipments.ui` | Layout Equipments (Qt Designer) |
-| `designer/gui_stocktracker.py` | Export `pyside6-uic` — nao editar a mao |
-| `designer/gui_equipments.py` | Export `pyside6-uic` — nao editar a mao |
-| `styles.py` | Metricas e estilos Siemens (template) |
-| `gui_config.py` | Caminhos de logos |
+| `styles.py` | Metricas e estilos Siemens |
 
 ### Dialogos
 
-| Ficheiro | Template |
-|----------|----------|
-| `message_dialog.py` | `popups/shared/gui_popup_confirm.ui` |
-| `user_name_dialog.py` | `popups/shared/gui_popup_confirm.ui` |
-| `confirm_dialog.py` | confirm |
-| `history_dialog.py` | `popups/components/gui_popup_history.ui` |
-| `manual_component_dialog.py` | `popups/components/gui_popup_manual.ui` |
-| `edit_component_dialog.py` | `popups/components/gui_popup_edit.ui` |
-| `search_results_dialog.py` | `popups/components/gui_popup_search.ui` |
-| `equipment_search_dialog.py` | `popups/equipments/gui_popup_search.ui` |
-| `equipments_table_dialog.py` | `popups/equipments/gui_popup_history.ui` |
-| `equipment_dialog.py` | `popups/equipments/gui_popup_equipment.ui` |
+| Ficheiro | Uso |
+|----------|-----|
+| `massive_dialog.py` | Adicionar/editar passivo R/C |
+| `massive_table_dialog.py` | Tabela Passive (Last 20) |
+| `components_table_dialog.py` | Tabela Components (Last 20) |
+| `equipments_table_dialog.py` | Tabela Equipments (Last 20) |
+| `equipment_loan_dialog.py` | Registo de emprestimo |
+| `history_dialog.py` | Historico (selecionavel) |
+| `manual_component_dialog.py` / `edit_component_dialog.py` | Components manual/edit |
+| `search_results_dialog.py` / `equipment_search_dialog.py` | Resultados de pesquisa |
 
-Arranque: `python -m src.main` ou `run.bat` na raiz.
+Arranque: `INSTALAR.bat` (primeira vez) · `run.bat` · `python -m src.main`
 
 **Nao** executar ficheiros de `gui/` isoladamente (imports relativos).
 
-## Pasta `designer/`
+## Core relacionado
 
-Ver [designer/README.md](designer/README.md) — gerar, exportar e sincronizar com Qt Designer.
-
-Pacote de edicao: `StockTracker-Designer/` na raiz do repo (espelho para o Qt Designer).
-
-## Template Siemens (`siemens_template/`)
-
-Icones, fontes e widgets de referencia. A janela usa `designer/*.ui`; metricas em `styles.py` alinhadas com `siemens_template/gui_template.ui`.
+| Ficheiro | Papel |
+|----------|-------|
+| `src/core/stock.py` | Excel, stock, equipamentos, passivos |
+| `src/core/passive_transfer.py` | Detecao R/C e autofill Package |
+| `src/core/inventory_report.py` | Dados para relatorio PDF |
 
 ## Ferramentas
 
-| Comando / script | Funcao |
-|------------------|--------|
-| `tools/ORGANIZAR-DESKTOP.bat` | Regenera `.ui`, exporta `.py`, sincroniza Designer + Desktop |
-| `tools/generate_all_designer_uis.py` | Regenera todos os `.ui` |
-| `tools/gui_ui_builder.py` | Builders partilhados (template) |
-| `tools/export-ui.bat` | Exporta `.ui` → `.py` |
-| `tools/sync_designer_package.ps1` | Atualiza `StockTracker-Designer/` (repo e/ou Desktop) |
-| `tools/ABRIR-DESIGNER.bat` | Abre Components ou Equipments no Designer |
+| Script | Funcao |
+|--------|--------|
+| `tools/ORGANIZAR-DESKTOP.bat` | Regenera UI + sync Designer |
+| `tools/verificar_entrega.py` | Verificacao pre-entrega |
+| `tools/build_project_docx.py` | Documento Word formal |
 
-Documentacao: [docs/guias/GUIA_RAPIDO_PT.md](../../docs/guias/GUIA_RAPIDO_PT.md) · [designer/EQUIPMENTS-LEIA-ME.txt](designer/EQUIPMENTS-LEIA-ME.txt)
+Documentacao: [docs/entrega/](../../docs/entrega/README.md) · [GUIA_RAPIDO_PT.md](../../docs/guias/GUIA_RAPIDO_PT.md)

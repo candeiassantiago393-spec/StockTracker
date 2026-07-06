@@ -241,6 +241,29 @@ def _add_evolution_section(doc: Document) -> None:
         "Nao misturar com este repositorio (StockTracker em Downloads).",
     )
 
+    _heading(doc, "2.9 Fase 5 — Versao de entrega do estagio (v2.1)", 2)
+    _para(
+        doc,
+        "Iteracao final do estagio Siemens: passivos em massa, estatisticas, "
+        "relatorios PDF, pesquisa global e emprestimos de equipamentos.",
+        bold=True,
+    )
+    _bullet(
+        doc,
+        [
+            "Folha Excel Generic — resistores e condensadores (modo Passive, Ctrl+Shift+M).",
+            "Pagina Statistics (Ctrl+3) — stock baixo, calibracoes, localizacoes, export PDF.",
+            "Pesquisa global Ctrl+G — Components + Passive + Equipments.",
+            "Empréstimos de equipamentos — folha EquipmentLoans + dialogo dedicado.",
+            "Alertas de calibracao por email (configuravel).",
+            "Localizacao opcional ao adicionar stock; multi-location nos componentes.",
+            "Package automatico no dialogo Passive a partir da Supplier Ref (catalogo).",
+            "Last 20 com selecao e abertura do item (Components, Passive, Equipments).",
+            "INSTALAR.bat e tools/verificar_entrega.py para entrega ao receptor.",
+            "Pacote docs/entrega/ — checklist e documentacao de entrega Siemens.",
+        ],
+    )
+
     doc.add_page_break()
 
 
@@ -262,7 +285,7 @@ def build() -> Path:
     sub.font.size = Pt(14)
     meta = doc.add_paragraph()
     meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    meta.add_run(f"Versao 1.1 | {date.today().strftime('%d/%m/%Y')}\n")
+    meta.add_run(f"Versao 2.1 | {date.today().strftime('%d/%m/%Y')}\n")
     meta.add_run(f"Repositorio: {ROOT.name}")
     doc.add_page_break()
 
@@ -324,6 +347,11 @@ def build() -> Path:
             ["RF08", "Editar dados de componente existente", "Implementado"],
             ["RF09", "Autocomplete a partir do Excel", "Implementado"],
             ["RF10", "Copiar campos para area de transferencia", "Implementado"],
+            ["RF11", "Inventario passivo R/C (folha Generic)", "Implementado v2.1"],
+            ["RF12", "Estatisticas e exportacao PDF", "Implementado v2.1"],
+            ["RF13", "Pesquisa global (Ctrl+G)", "Implementado v2.1"],
+            ["RF14", "Emprestimos de equipamentos", "Implementado v2.1"],
+            ["RF15", "Alertas de calibracao por email", "Implementado v2.1"],
         ],
     )
 

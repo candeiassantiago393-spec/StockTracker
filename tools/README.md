@@ -21,6 +21,9 @@ These are not required to run the app.
 | `ORGANIZAR-DESKTOP.bat` | Wrapper for `organizar-ambiente.ps1` (in this folder) |
 | `sincronizar-desktop.ps1` | Legacy: copies project + Designer (use `organizar-ambiente.ps1` instead) |
 | `build_project_docx.py` | Builds `word/StockTracker_Documentacao_Projeto.docx` |
+| `verificar_entrega.py` | Pre-delivery install/doc checks |
+| `list_missing_locations.py` | CSV report: stock > 0 without location |
+| `import_electrolytic_grid.py` | Bulk import electrolytic caps (one-off lab data) |
 | `seed_example_equipments.py` | Adds 5 demo equipments + sample datasheets in `data/` |
 
 ## Run the App
